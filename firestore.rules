@@ -1,0 +1,246 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: apps
+    // Document ID: auto-generated
+    // Fields:
+    //   - name: string (required, 1-100 chars)
+    //   - description: string (required, 1-1000 chars)
+    //   - type: string (required, enum: Web, Mobile, Desktop)
+    //   - link: string (required, URL format)
+    //   - tags: list (required, max 20 items, each string < 50 chars)
+    //   - authorUid: string (required, immutable)
+    //   - createdAt: timestamp (required, immutable)
+    //   - ratingCount: number (optional, default 0)
+    //   - sumOfRatings: number (optional, default 0)
+    //
+    // Collection: app_ratings
+    // Document ID: {userId}_{appId}
+    // Fields:
+    //   - userId: string (required, immutable)
+    //   - appId: string (required, immutable)
+    //   - rating: number (required, 1-5)
+    //   - createdAt: timestamp (required, immutable)
+    //
+    // Collection: settings
+    // Document ID: global
+    // Fields:
+    //   - contactEmail: string (email)
+    //   - phoneNumber: string
+    //   - linkedin: string (URL)
+    //   - twitter: string (URL)
+    //   - facebook: string (URL)
+    //
+    // Collection: messages
+    // Document ID: auto-generated
+    // Fields:
+    //   - name: string
+    //   - email: string (email)
+    //   - subject: string
+    //   - message: string
+    //   - createdAt: timestamp
+    //
+    // Collection: users
+    // Document ID: userId
+    // Fields:
+    //   - role: string (required, enum: admin, user, guest)
+    //   - customDomain: string (optional)
+    //   - email: string (required, email format)
+    //
+    // Collection: reviews
+    // Document ID: auto-generated
+    // Fields:
+    //   - userId: string (required, immutable)
+    //   - userName: string (required)
+    //   - userPhoto: string (optional)
+    //   - rating: number (required, 1-5)
+    //   - comment: string (required, 1-500 chars)
+    //   - createdAt: timestamp (required, immutable)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() &&
+        (request.auth.token.email == "pymmcoresolutions@gmail.com" && request.auth.token.email_verified == true ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+
+    function isEditor() {
+      return isAuthenticated() && 
+        (request.auth.token.email == "pymmcoresolutions@gmail.com" && request.auth.token.email_verified == true ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'editor']);
+    }
+
+    function isViewer() {
+      return isAuthenticated();
+    }
+    
+    function isNotSuspended() {
+      return !('status' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data) || 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status != 'suspended';
+    }
+    
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+    
+    function isValidUrl(url) {
+      return url is string && (url.matches("^https://.*") || url.matches("^http://.*"));
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidApp(data) {
+      return data.keys().hasAll(['name', 'description', 'type', 'link', 'tags', 'authorUid', 'createdAt', 'developer', 'price']) &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+             data.description is string && data.description.size() >= 1 && data.description.size() <= 1000 &&
+             data.type in ['Web', 'Mobile', 'Desktop'] &&
+             isValidUrl(data.link) &&
+             data.tags is list && data.tags.size() <= 20 &&
+             data.authorUid == request.auth.uid &&
+             data.createdAt is timestamp &&
+             data.developer is string && data.developer.size() >= 1 &&
+             data.price is string &&
+             (!('isPymmcoreProduct' in data) || data.isPymmcoreProduct is bool) &&
+             (!('appStoreLink' in data) || isValidUrl(data.appStoreLink)) &&
+             (!('playStoreLink' in data) || isValidUrl(data.playStoreLink)) &&
+             (!('demoLink' in data) || isValidUrl(data.demoLink)) &&
+             (!('status' in data) || data.status in ['staging', 'production']);
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['role', 'email']) &&
+             data.role in ['admin', 'editor', 'viewer'] &&
+             isValidEmail(data.email) &&
+             (!('status' in data) || data.status in ['active', 'suspended']) &&
+             (!('name' in data) || (data.name is string && data.name.size() <= 100)) &&
+             (!('phone' in data) || (data.phone is string && data.phone.size() <= 20)) &&
+             (!('address' in data) || (data.address is string && data.address.size() <= 500));
+    }
+
+    function isValidReview(data) {
+      return data.keys().hasAll(['userId', 'userName', 'rating', 'comment', 'createdAt']) &&
+             data.userId == request.auth.uid &&
+             data.userName is string && data.userName.size() > 0 &&
+             data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+             data.comment is string && data.comment.size() >= 1 && data.comment.size() <= 500 &&
+             data.createdAt is timestamp &&
+             (!('userPhoto' in data) || isValidUrl(data.userPhoto));
+    }
+
+    function isValidAppRating(data) {
+      return data.keys().hasAll(['userId', 'appId', 'rating', 'createdAt']) &&
+             data.userId == request.auth.uid &&
+             data.appId is string &&
+             data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+             data.createdAt is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /apps/{appId} {
+      allow read: if true;
+      allow create: if isEditor() && isNotSuspended() && isValidApp(request.resource.data);
+      allow update: if isAdmin() || 
+                    (isEditor() && isNotSuspended() && request.auth.uid == resource.data.authorUid && isValidApp(request.resource.data)) ||
+                    (isAuthenticated() && isNotSuspended() && 
+                     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ratingCount', 'sumOfRatings']) &&
+                     (
+                       // Increment: Rating added
+                       (request.resource.data.ratingCount == resource.data.ratingCount + 1 &&
+                        request.resource.data.sumOfRatings >= resource.data.sumOfRatings + 1 &&
+                        request.resource.data.sumOfRatings <= resource.data.sumOfRatings + 5 &&
+                        getAfter(/databases/$(database)/documents/app_ratings/$(request.auth.uid + "_" + appId)) != null) ||
+                       // Update: Rating changed
+                       (request.resource.data.ratingCount == resource.data.ratingCount &&
+                        request.resource.data.sumOfRatings >= resource.data.sumOfRatings - 4 &&
+                        request.resource.data.sumOfRatings <= resource.data.sumOfRatings + 4 &&
+                        getAfter(/databases/$(database)/documents/app_ratings/$(request.auth.uid + "_" + appId)) != null) ||
+                       // Decrement: Rating removed
+                       (request.resource.data.ratingCount == resource.data.ratingCount - 1 &&
+                        request.resource.data.sumOfRatings >= resource.data.sumOfRatings - 5 &&
+                        request.resource.data.sumOfRatings <= resource.data.sumOfRatings - 1 &&
+                        getAfter(/databases/$(database)/documents/app_ratings/$(request.auth.uid + "_" + appId)) == null)
+                     ));
+      allow delete: if isAdmin();
+
+      match /versions/{versionId} {
+        allow read: if isViewer();
+        allow write: if isEditor();
+      }
+    }
+
+    match /pages/{pageId} {
+      allow read: if true;
+      allow write: if isEditor();
+    }
+
+    match /logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated(); 
+    }
+
+    match /notifications/{notifId} {
+      allow read: if isOwner(resource.data.userId);
+      allow update: if isOwner(resource.data.userId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow create: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /messages/{messageId} {
+      allow create: if true;
+      allow read, delete: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && isValidUser(request.resource.data) && 
+                    (isOwner(userId) && request.resource.data.role == 'viewer' || isAdmin());
+      allow update: if isAdmin() || (isOwner(userId) && request.resource.data.role == resource.data.role && (!('status' in request.resource.data) || request.resource.data.status == resource.data.status));
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isOwner(reviewId) && isNotSuspended() && isValidReview(request.resource.data);
+      allow update: if isOwner(reviewId) && isNotSuspended() && isValidReview(request.resource.data) &&
+                    request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isOwner(reviewId) || isAdmin();
+    }
+
+    match /app_ratings/{ratingId} {
+      allow read: if true;
+      allow create, update: if isOwner(ratingId.split('_')[0]) && isNotSuspended() && isValidAppRating(request.resource.data);
+      allow delete: if isOwner(ratingId.split('_')[0]) || isAdmin();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

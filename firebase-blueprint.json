@@ -1,0 +1,136 @@
+{
+  "entities": {
+    "App": {
+      "title": "Application",
+      "description": "A registry entry for a showcased application in the storefront.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Application title" },
+        "description": { "type": "string", "description": "AI-optimized marketing copy" },
+        "type": { "type": "string", "enum": ["Web", "Mobile", "Desktop"], "description": "Platform type" },
+        "link": { "type": "string", "format": "uri", "description": "Primary link (Web URL or Desktop Download)" },
+        "tags": { "type": "array", "items": { "type": "string" }, "description": "Searchable metadata" },
+        "authorUid": { "type": "string", "description": "Reference to the creator" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "System-generated creation date" },
+        "status": { "type": "string", "enum": ["staging", "production"], "description": "Listing status" },
+        "version": { "type": "string", "description": "Current version string" },
+        "developer": { "type": "string", "description": "Name of the developer or company" },
+        "price": { "type": "string", "description": "Price or 'Free'" },
+        "isPymmcoreProduct": { "type": "boolean", "description": "Whether it's an official PymmCore product" },
+        "appStoreLink": { "type": "string", "format": "uri", "description": "iOS App Store link" },
+        "playStoreLink": { "type": "string", "format": "uri", "description": "Android Play Store link" },
+        "demoLink": { "type": "string", "format": "uri", "description": "Live demo link for web/desktop" },
+        "features": { "type": "array", "items": { "type": "string" }, "description": "Key features list" },
+        "icon": { "type": "string", "description": "Base64 encoded icon or URL" },
+        "screenshots": { "type": "array", "items": { "type": "string" }, "description": "URLs for app screenshots" }
+      },
+      "required": ["name", "type", "link", "authorUid", "createdAt", "developer", "price"]
+    },
+    "Page": {
+      "title": "CMS Page",
+      "description": "Static content page for the website.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "content": { "type": "string" },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      }
+    },
+    "AuditLog": {
+      "title": "Audit Log",
+      "description": "Record of administrative actions.",
+      "type": "object",
+      "properties": {
+        "action": { "type": "string" },
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "details": { "type": "object" }
+      }
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "In-app alert for users.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "ContactMessage": {
+      "title": "Contact Message",
+      "description": "A message sent by a user via the contact form.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "subject": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "subject", "message", "createdAt"]
+    },
+    "Settings": {
+      "title": "Global Settings",
+      "description": "Global configuration and site content management.",
+      "type": "object",
+      "properties": {
+        "contactEmail": { "type": "string", "format": "email" },
+        "phoneNumber": { "type": "string" },
+        "linkedin": { "type": "string", "format": "uri" },
+        "twitter": { "type": "string", "format": "uri" },
+        "facebook": { "type": "string", "format": "uri" },
+        "aboutMission": { "type": "string" },
+        "aboutVision": { "type": "string" },
+        "aboutBackground": { "type": "string" },
+        "founderName": { "type": "string" },
+        "founderTitle": { "type": "string" },
+        "founderBio": { "type": "string" },
+        "founderPhotoUrl": { "type": "string" },
+        "contactTitle": { "type": "string" },
+        "contactDescription": { "type": "string" },
+        "customLogoUrl": { "type": "string", "description": "Base64 encoded logo or external URL" }
+      }
+    },
+    "User": {
+      "title": "User Profile",
+      "description": "Identity and role management for users.",
+      "type": "object",
+      "properties": {
+        "role": { "type": "string", "enum": ["admin", "editor", "viewer"], "description": "User access level" },
+        "email": { "type": "string", "format": "email" },
+        "status": { "type": "string", "enum": ["active", "suspended"] }
+      },
+      "required": ["role", "email"]
+    },
+    "Review": {
+      "title": "Website Review",
+      "description": "A user review of the website including a star rating.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "UID of the reviewer" },
+        "userName": { "type": "string", "description": "Display name of the reviewer" },
+        "userPhoto": { "type": "string", "description": "Photo URL of the reviewer" },
+        "rating": { "type": "number", "description": "Star rating (1-5)" },
+        "comment": { "type": "string", "description": "Review text" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "userName", "rating", "comment", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/apps/{appId}": { "schema": "App", "description": "Application registry." },
+    "/apps/{appId}/versions/{versionId}": { "schema": "object", "description": "Version history." },
+    "/pages/{pageId}": { "schema": "Page", "description": "CMS content." },
+    "/logs/{logId}": { "schema": "AuditLog", "description": "System audit logs." },
+    "/notifications/{notifId}": { "schema": "Notification", "description": "User alerts." },
+    "/settings/global": { "schema": "Settings", "description": "Global config." },
+    "/messages/{messageId}": { "schema": "ContactMessage", "description": "User inquiries." },
+    "/users/{userId}": { "schema": "User", "description": "User profiles." },
+    "/reviews/{reviewId}": { "schema": "Review", "description": "Public website reviews." }
+  }
+}
