@@ -7,7 +7,9 @@ import {
   signOut,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  updateProfile
+  updateProfile,
+  sendEmailVerification,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { doc, onSnapshot, setDoc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './firebase';
@@ -20,11 +22,14 @@ interface AuthContextType {
   isAdmin: boolean;
   isEditor: boolean;
   isSuspended: boolean;
+  isEmailVerified: boolean;
   login: () => Promise<void>;
   loginWithEmail: (email: string, pass: string) => Promise<void>;
   registerWithEmail: (email: string, pass: string, data: { name: string; phone: string; address: string }) => Promise<void>;
   logout: () => Promise<void>;
   logActivity: (action: string, details?: any) => Promise<void>;
+  resendVerification: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -143,6 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const registerWithEmail = async (email: string, pass: string, data: { name: string; phone: string; address: string }) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     await updateProfile(userCredential.user, { displayName: data.name });
+    await sendEmailVerification(userCredential.user);
     
     // Create the user profile immediately with the extra data
     const userDoc = doc(db, 'users', userCredential.user.uid);
@@ -162,9 +168,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signOut(auth);
   };
 
+  const resendVerification = async () => {
+    if (auth.currentUser) {
+      await sendEmailVerification(auth.currentUser);
+    }
+  };
+
+  const resetPassword = async (email: string) => {
+    await sendPasswordResetEmail(auth, email);
+  };
+
   const isAdmin = profile?.role === 'admin' || user?.email === "pymmcoresolutions@gmail.com";
   const isEditor = isAdmin || profile?.role === 'editor';
   const isSuspended = profile?.status === 'suspended';
+  const isEmailVerified = user?.emailVerified || false;
 
   return (
     <AuthContext.Provider value={{ 
@@ -174,11 +191,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAdmin, 
       isEditor, 
       isSuspended, 
+      isEmailVerified,
       login, 
       loginWithEmail,
       registerWithEmail,
       logout, 
-      logActivity 
+      logActivity,
+      resendVerification,
+      resetPassword
     }}>
       {children}
     </AuthContext.Provider>

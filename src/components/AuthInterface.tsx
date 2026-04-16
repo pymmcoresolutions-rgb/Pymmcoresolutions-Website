@@ -9,10 +9,12 @@ import {
 import Logo from './Logo';
 
 export default function AuthInterface({ onComplete }: { onComplete?: () => void }) {
-  const { login, loginWithEmail, registerWithEmail } = useAuth();
-  const [mode, setMode] = useState<'login' | 'register'>('register');
+  const { login, loginWithEmail, registerWithEmail, user, isEmailVerified, resendVerification, resetPassword } = useAuth();
+  const [mode, setMode] = useState<'login' | 'register' | 'reset'>('register');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -25,17 +27,25 @@ export default function AuthInterface({ onComplete }: { onComplete?: () => void 
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(null);
     try {
       if (mode === 'login') {
         await loginWithEmail(form.email, form.password);
-      } else {
+      } else if (mode === 'register') {
         await registerWithEmail(form.email, form.password, {
           name: form.name,
           phone: form.phone,
           address: form.address
         });
+      } else if (mode === 'reset') {
+        await resetPassword(form.email);
+        setSuccess('Password reset link sent to your email.');
+        setTimeout(() => setMode('login'), 3000);
       }
-      onComplete?.();
+      
+      if (mode !== 'reset') {
+        onComplete?.();
+      }
     } catch (err: any) {
       console.error("Auth Error:", err);
       let message = 'Authentication failed. Please check your credentials.';
@@ -56,6 +66,7 @@ export default function AuthInterface({ onComplete }: { onComplete?: () => void 
   const handleGoogleLogin = async () => {
     setLoading(true);
     setError(null);
+    setSuccess(null);
     try {
       await login();
       onComplete?.();
@@ -70,6 +81,72 @@ export default function AuthInterface({ onComplete }: { onComplete?: () => void 
     setLoading(false);
   };
 
+  const handleResend = async () => {
+    if (resendCooldown > 0) return;
+    setLoading(true);
+    try {
+      await resendVerification();
+      setSuccess('Verification email resent.');
+      setResendCooldown(60);
+      const timer = setInterval(() => {
+        setResendCooldown(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (err: any) {
+      setError('Failed to resend verification email.');
+    }
+    setLoading(false);
+  };
+
+  if (user && !isEmailVerified && user.providerData[0]?.providerId === 'password') {
+    return (
+      <div className="w-full max-w-md mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl shadow-2xl text-center"
+        >
+          <div className="flex justify-center mb-8">
+            <Mail className="w-16 h-16 text-teal-400 animate-pulse" />
+          </div>
+          <h2 className="text-2xl font-bold mb-4">Verify Your Identity</h2>
+          <p className="text-sm text-white/40 mb-8 leading-relaxed">
+            A verification link has been sent to <span className="text-white font-bold">{user.email}</span>. 
+            Please check your inbox and follow the instructions to activate your administrative access.
+          </p>
+          
+          {success && (
+            <div className="mb-6 p-3 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs flex items-center justify-center gap-2">
+              <CheckCircle2 className="w-4 h-4" /> {success}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <button
+              onClick={handleResend}
+              disabled={loading || resendCooldown > 0}
+              className="w-full py-4 bg-teal-700 hover:bg-teal-600 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mail className="w-5 h-5" />}
+              {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Verification Email'}
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="w-full py-4 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+            >
+              I've Verified My Email
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-md mx-auto">
       <motion.div
@@ -83,11 +160,13 @@ export default function AuthInterface({ onComplete }: { onComplete?: () => void 
 
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold tracking-tight mb-2">
-            {mode === 'login' ? 'Access Protocol' : 'Initialize Identity'}
+            {mode === 'login' ? 'Access Protocol' : mode === 'reset' ? 'Reset Protocol' : 'Initialize Identity'}
           </h2>
           <p className="text-sm text-white/40">
             {mode === 'login' 
               ? 'Enter your credentials to access the PymmCore network.' 
+              : mode === 'reset'
+              ? 'Enter your email to receive a secure password reset link.'
               : 'Create a new administrative identity for the infrastructure hub.'}
           </p>
         </div>
@@ -158,17 +237,19 @@ export default function AuthInterface({ onComplete }: { onComplete?: () => void 
             />
           </div>
 
-          <div className="relative">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-            <input
-              required
-              type="password"
-              placeholder="Password"
-              value={form.password}
-              onChange={e => setForm({ ...form, password: e.target.value })}
-              className="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-4 py-3 focus:border-teal-500 outline-none transition-all text-sm"
-            />
-          </div>
+          {mode !== 'reset' && (
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+              <input
+                required
+                type="password"
+                placeholder="Password"
+                value={form.password}
+                onChange={e => setForm({ ...form, password: e.target.value })}
+                className="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-4 py-3 focus:border-teal-500 outline-none transition-all text-sm"
+              />
+            </div>
+          )}
 
           {error && (
             <motion.div
@@ -181,15 +262,37 @@ export default function AuthInterface({ onComplete }: { onComplete?: () => void 
             </motion.div>
           )}
 
+          {success && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="p-3 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs flex items-center gap-2"
+            >
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              {success}
+            </motion.div>
+          )}
+
           <button
             type="submit"
             disabled={loading}
             className="w-full py-4 bg-teal-700 hover:bg-teal-600 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-teal-900/20 disabled:opacity-50"
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowRight className="w-5 h-5" />}
-            {mode === 'login' ? 'Authenticate' : 'Register Identity'}
+            {mode === 'login' ? 'Authenticate' : mode === 'reset' ? 'Send Reset Link' : 'Register Identity'}
           </button>
         </form>
+
+        {mode === 'login' && (
+          <div className="mt-4 text-right">
+            <button
+              onClick={() => setMode('reset')}
+              className="text-[10px] text-white/20 hover:text-teal-400 transition-colors uppercase tracking-widest font-bold"
+            >
+              Forgot Password?
+            </button>
+          </div>
+        )}
 
         <div className="relative my-8">
           <div className="absolute inset-0 flex items-center">
@@ -217,6 +320,8 @@ export default function AuthInterface({ onComplete }: { onComplete?: () => void 
           >
             {mode === 'login' 
               ? "Don't have an identity? Initialize one here." 
+              : mode === 'reset'
+              ? "Back to Authentication"
               : "Already have an identity? Authenticate here."}
           </button>
         </div>

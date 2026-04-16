@@ -3,6 +3,7 @@ import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
 import nodemailer from "nodemailer";
+import { rateLimit } from 'express-rate-limit';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,7 +12,25 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // Rate Limiting
+  const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 100, // Limit each IP to 100 requests per window
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { error: 'Too many requests, please try again later.' }
+  });
+
+  const sensitiveLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 5, // Limit each IP to 5 requests per window for sensitive endpoints
+    message: { error: 'Too many attempts, please try again in 15 minutes.' }
+  });
+
   app.use(express.json());
+  app.use('/api/', apiLimiter);
+  app.use('/api/contact', sensitiveLimiter);
+  app.use('/api/admin/test-smtp', sensitiveLimiter);
 
   // API routes
   app.get("/api/health", (req, res) => {
