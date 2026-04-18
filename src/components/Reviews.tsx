@@ -3,10 +3,10 @@ import { collection, setDoc, onSnapshot, query, orderBy, serverTimestamp, delete
 import { db } from '../lib/firebase';
 import { useAuth } from '../lib/auth';
 import { motion, AnimatePresence } from 'motion/react';
-import { Star, MessageSquare, Trash2, Loader2, User as UserIcon } from 'lucide-react';
+import { Star, MessageSquare, Trash2, Loader2, User as UserIcon, Quote } from 'lucide-react';
 import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
 
-export default function Reviews() {
+export default function Reviews({ minimal = false }: { minimal?: boolean }) {
   const { user, isAdmin, login, logActivity } = useAuth();
   const [reviews, setReviews] = useState<any[]>([]);
   const [rating, setRating] = useState(5);
@@ -59,95 +59,99 @@ export default function Reviews() {
   };
 
   return (
-    <section className="py-24 bg-black relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 relative z-10">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold mb-4 tracking-tight">Community Feedback</h2>
-          <p className="text-white/40 max-w-2xl mx-auto">
-            Hear what our users have to say about their experience with PymmCore Solutions.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Review Form */}
-          <div className="lg:col-span-1">
-            <div className="p-8 rounded-[2.5rem] bg-white/5 border border-white/10 sticky top-24">
-              <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-blue-400" /> Share Your Experience
-              </h3>
-              
-              {user ? (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">Rating</label>
-                    <div className="flex gap-2">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          type="button"
-                          onClick={() => setRating(star)}
-                          className="transition-transform hover:scale-110"
-                        >
-                          <Star 
-                            className={`w-6 h-6 ${star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-white/10'}`} 
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">Your Review</label>
-                    <textarea
-                      required
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      placeholder="What do you think about our website and services?"
-                      className="w-full h-32 bg-black/40 border border-white/10 rounded-2xl px-4 py-3 focus:border-blue-500 outline-none transition-all resize-none text-sm"
-                    />
-                  </div>
-
-                  <button
-                    disabled={loading}
-                    className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 disabled:opacity-50"
-                  >
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Post Review'}
-                  </button>
-                </form>
-              ) : (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Star className="w-8 h-8 text-white/10" />
-                  </div>
-                  <p className="text-sm text-white/40 mb-6">Please log in to share your feedback with the community.</p>
-                  <button
-                    onClick={login}
-                    className="w-full py-3 bg-white text-black font-bold rounded-xl hover:bg-white/90 transition-all"
-                  >
-                    Log In to Review
-                  </button>
-                </div>
-              )}
-            </div>
+    <section className={`${minimal ? 'py-8 bg-transparent' : 'py-24 bg-black'} relative overflow-hidden`}>
+      <div className={`${minimal ? 'max-w-none' : 'max-w-7xl mx-auto px-4'} relative z-10`}>
+        {!minimal && (
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4 tracking-tight">Community Feedback</h2>
+            <p className="text-white/40 max-w-2xl mx-auto">
+              Hear what our users have to say about their experience with PymmCore Solutions.
+            </p>
           </div>
+        )}
+
+        <div className={`grid grid-cols-1 ${minimal ? '' : 'lg:grid-cols-3'} gap-12`}>
+          {/* Review Form */}
+          {!minimal && (
+            <div className="lg:col-span-1">
+              <div className="p-8 rounded-[2.5rem] bg-white/5 border border-white/10 sticky top-24">
+                <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-teal-400" /> Share Your Experience
+                </h3>
+                
+                {user ? (
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">Rating</label>
+                      <div className="flex gap-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => setRating(star)}
+                            className="transition-transform hover:scale-110"
+                          >
+                            <Star 
+                              className={`w-6 h-6 ${star <= rating ? 'fill-amber-400 text-amber-400' : 'text-white/10'}`} 
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">Your Review</label>
+                      <textarea
+                        required
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        placeholder="What do you think about our website and services?"
+                        className="w-full h-32 bg-black/40 border border-white/10 rounded-2xl px-4 py-3 focus:border-teal-500 outline-none transition-all resize-none text-sm"
+                      />
+                    </div>
+
+                    <button
+                      disabled={loading}
+                      className="w-full py-4 bg-teal-700 hover:bg-teal-600 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-teal-700/20 disabled:opacity-50"
+                    >
+                      {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Post Review'}
+                    </button>
+                  </form>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Star className="w-8 h-8 text-white/10" />
+                    </div>
+                    <p className="text-sm text-white/40 mb-6">Please log in to share your feedback with the community.</p>
+                    <button
+                      onClick={login}
+                      className="w-full py-3 bg-white text-black font-bold rounded-xl hover:bg-white/90 transition-all"
+                    >
+                      Log In to Review
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Reviews List */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className={`${minimal ? '' : 'lg:col-span-2'} space-y-6`}>
             {fetching ? (
               <div className="flex justify-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
               </div>
             ) : reviews.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className={`grid grid-cols-1 ${minimal ? 'md:grid-cols-1 overflow-x-auto pb-4' : 'md:grid-cols-2'} gap-6`}>
                 <AnimatePresence mode="popLayout">
                   {reviews.map((review) => (
                     <motion.div
                       key={review.id}
                       layout
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="p-6 rounded-3xl bg-white/5 border border-white/10 flex flex-col h-full relative group"
+                      className={`${minimal ? 'w-full max-w-md' : ''} p-6 rounded-3xl bg-white/5 border border-white/10 flex flex-col h-full relative group hover:border-teal-500/30 transition-all`}
                     >
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
@@ -169,13 +173,14 @@ export default function Reviews() {
                           {[...Array(5)].map((_, i) => (
                             <Star 
                               key={i} 
-                              className={`w-3 h-3 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-white/10'}`} 
+                              className={`w-3 h-3 ${i < review.rating ? 'fill-amber-400 text-amber-400' : 'text-white/10'}`} 
                             />
                           ))}
                         </div>
                       </div>
                       
-                      <p className="text-sm text-white/60 leading-relaxed flex-1 italic">
+                      <p className="text-sm text-white/60 leading-relaxed flex-1 italic relative pt-4">
+                        <Quote className="absolute top-0 left-0 w-3 h-3 text-teal-500 opacity-40" />
                         "{review.comment}"
                       </p>
 
@@ -188,7 +193,8 @@ export default function Reviews() {
                         </button>
                       )}
                     </motion.div>
-                  ))}
+                  ))
+                  .slice(0, minimal ? 3 : undefined)}
                 </AnimatePresence>
               </div>
             ) : (

@@ -66,13 +66,25 @@ export default function CookieConsent() {
               </button>
             </div>
             
-            <div className="mt-4 flex justify-center">
-              <a 
-                href="/legal#privacy" 
+            <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2">
+              <button 
+                onClick={() => { window.location.hash = '#privacy'; }}
                 className="text-[10px] text-teal-400/60 hover:text-teal-400 flex items-center gap-1 transition-colors"
               >
-                <Info className="w-3 h-3" /> View Privacy Policy
-              </a>
+                <Info className="w-3 h-3" /> Privacy
+              </button>
+              <button 
+                onClick={() => { window.location.hash = '#terms'; }}
+                className="text-[10px] text-teal-400/60 hover:text-teal-400 flex items-center gap-1 transition-colors"
+              >
+                <Shield className="w-3 h-3" /> Terms
+              </button>
+              <button 
+                onClick={() => { window.location.hash = '#security'; }}
+                className="text-[10px] text-teal-400/60 hover:text-teal-400 flex items-center gap-1 transition-colors"
+              >
+                <Check className="w-3 h-3" /> Security
+              </button>
             </div>
           </div>
         </motion.div>

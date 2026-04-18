@@ -8,6 +8,7 @@ import {
 import { useState } from 'react';
 import { useAuth } from '../lib/auth';
 import Logo from './Logo';
+import Reviews from './Reviews';
 
 export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
   const { login } = useAuth();
@@ -88,6 +89,14 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
               >
                 Explore Marketplace <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
               </button>
+            </div>
+
+            {/* Quick Community Proof */}
+            <div className="mt-12 pt-12 border-t border-white/5">
+              <div className="text-[10px] font-bold text-teal-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                <Star className="w-3 h-3 fill-teal-400" /> Community Validation
+              </div>
+              <Reviews minimal />
             </div>
           </motion.div>
 
