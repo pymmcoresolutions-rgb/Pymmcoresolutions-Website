@@ -34,7 +34,9 @@ function MainContent() {
     );
   }
 
-  if (currentPath === '#home' || (!isLaunched && !user)) {
+  const isLegalPath = ['#privacy', '#terms', '#security', '#status'].includes(currentPath);
+
+  if (!isLegalPath && (currentPath === '#home' || (!isLaunched && !user))) {
     return <LandingPage onLaunch={() => {
       setIsLaunched(true);
       setCurrentPath('#');
@@ -47,7 +49,9 @@ function MainContent() {
 
   return (
     <Layout currentPath={currentPath} onNavigate={setCurrentPath}>
-      {!user || needsVerification ? (
+      {isLegalPath ? (
+        <Legal />
+      ) : (!user || needsVerification) ? (
         <div className="py-20">
           <AuthInterface onComplete={() => setIsLaunched(true)} />
         </div>
@@ -65,8 +69,6 @@ function MainContent() {
         <Contact />
       ) : currentPath === '#reviews' ? (
         <Reviews />
-      ) : ['#privacy', '#terms', '#security', '#status'].includes(currentPath) ? (
-        <Legal />
       ) : (
         <div className="space-y-24 pb-24">
           <Catalog />
