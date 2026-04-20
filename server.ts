@@ -12,6 +12,9 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // Trust proxy for rate limiting (essential in AI Studio/Cloud Run environments)
+  app.set('trust proxy', 1);
+
   // Rate Limiting
   const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
