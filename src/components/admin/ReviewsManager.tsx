@@ -8,12 +8,14 @@ import { handleFirestoreError, OperationType } from '../../lib/firestore-errors'
 import ConfirmDialog from './ConfirmDialog';
 
 export default function ReviewsManager() {
-  const { logActivity } = useAuth();
+  const { logActivity, isAdmin, loading: authLoading } = useAuth();
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; userName: string } | null>(null);
 
   useEffect(() => {
+    if (authLoading || !isAdmin) return;
+
     const q = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setReviews(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -23,7 +25,7 @@ export default function ReviewsManager() {
       setLoading(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [authLoading, isAdmin]);
 
   const handleDelete = async (id: string, userName: string) => {
     try {

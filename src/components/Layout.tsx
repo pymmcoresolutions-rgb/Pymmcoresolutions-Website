@@ -4,6 +4,7 @@ import { useAuth } from '../lib/auth';
 import { useState } from 'react';
 import Notifications from './Notifications';
 import Logo from './Logo';
+import GlobalBackground from './GlobalBackground';
 
 export default function Layout({ children, currentPath, onNavigate }: { children: React.ReactNode, currentPath?: string, onNavigate?: (path: string) => void }) {
   const { user, profile, isAdmin, isEditor, login, logout } = useAuth();
@@ -26,6 +27,7 @@ export default function Layout({ children, currentPath, onNavigate }: { children
 
   return (
     <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-blue-500/30">
+      <GlobalBackground />
       {/* Background Gradients */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-teal-600/10 blur-[120px] rounded-full" />

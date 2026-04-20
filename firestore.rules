@@ -79,14 +79,16 @@ service cloud.firestore {
     
     function isAdmin() {
       return isAuthenticated() &&
-        (request.auth.token.email == "pymmcoresolutions@gmail.com" && request.auth.token.email_verified == true ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+        (request.auth.token.email == "pymmcoresolutions@gmail.com" ||
+         (request.auth.uid != null && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
     }
 
     function isEditor() {
       return isAuthenticated() && 
-        (request.auth.token.email == "pymmcoresolutions@gmail.com" && request.auth.token.email_verified == true ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'editor']);
+        (request.auth.token.email == "pymmcoresolutions@gmail.com" ||
+         (request.auth.uid != null && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'editor']));
     }
 
     function isViewer() {
@@ -94,7 +96,8 @@ service cloud.firestore {
     }
     
     function isNotSuspended() {
-      return !('status' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data) || 
+      return !exists(/databases/$(database)/documents/users/$(request.auth.uid)) || 
+             !('status' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data) || 
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status != 'suspended';
     }
     
@@ -103,7 +106,7 @@ service cloud.firestore {
     }
     
     function isValidUrl(url) {
-      return url is string && url.size() < 2000 && (url.matches("^https://.*") || url.matches("^http://.*") || url.matches("^data:image/.*"));
+      return url is string && url.size() < 2000000 && (url.matches("^https://.*") || url.matches("^http://.*") || url.matches("^data:image/.*"));
     }
 
     function isRecent(time) {
@@ -132,7 +135,7 @@ service cloud.firestore {
              (!('playStoreLink' in data) || isValidUrl(data.playStoreLink)) &&
              (!('demoLink' in data) || isValidUrl(data.demoLink)) &&
              (!('status' in data) || data.status in ['staging', 'production']) &&
-             (!('icon' in data) || (data.icon is string && data.icon.size() <= 500000)) &&
+             (!('icon' in data) || (data.icon is string && data.icon.size() <= 1000000)) &&
              (!('screenshots' in data) || (data.screenshots is list && data.screenshots.size() <= 10));
     }
 
@@ -151,9 +154,23 @@ service cloud.firestore {
              data.userId == request.auth.uid &&
              data.userName is string && data.userName.size() > 0 &&
              data.rating is number && data.rating >= 1 && data.rating <= 5 &&
-             data.comment is string && data.comment.size() >= 1 && data.comment.size() <= 500 &&
+             data.comment is string && data.comment.size() >= 1 && data.comment.size() <= 1000 &&
              data.createdAt is timestamp &&
-             (!('userPhoto' in data) || isValidUrl(data.userPhoto));
+             (!('userPhoto' in data) || isValidUrl(data.userPhoto)) &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp);
+    }
+
+    function isValidBackgroundAsset(data) {
+      return data.keys().hasAll(['url', 'opacity', 'blur', 'grayscale', 'active', 'createdAt', 'name']) &&
+             data.name is string && data.name.size() > 0 &&
+             isValidUrl(data.url) &&
+             data.opacity is number && data.opacity >= 0 && data.opacity <= 100 &&
+             data.blur is number && data.blur >= 0 && data.blur <= 100 &&
+             data.grayscale is number && data.grayscale >= 0 && data.grayscale <= 100 &&
+             data.active is bool &&
+             data.createdAt is timestamp &&
+             (!('blendMode' in data) || data.blendMode is string) &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp);
     }
 
     function isValidWaitlistEntry(data) {
@@ -178,7 +195,7 @@ service cloud.firestore {
              isValidEmail(data.email) &&
              data.subject is string && data.subject.size() >= 1 && data.subject.size() <= 200 &&
              data.message is string && data.message.size() >= 1 && data.message.size() <= 5000 &&
-             isRecent(data.createdAt);
+             data.createdAt is timestamp;
     }
 
     function isValidSettings(data) {
@@ -187,7 +204,9 @@ service cloud.firestore {
              (!('linkedin' in data) || isValidUrl(data.linkedin)) &&
              (!('twitter' in data) || isValidUrl(data.twitter)) &&
              (!('facebook' in data) || isValidUrl(data.facebook)) &&
-             (!('customLogoUrl' in data) || (data.customLogoUrl is string && data.customLogoUrl.size() <= 500000));
+             (!('customLogoUrl' in data) || data.customLogoUrl == null || isValidUrl(data.customLogoUrl)) &&
+             (!('hideEmblem' in data) || data.hideEmblem is bool) &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp);
     }
 
     // ===============================================================
@@ -261,10 +280,10 @@ service cloud.firestore {
 
     match /reviews/{reviewId} {
       allow read: if true;
-      allow create: if isOwner(reviewId) && isNotSuspended() && isValidReview(request.resource.data);
-      allow update: if isOwner(reviewId) && isNotSuspended() && isValidReview(request.resource.data) &&
+      allow create: if isAuthenticated() && isNotSuspended() && isValidReview(request.resource.data);
+      allow update: if isAuthenticated() && isNotSuspended() && resource.data.userId == request.auth.uid && isValidReview(request.resource.data) &&
                     request.resource.data.createdAt == resource.data.createdAt;
-      allow delete: if isOwner(reviewId) || isAdmin();
+      allow delete: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
     }
 
     match /app_ratings/{ratingId} {
@@ -276,6 +295,12 @@ service cloud.firestore {
     match /waitlist/{entryId} {
       allow create: if isValidWaitlistEntry(request.resource.data);
       allow read, delete: if isAdmin();
+    }
+
+    match /background_assets/{assetId} {
+      allow read, get, list: if true;
+      allow create, update: if isAdmin() && isValidBackgroundAsset(request.resource.data);
+      allow delete: if isAdmin();
     }
 
     // Default deny

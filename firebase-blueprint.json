@@ -132,6 +132,21 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["email", "subscribed", "createdAt"]
+    },
+    "BackgroundAsset": {
+      "title": "Background Asset",
+      "description": "Custom environment asset for the landing page theme.",
+      "type": "object",
+      "properties": {
+        "url": { "type": "string", "format": "uri", "description": "Image URL" },
+        "opacity": { "type": "number", "description": "0-100 opacity" },
+        "blur": { "type": "number", "description": "Blur in pixels" },
+        "grayscale": { "type": "number", "description": "0-100 grayscale percentage" },
+        "blendMode": { "type": "string", "description": "CSS mix-blend-mode" },
+        "active": { "type": "boolean", "description": "Whether the asset is currently rendering" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["url", "opacity", "blur", "grayscale", "active", "createdAt"]
     }
   },
   "firestore": {
@@ -144,6 +159,7 @@
     "/messages/{messageId}": { "schema": "ContactMessage", "description": "User inquiries." },
     "/users/{userId}": { "schema": "User", "description": "User profiles." },
     "/reviews/{reviewId}": { "schema": "Review", "description": "Public website reviews." },
-    "/waitlist/{entryId}": { "schema": "WaitlistEntry", "description": "Marketing leads and waitlisted users." }
+    "/waitlist/{entryId}": { "schema": "WaitlistEntry", "description": "Marketing leads and waitlisted users." },
+    "/background_assets/{assetId}": { "schema": "BackgroundAsset", "description": "Environment branding elements." }
   }
 }

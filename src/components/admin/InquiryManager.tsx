@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { collection, query, orderBy, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { useAuth } from '../../lib/auth';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mail, Trash2, Calendar, User, MessageSquare, ChevronDown, Send, Loader2, CheckCircle2, X } from 'lucide-react';
 import ConfirmDialog from './ConfirmDialog';
 
 export default function InquiryManager() {
+  const { isAdmin, loading } = useAuth();
   const [messages, setMessages] = useState<any[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -13,14 +15,21 @@ export default function InquiryManager() {
   const [replyMessage, setReplyMessage] = useState('');
   const [sendingReply, setSendingReply] = useState(false);
   const [replyStatus, setReplyStatus] = useState<{ success: boolean; message: string } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (loading || !isAdmin) return;
+
     const q = query(collection(db, 'messages'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setError(null);
+    }, (err) => {
+      console.error("InquiryManager subscription error:", err);
+      setError("Inquiries sync failure: Access denied.");
     });
     return () => unsubscribe();
-  }, []);
+  }, [loading, isAdmin]);
 
   const handleDelete = async (id: string) => {
     try {

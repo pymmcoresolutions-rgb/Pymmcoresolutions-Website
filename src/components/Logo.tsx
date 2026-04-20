@@ -11,11 +11,14 @@ interface LogoProps {
 
 export default function Logo({ className = '', showText = true, variant = 'light', size = 'md' }: LogoProps) {
   const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(null);
+  const [hideEmblem, setHideEmblem] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(doc(db, 'settings', 'global'), (snapshot) => {
       if (snapshot.exists()) {
-        setCustomLogoUrl(snapshot.data().customLogoUrl || null);
+        const data = snapshot.data();
+        setCustomLogoUrl(data.customLogoUrl || null);
+        setHideEmblem(data.hideEmblem || false);
       }
     });
     return () => unsubscribe();
@@ -31,7 +34,7 @@ export default function Logo({ className = '', showText = true, variant = 'light
   const textColor = variant === 'light' ? 'text-white' : 'text-slate-900';
   const subTextColor = variant === 'light' ? 'text-white/40' : 'text-slate-500';
 
-  if (customLogoUrl) {
+  if (customLogoUrl && !hideEmblem) {
     return (
       <div className={`flex items-center gap-2 ${className}`}>
         <img 
@@ -57,8 +60,9 @@ export default function Logo({ className = '', showText = true, variant = 'light
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       {/* Emblem Section */}
-      <div className={`${sizes[size]} aspect-[1.5/1] relative flex items-center`}>
-        <svg viewBox="0 0 300 200" className="w-full h-full drop-shadow-2xl overflow-visible">
+      {!hideEmblem && (
+        <div className={`${sizes[size]} aspect-[1.5/1] relative flex items-center`}>
+          <svg viewBox="0 0 300 200" className="w-full h-full drop-shadow-2xl overflow-visible">
           <defs>
             <linearGradient id="tealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#134e4a" />
@@ -152,10 +156,11 @@ export default function Logo({ className = '', showText = true, variant = 'light
           </g>
         </svg>
       </div>
+      )}
 
       {/* Text Section */}
       {showText && (
-        <div className="flex flex-col ml-[-15px] z-10">
+        <div className={`flex flex-col ${!hideEmblem ? 'ml-[-15px]' : ''} z-10`}>
           <h1 className={`text-xl md:text-3xl font-bold tracking-tighter leading-none ${textColor}`}>
             pymmcore<span className="text-teal-500">solutions</span>
           </h1>

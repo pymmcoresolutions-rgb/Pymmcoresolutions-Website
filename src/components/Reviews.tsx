@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, setDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
+import { collection, setDoc, getDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../lib/auth';
 import { motion, AnimatePresence } from 'motion/react';
@@ -31,15 +31,23 @@ export default function Reviews({ minimal = false }: { minimal?: boolean }) {
     if (!user) return;
     setLoading(true);
     try {
-      // Use setDoc with user.uid as the document ID to ensure one review per user
-      await setDoc(doc(db, 'reviews', user.uid), {
+      const reviewDoc = doc(db, 'reviews', user.uid);
+      const snap = await getDoc(reviewDoc);
+      
+      const reviewData: any = {
         userId: user.uid,
         userName: user.displayName || 'Anonymous User',
         userPhoto: user.photoURL || '',
         rating,
         comment,
-        createdAt: serverTimestamp()
-      });
+        updatedAt: serverTimestamp()
+      };
+
+      if (!snap.exists()) {
+        reviewData.createdAt = serverTimestamp();
+      }
+
+      await setDoc(reviewDoc, reviewData, { merge: true });
       await logActivity('review_posted', { rating });
       setComment('');
       setRating(5);

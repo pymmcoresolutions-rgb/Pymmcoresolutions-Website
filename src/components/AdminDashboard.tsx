@@ -19,11 +19,13 @@ import SettingsManager from './admin/SettingsManager';
 import SiteContentManager from './admin/SiteContentManager';
 import LogoManager from './admin/LogoManager';
 import WaitlistManager from './admin/WaitlistManager';
+import BrandingSettings from './BrandingSettings';
 
 export default function AdminDashboard() {
-  const { profile, isAdmin, isEditor } = useAuth();
+  const { user, profile, isAdmin, isEditor, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [recentLogs, setRecentLogs] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState({
     totalApps: 0,
     totalUsers: 0,
@@ -35,30 +37,53 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const appsSnap = await getDocs(collection(db, 'apps'));
-      const usersSnap = await getDocs(collection(db, 'users'));
-      const reviewsSnap = await getDocs(collection(db, 'reviews'));
-      const waitlistSnap = await getDocs(collection(db, 'waitlist'));
-      const logsSnap = await getDocs(query(collection(db, 'logs'), limit(100)));
-      
-      setStats({
-        totalApps: appsSnap.size,
-        totalUsers: usersSnap.size,
-        totalReviews: reviewsSnap.size,
-        totalWaitlist: waitlistSnap.size,
-        activeLogs: logsSnap.size,
-        systemHealth: 'Optimal'
-      });
+      try {
+        const appsSnap = await getDocs(collection(db, 'apps'));
+        const reviewsSnap = await getDocs(collection(db, 'reviews'));
+        
+        let usersSize = 0;
+        let waitlistSize = 0;
+        let logsSize = 0;
+
+        if (isAdmin) {
+          const usersSnap = await getDocs(collection(db, 'users'));
+          const waitlistSnap = await getDocs(collection(db, 'waitlist'));
+          const logsSnap = await getDocs(query(collection(db, 'logs'), limit(100)));
+          usersSize = usersSnap.size;
+          waitlistSize = waitlistSnap.size;
+          logsSize = logsSnap.size;
+        }
+
+        setStats({
+          totalApps: appsSnap.size,
+          totalUsers: usersSize,
+          totalReviews: reviewsSnap.size,
+          totalWaitlist: waitlistSize,
+          activeLogs: logsSize,
+          systemHealth: 'Optimal'
+        });
+      } catch (error) {
+        console.error("Error fetching dashboard stats:", error);
+      }
     };
 
-    const logsQuery = query(collection(db, 'logs'), orderBy('timestamp', 'desc'), limit(5));
-    const unsubscribeLogs = onSnapshot(logsQuery, (snapshot) => {
-      setRecentLogs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    });
+    let unsubscribeLogs = () => {};
+    if (isAdmin && !loading) {
+      const logsQuery = query(collection(db, 'logs'), orderBy('timestamp', 'desc'), limit(5));
+      unsubscribeLogs = onSnapshot(logsQuery, (snapshot) => {
+        setRecentLogs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        setError(null);
+      }, (err) => {
+        console.error("Dashboard logs subscription error:", err);
+        setError("Permission denied for activity logs.");
+      });
+    }
 
-    fetchStats();
+    if (!loading) {
+      fetchStats();
+    }
     return () => unsubscribeLogs();
-  }, []);
+  }, [isAdmin, loading]);
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard, roles: ['admin', 'editor'] },
@@ -131,6 +156,11 @@ export default function AdminDashboard() {
                       <Clock className="w-4 h-4 text-blue-400" /> Recent Activity
                     </h3>
                     <div className="space-y-4">
+                      {error && (
+                        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4" /> {error}
+                        </div>
+                      )}
                       {recentLogs.map(log => (
                         <ActivityItem 
                           key={log.id} 
@@ -166,7 +196,7 @@ export default function AdminDashboard() {
             {activeTab === 'cms' && <ContentManager key="cms" />}
             {activeTab === 'content' && <SiteContentManager key="content" />}
             {activeTab === 'audit' && <AuditViewer key="audit" />}
-            {activeTab === 'branding' && <LogoManager key="branding" />}
+            {activeTab === 'branding' && <BrandingSettings key="branding" />}
             {activeTab === 'settings' && <SettingsManager key="settings" />}
           </AnimatePresence>
         </main>

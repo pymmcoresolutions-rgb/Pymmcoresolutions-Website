@@ -1,11 +1,15 @@
-import { useState, useRef } from 'react';
-import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { useState, useRef, useEffect } from 'react';
+import { doc, getDoc, onSnapshot, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { motion, AnimatePresence } from 'motion/react';
-import { Image as ImageIcon, Upload, Link as LinkIcon, X, CheckCircle2, AlertCircle, Loader2, Trash2, Sparkles, ShieldCheck } from 'lucide-react';
+import { 
+  Image as ImageIcon, Upload, Link as LinkIcon, X, CheckCircle2, 
+  AlertCircle, Loader2, Trash2, Sparkles, ShieldCheck, Eye, EyeOff 
+} from 'lucide-react';
 
 export default function LogoManager() {
   const [logoUrl, setLogoUrl] = useState('');
+  const [hideEmblem, setHideEmblem] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -14,6 +18,15 @@ export default function LogoManager() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [previewBg, setPreviewBg] = useState<'black' | 'white' | 'teal'>('black');
+
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'settings', 'global'), (snap) => {
+      if (snap.exists()) {
+        setHideEmblem(snap.data().hideEmblem || false);
+      }
+    });
+    return () => unsub();
+  }, []);
 
   const validateFile = (file: File) => {
     const validTypes = ['image/png', 'image/jpeg', 'image/svg+xml'];
@@ -165,10 +178,10 @@ export default function LogoManager() {
     setLoading(true);
     setError(null);
     try {
-      await updateDoc(doc(db, 'settings', 'global'), {
+      await setDoc(doc(db, 'settings', 'global'), {
         customLogoUrl: finalUrl,
         updatedAt: serverTimestamp()
-      });
+      }, { merge: true });
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err: any) {
@@ -181,16 +194,32 @@ export default function LogoManager() {
   const handleReset = async () => {
     setLoading(true);
     try {
-      await updateDoc(doc(db, 'settings', 'global'), {
+      await setDoc(doc(db, 'settings', 'global'), {
         customLogoUrl: null,
+        hideEmblem: false,
         updatedAt: serverTimestamp()
-      });
+      }, { merge: true });
       setPreviewUrl(null);
       setLogoUrl('');
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       setError('Failed to reset logo.');
+    }
+    setLoading(false);
+  };
+
+  const toggleEmblem = async () => {
+    setLoading(true);
+    try {
+      await setDoc(doc(db, 'settings', 'global'), {
+        hideEmblem: !hideEmblem,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      setError('Failed to toggle emblem visibility.');
     }
     setLoading(false);
   };
@@ -275,6 +304,28 @@ export default function LogoManager() {
                 accept=".png,.jpg,.jpeg,.svg"
                 onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
               />
+            </div>
+          </div>
+
+          {/* Visibility Guard */}
+          <div className="p-8 rounded-3xl bg-white/5 border border-white/10">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-white/40 mb-6 flex items-center gap-2">
+              <ShieldCheck className="w-3 h-3" /> Visibility Protocol
+            </h4>
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-black/40 border border-white/5">
+              <div>
+                <p className="text-sm font-bold mb-1">Text-Only Branding</p>
+                <p className="text-[10px] text-white/40 uppercase tracking-widest leading-loose">
+                  When active, both custom logos and the default emblem are stripped, leaving only the primary typography.
+                </p>
+              </div>
+              <button
+                onClick={toggleEmblem}
+                disabled={loading}
+                className={`p-3 rounded-xl transition-all ${hideEmblem ? 'bg-teal-600 text-white shadow-lg shadow-teal-900/40' : 'bg-white/5 text-white/20 hover:text-white'}`}
+              >
+                {hideEmblem ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
             </div>
           </div>
         </div>

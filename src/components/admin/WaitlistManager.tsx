@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { useAuth } from '../../lib/auth';
 import { 
   Users, Mail, Clock, Trash2, Search, Filter, 
   Download, Send, CheckCircle2, UserCheck, Shield
@@ -8,18 +9,26 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function WaitlistManager() {
+  const { isAdmin, loading } = useAuth();
   const [entries, setEntries] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (loading || !isAdmin) return;
+
     const q = query(collection(db, 'waitlist'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setEntries(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setError(null);
+    }, (err) => {
+      console.error("WaitlistManager subscription error:", err);
+      setError("Leads sync failure: Access denied.");
     });
     return () => unsubscribe();
-  }, []);
+  }, [loading, isAdmin]);
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {

@@ -1,22 +1,31 @@
 import { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { useAuth } from '../../lib/auth';
 import { 
   History, Search, Filter, Clock, 
   User, Activity, Shield, Terminal
 } from 'lucide-react';
 
 export default function AuditViewer() {
+  const { isAdmin, loading } = useAuth();
   const [logs, setLogs] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (loading || !isAdmin) return;
+
     const q = query(collection(db, 'logs'), orderBy('timestamp', 'desc'), limit(200));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setLogs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setError(null);
+    }, (err) => {
+      console.error("AuditViewer subscription error:", err);
+      setError("Audit log access restricted.");
     });
     return () => unsubscribe();
-  }, []);
+  }, [loading, isAdmin]);
 
   const filteredLogs = logs.filter(log => 
     log.action?.toLowerCase().includes(searchTerm.toLowerCase()) ||

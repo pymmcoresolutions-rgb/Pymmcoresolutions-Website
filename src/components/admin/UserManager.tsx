@@ -120,20 +120,27 @@ function BroadcastModal({ selectedUsers, onClose }: any) {
 }
 
 export default function UserManager() {
-  const { logActivity } = useAuth();
+  const { user, isAdmin, loading, logActivity } = useAuth();
   const [users, setUsers] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [segment, setSegment] = useState<'all' | 'guest' | 'staff'>('all');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showMessageModal, setShowMessageModal] = useState(false);
 
   useEffect(() => {
+    if (loading || !isAdmin) return;
+
     const q = query(collection(db, 'users'), orderBy('email', 'asc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setUsers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setError(null);
+    }, (err) => {
+      console.error("UserManager subscription error:", err);
+      setError("Sync failure: Access restricted.");
     });
     return () => unsubscribe();
-  }, []);
+  }, [loading, isAdmin]);
 
   const updateRole = async (userId: string, email: string, newRole: string) => {
     try {
