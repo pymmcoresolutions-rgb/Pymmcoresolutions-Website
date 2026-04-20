@@ -106,7 +106,7 @@ service cloud.firestore {
     }
     
     function isValidUrl(url) {
-      return url is string && url.size() < 2000000 && (url.matches("^https://.*") || url.matches("^http://.*") || url.matches("^data:image/.*"));
+      return url is string && url.size() < 2000000 && (url.size() == 0 || url.matches("^https://.*") || url.matches("^http://.*") || url.matches("^data:image/.*"));
     }
 
     function isRecent(time) {
@@ -200,13 +200,21 @@ service cloud.firestore {
 
     function isValidSettings(data) {
       return (!('contactEmail' in data) || isValidEmail(data.contactEmail)) &&
-             (!('phoneNumber' in data) || (data.phoneNumber is string && data.phoneNumber.size() <= 20)) &&
+             (!('phoneNumber' in data) || (data.phoneNumber is string && data.phoneNumber.size() <= 100)) &&
              (!('linkedin' in data) || isValidUrl(data.linkedin)) &&
              (!('twitter' in data) || isValidUrl(data.twitter)) &&
              (!('facebook' in data) || isValidUrl(data.facebook)) &&
              (!('customLogoUrl' in data) || data.customLogoUrl == null || isValidUrl(data.customLogoUrl)) &&
              (!('founderPhotoUrl' in data) || data.founderPhotoUrl == null || isValidUrl(data.founderPhotoUrl)) &&
              (!('hideEmblem' in data) || data.hideEmblem is bool) &&
+             (!('aboutMission' in data) || (data.aboutMission is string && data.aboutMission.size() <= 10000)) &&
+             (!('aboutVision' in data) || (data.aboutVision is string && data.aboutVision.size() <= 10000)) &&
+             (!('aboutBackground' in data) || (data.aboutBackground is string && data.aboutBackground.size() <= 30000)) &&
+             (!('founderName' in data) || (data.founderName is string && data.founderName.size() <= 200)) &&
+             (!('founderTitle' in data) || (data.founderTitle is string && data.founderTitle.size() <= 200)) &&
+             (!('founderBio' in data) || (data.founderBio is string && data.founderBio.size() <= 30000)) &&
+             (!('contactTitle' in data) || (data.contactTitle is string && data.contactTitle.size() <= 500)) &&
+             (!('contactDescription' in data) || (data.contactDescription is string && data.contactDescription.size() <= 10000)) &&
              (!('updatedAt' in data) || data.updatedAt is timestamp);
     }
 
