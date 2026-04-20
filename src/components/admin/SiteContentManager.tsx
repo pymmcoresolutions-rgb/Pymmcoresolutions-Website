@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../lib/auth';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   Layout, Save, Loader2, CheckCircle2, 
   Info, Target, Eye, User, Image as ImageIcon,
-  MessageSquare, FileText
+  MessageSquare, FileText, Upload, Trash2, X
 } from 'lucide-react';
 
 export default function SiteContentManager() {
   const { logActivity } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     aboutMission: '',
     aboutVision: '',
@@ -61,6 +62,26 @@ export default function SiteContentManager() {
       console.error("Content update failed:", error);
     }
     setLoading(false);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 1024 * 1024) {
+      alert("Image too large. Max 1MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setForm(prev => ({ ...prev, founderPhotoUrl: reader.result as string }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removePhoto = () => {
+    setForm(prev => ({ ...prev, founderPhotoUrl: '' }));
   };
 
   return (
@@ -154,14 +175,62 @@ export default function SiteContentManager() {
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Photo URL</label>
-                <div className="relative">
-                  <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                  <input
-                    value={form.founderPhotoUrl}
-                    onChange={e => setForm({ ...form, founderPhotoUrl: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 focus:border-purple-500 outline-none transition-all text-sm"
-                    placeholder="https://..."
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Founder Photo</label>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 overflow-hidden flex items-center justify-center relative group">
+                      {form.founderPhotoUrl ? (
+                        <>
+                          <img src={form.founderPhotoUrl} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                          <button 
+                            type="button"
+                            onClick={removePhoto}
+                            className="absolute inset-0 bg-red-500/80 items-center justify-center hidden group-hover:flex transition-all"
+                          >
+                            <Trash2 className="w-6 h-6 text-white" />
+                          </button>
+                        </>
+                      ) : (
+                        <User className="w-8 h-8 text-white/10" />
+                      )}
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex-1 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                        >
+                          <Upload className="w-3 h-3" /> Upload Photo
+                        </button>
+                        {form.founderPhotoUrl && (
+                          <button
+                            type="button"
+                            onClick={removePhoto}
+                            className="p-2 aspect-square bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl text-red-500 transition-all flex items-center justify-center"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-[9px] text-white/30 uppercase tracking-[0.2em]">PNG, JPG, or SVG • Max 1MB</p>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                    <input
+                      value={form.founderPhotoUrl}
+                      onChange={e => setForm({ ...form, founderPhotoUrl: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 focus:border-purple-500 outline-none transition-all text-sm"
+                      placeholder="Or enter image URL..."
+                    />
+                  </div>
+                  <input 
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    accept="image/*"
+                    className="hidden"
                   />
                 </div>
               </div>

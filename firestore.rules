@@ -205,6 +205,7 @@ service cloud.firestore {
              (!('twitter' in data) || isValidUrl(data.twitter)) &&
              (!('facebook' in data) || isValidUrl(data.facebook)) &&
              (!('customLogoUrl' in data) || data.customLogoUrl == null || isValidUrl(data.customLogoUrl)) &&
+             (!('founderPhotoUrl' in data) || data.founderPhotoUrl == null || isValidUrl(data.founderPhotoUrl)) &&
              (!('hideEmblem' in data) || data.hideEmblem is bool) &&
              (!('updatedAt' in data) || data.updatedAt is timestamp);
     }
