@@ -120,6 +120,18 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "userName", "rating", "comment", "createdAt"]
+    },
+    "WaitlistEntry": {
+      "title": "Waitlist Entry",
+      "description": "Prospective user interested in new product releases.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "name": { "type": "string" },
+        "subscribed": { "type": "boolean", "description": "Opted-in for updates" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "subscribed", "createdAt"]
     }
   },
   "firestore": {
@@ -131,6 +143,7 @@
     "/settings/global": { "schema": "Settings", "description": "Global config." },
     "/messages/{messageId}": { "schema": "ContactMessage", "description": "User inquiries." },
     "/users/{userId}": { "schema": "User", "description": "User profiles." },
-    "/reviews/{reviewId}": { "schema": "Review", "description": "Public website reviews." }
+    "/reviews/{reviewId}": { "schema": "Review", "description": "Public website reviews." },
+    "/waitlist/{entryId}": { "schema": "WaitlistEntry", "description": "Marketing leads and waitlisted users." }
   }
 }

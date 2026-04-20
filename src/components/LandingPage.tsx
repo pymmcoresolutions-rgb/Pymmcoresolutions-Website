@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { useAuth } from '../lib/auth';
 import Logo from './Logo';
 import Reviews from './Reviews';
+import WaitlistPortal from './WaitlistPortal';
 
 export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
   const { login } = useAuth();
@@ -257,6 +258,12 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* Waitlist Section */}
+      <section className="py-24 px-6 border-t border-white/5 relative">
+        <div className="absolute inset-0 bg-teal-500/5 blur-[120px] rounded-full -z-10" />
+        <WaitlistPortal />
       </section>
 
       {/* Final CTA */}

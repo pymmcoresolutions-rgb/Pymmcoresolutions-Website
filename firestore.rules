@@ -156,6 +156,14 @@ service cloud.firestore {
              (!('userPhoto' in data) || isValidUrl(data.userPhoto));
     }
 
+    function isValidWaitlistEntry(data) {
+      return data.keys().hasAll(['email', 'subscribed', 'createdAt']) &&
+             isValidEmail(data.email) &&
+             data.subscribed is bool &&
+             data.createdAt is timestamp &&
+             (!('name' in data) || (data.name is string && data.name.size() <= 100));
+    }
+
     function isValidAppRating(data) {
       return data.keys().hasAll(['userId', 'appId', 'rating', 'createdAt']) &&
              data.userId == request.auth.uid &&
@@ -263,6 +271,11 @@ service cloud.firestore {
       allow read: if true;
       allow create, update: if isOwner(ratingId.split('_')[0]) && isNotSuspended() && isValidAppRating(request.resource.data);
       allow delete: if isOwner(ratingId.split('_')[0]) || isAdmin();
+    }
+
+    match /waitlist/{entryId} {
+      allow create: if isValidWaitlistEntry(request.resource.data);
+      allow read, delete: if isAdmin();
     }
 
     // Default deny

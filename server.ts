@@ -226,6 +226,85 @@ async function startServer() {
     }
   });
 
+  // Admin Broadcast endpoint
+  app.post("/api/admin/broadcast", async (req, res) => {
+    const { emails, subject, content } = req.body;
+    
+    if (!emails || !Array.isArray(emails) || emails.length === 0) {
+      return res.status(400).json({ success: false, error: "Recipient list is required." });
+    }
+
+    const smtpHost = process.env.SMTP_HOST?.trim();
+    const smtpPort = process.env.SMTP_PORT?.trim();
+    const smtpUser = process.env.SMTP_USER?.trim();
+    const smtpPass = process.env.SMTP_PASS?.trim();
+    const fromEmail = (process.env.SMTP_FROM_EMAIL || "pymmcoresolutions@gmail.com").trim();
+
+    const isInvalid = (val: string | undefined) => 
+      !val || val.trim() === "" || val.includes("YOUR_") || val.includes("MY_") || val.includes("<") || val === "undefined";
+
+    if (isInvalid(smtpHost) || isInvalid(smtpUser) || isInvalid(smtpPass)) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "SMTP not configured. Broadcast aborted." 
+      });
+    }
+
+    try {
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: parseInt(smtpPort || "587"),
+        secure: smtpPort === "465",
+        auth: {
+          user: smtpUser,
+          pass: smtpPass,
+        },
+      });
+
+      // For high volume, we send in batches to avoid spam filters
+      const batchSize = 25;
+      for (let i = 0; i < emails.length; i += batchSize) {
+        const batch = emails.slice(i, i + batchSize);
+        
+        await Promise.all(batch.map(email => 
+          transporter.sendMail({
+            from: `"PymmCore Executive" <${fromEmail}>`,
+            to: email,
+            subject: subject,
+            html: `
+              <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a; line-height: 1.6;">
+                <div style="background: #0f172a; padding: 40px text-align: center; border-radius: 10px 10px 0 0;">
+                  <h1 style="color: #2dd4bf; margin: 0; font-size: 24px; letter-spacing: 2px;">PYMMCORE BROADCAST</h1>
+                </div>
+                <div style="padding: 40px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 10px 10px;">
+                  <div style="margin-bottom: 30px;">
+                    ${content.replace(/\n/g, '<br>')}
+                  </div>
+                  <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0;">
+                  <div style="font-size: 10px; color: #64748b; text-align: center; text-transform: uppercase; letter-spacing: 1px;">
+                    <p>© 2026 PymmCore Solutions • Infrastructure Protocol 5.0</p>
+                    <p>You received this mission briefing because you are registered in our secure infrastructure protocols.</p>
+                    <p><a href="#" style="color: #2dd4bf; text-decoration: none;">Preference Center</a> | <a href="#" style="color: #2dd4bf; text-decoration: none;">Unsubscribe</a></p>
+                  </div>
+                </div>
+              </div>
+            `
+          })
+        ));
+
+        // Small delay between batches to respect rate limits
+        if (i + batchSize < emails.length) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      res.json({ success: true, message: "Broadcast dispatched successfully." });
+    } catch (error: any) {
+      console.error("Broadcast failed:", error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

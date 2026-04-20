@@ -18,6 +18,7 @@ import ReviewsManager from './admin/ReviewsManager';
 import SettingsManager from './admin/SettingsManager';
 import SiteContentManager from './admin/SiteContentManager';
 import LogoManager from './admin/LogoManager';
+import WaitlistManager from './admin/WaitlistManager';
 
 export default function AdminDashboard() {
   const { profile, isAdmin, isEditor } = useAuth();
@@ -27,6 +28,7 @@ export default function AdminDashboard() {
     totalApps: 0,
     totalUsers: 0,
     totalReviews: 0,
+    totalWaitlist: 0,
     activeLogs: 0,
     systemHealth: 'Optimal'
   });
@@ -36,12 +38,14 @@ export default function AdminDashboard() {
       const appsSnap = await getDocs(collection(db, 'apps'));
       const usersSnap = await getDocs(collection(db, 'users'));
       const reviewsSnap = await getDocs(collection(db, 'reviews'));
+      const waitlistSnap = await getDocs(collection(db, 'waitlist'));
       const logsSnap = await getDocs(query(collection(db, 'logs'), limit(100)));
       
       setStats({
         totalApps: appsSnap.size,
         totalUsers: usersSnap.size,
         totalReviews: reviewsSnap.size,
+        totalWaitlist: waitlistSnap.size,
         activeLogs: logsSnap.size,
         systemHealth: 'Optimal'
       });
@@ -60,6 +64,7 @@ export default function AdminDashboard() {
     { id: 'overview', label: 'Overview', icon: LayoutDashboard, roles: ['admin', 'editor'] },
     { id: 'apps', label: 'Apps', icon: Activity, roles: ['admin', 'editor'] },
     { id: 'users', label: 'Users', icon: Users, roles: ['admin'] },
+    { id: 'waitlist', label: 'Waitlist', icon: Mail, roles: ['admin'] },
     { id: 'reviews', label: 'Reviews', icon: Star, roles: ['admin', 'editor'] },
     { id: 'inquiries', label: 'Inquiries', icon: Mail, roles: ['admin'] },
     { id: 'cms', label: 'CMS', icon: FileText, roles: ['admin', 'editor'] },
@@ -155,6 +160,7 @@ export default function AdminDashboard() {
 
             {activeTab === 'apps' && <NodeManager key="apps" />}
             {activeTab === 'users' && <UserManager key="users" />}
+            {activeTab === 'waitlist' && <WaitlistManager key="waitlist" />}
             {activeTab === 'reviews' && <ReviewsManager key="reviews" />}
             {activeTab === 'inquiries' && <InquiryManager key="inquiries" />}
             {activeTab === 'cms' && <ContentManager key="cms" />}
