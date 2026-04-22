@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, orderBy, writeBatch, doc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, writeBatch, doc, serverTimestamp, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
 import { useAuth } from '../lib/auth';
@@ -10,7 +10,7 @@ import {
   Plus, Shield, Activity, ArrowUpRight, Lock,
   CheckCircle2, Clock, Search, ShoppingCart,
   Apple, Play, Download, Sparkles, Box, Star,
-  Loader2
+  Loader2, Heart
 } from 'lucide-react';
 
 // Helper to render dynamic Lucide icons
@@ -85,9 +85,11 @@ export default function Catalog() {
   const { user, profile, isEditor, isAdmin, login } = useAuth();
   const [apps, setApps] = useState<any[]>([]);
   const [userRatings, setUserRatings] = useState<Record<string, number>>({});
+  const [wishlist, setWishlist] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState('All');
   const [search, setSearch] = useState('');
   const [showStaging, setShowStaging] = useState(false);
+  const [showWishlistOnly, setShowWishlistOnly] = useState(false);
 
   useEffect(() => {
     const path = 'apps';
@@ -118,6 +120,28 @@ export default function Catalog() {
       setUserRatings(ratings);
     }, (error) => {
       console.warn("Could not fetch user ratings:", error);
+    });
+    return () => unsubscribe();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) {
+      setWishlist(new Set());
+      return;
+    }
+
+    const q = query(collection(db, 'wishlists'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const items = new Set<string>();
+      snapshot.docs.forEach(doc => {
+        const data = doc.data();
+        if (data.userId === user.uid) {
+          items.add(data.appId);
+        }
+      });
+      setWishlist(items);
+    }, (error) => {
+      console.warn("Could not fetch wishlist:", error);
     });
     return () => unsubscribe();
   }, [user]);
@@ -170,15 +194,42 @@ export default function Catalog() {
     }
   };
 
+  const handleToggleWishlist = async (appId: string) => {
+    if (!user) {
+      login();
+      return;
+    }
+
+    const wishId = `${user.uid}_${appId}`;
+    const wishRef = doc(db, 'wishlists', wishId);
+
+    try {
+      if (wishlist.has(appId)) {
+        const batch = writeBatch(db);
+        batch.delete(wishRef);
+        await batch.commit();
+      } else {
+        await setDoc(wishRef, {
+          userId: user.uid,
+          appId,
+          createdAt: serverTimestamp()
+        });
+      }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `wishlists/${wishId}`);
+    }
+  };
+
   const filteredApps = apps.filter(app => {
     const typeMatch = filter === 'All' || app.type === filter;
     const statusMatch = isEditor ? (showStaging || app.status === 'production') : app.status === 'production';
+    const wishlistMatch = !showWishlistOnly || wishlist.has(app.id);
     const searchMatch = !search || 
       app.name.toLowerCase().includes(search.toLowerCase()) || 
       app.description.toLowerCase().includes(search.toLowerCase()) ||
       app.developer?.toLowerCase().includes(search.toLowerCase()) ||
       app.tags?.some((t: string) => t.toLowerCase().includes(search.toLowerCase()));
-    return typeMatch && statusMatch && searchMatch;
+    return typeMatch && statusMatch && searchMatch && wishlistMatch;
   });
 
   return (
@@ -192,6 +243,20 @@ export default function Catalog() {
           <p className="text-white/40 max-w-md">
             Discover premium applications developed by PymmCore Solutions and our global partner network.
           </p>
+          
+          {user && (
+            <button
+              onClick={() => setShowWishlistOnly(!showWishlistOnly)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${
+                showWishlistOnly 
+                  ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' 
+                  : 'bg-white/5 border border-white/10 text-white/40 hover:text-white'
+              }`}
+            >
+              <Heart className={`w-3.5 h-3.5 ${showWishlistOnly ? 'fill-current' : ''}`} />
+              {showWishlistOnly ? 'Showing Wishlist' : 'Show Wishlist'}
+            </button>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
@@ -249,8 +314,21 @@ export default function Catalog() {
                 </div>
               )}
 
-              <div className="absolute top-6 right-6 text-xl font-bold text-blue-400">
-                {app.price}
+              <div className="absolute top-6 right-6 flex items-center gap-4">
+                <button
+                  onClick={() => handleToggleWishlist(app.id)}
+                  className={`p-2 rounded-xl transition-all ${
+                    wishlist.has(app.id) 
+                      ? 'bg-red-500/10 text-red-500 border border-red-500/20 shadow-lg shadow-red-500/20' 
+                      : 'bg-white/5 text-white/20 border border-white/10 hover:text-white/60'
+                  }`}
+                  title={wishlist.has(app.id) ? "Remove from wishlist" : "Add to wishlist"}
+                >
+                  <Heart className={`w-4 h-4 ${wishlist.has(app.id) ? 'fill-current' : ''}`} />
+                </button>
+                <div className="text-xl font-bold text-blue-400">
+                  {app.price}
+                </div>
               </div>
 
               <div className="mb-8 mt-4">

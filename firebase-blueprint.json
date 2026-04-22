@@ -133,6 +133,17 @@
       },
       "required": ["email", "subscribed", "createdAt"]
     },
+    "WishlistItem": {
+      "title": "Wishlist Item",
+      "description": "User's saved application for later interest.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "appId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "appId", "createdAt"]
+    },
     "BackgroundAsset": {
       "title": "Background Asset",
       "description": "Custom environment asset for the landing page theme.",
@@ -160,6 +171,7 @@
     "/users/{userId}": { "schema": "User", "description": "User profiles." },
     "/reviews/{reviewId}": { "schema": "Review", "description": "Public website reviews." },
     "/waitlist/{entryId}": { "schema": "WaitlistEntry", "description": "Marketing leads and waitlisted users." },
+    "/wishlists/{wishId}": { "schema": "WishlistItem", "description": "User's collection of saved apps." },
     "/background_assets/{assetId}": { "schema": "BackgroundAsset", "description": "Environment branding elements." }
   }
 }

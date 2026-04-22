@@ -27,6 +27,13 @@ service cloud.firestore {
     //   - rating: number (required, 1-5)
     //   - createdAt: timestamp (required, immutable)
     //
+    // Collection: wishlists
+    // Document ID: {userId}_{appId}
+    // Fields:
+    //   - userId: string (required, immutable)
+    //   - appId: string (required, immutable)
+    //   - createdAt: timestamp (required, immutable)
+    //
     // Collection: settings
     // Document ID: global
     // Fields:
@@ -188,6 +195,13 @@ service cloud.firestore {
              data.rating is number && data.rating >= 1 && data.rating <= 5 &&
              data.createdAt is timestamp;
     }
+    
+    function isValidWishlistItem(data) {
+      return data.keys().hasAll(['userId', 'appId', 'createdAt']) &&
+             data.userId == request.auth.uid &&
+             data.appId is string &&
+             data.createdAt is timestamp;
+    }
 
     function isValidContactMessage(data) {
       return data.keys().hasAll(['name', 'email', 'subject', 'message', 'createdAt']) &&
@@ -299,6 +313,12 @@ service cloud.firestore {
       allow read: if true;
       allow create, update: if isOwner(ratingId.split('_')[0]) && isNotSuspended() && isValidAppRating(request.resource.data);
       allow delete: if isOwner(ratingId.split('_')[0]) || isAdmin();
+    }
+
+    match /wishlists/{wishId} {
+      allow read: if isAuthenticated() && isOwner(wishId.split('_')[0]);
+      allow create: if isAuthenticated() && isOwner(wishId.split('_')[0]) && isNotSuspended() && isValidWishlistItem(request.resource.data);
+      allow delete: if isAuthenticated() && isOwner(wishId.split('_')[0]);
     }
 
     match /waitlist/{entryId} {
