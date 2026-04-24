@@ -17,6 +17,7 @@
         "developer": { "type": "string", "description": "Name of the developer or company" },
         "price": { "type": "string", "description": "Price or 'Free'" },
         "isPymmcoreProduct": { "type": "boolean", "description": "Whether it's an official PymmCore product" },
+        "expectedLaunchDate": { "type": "string", "description": "Planned deployment date for pending applications." },
         "appStoreLink": { "type": "string", "format": "uri", "description": "iOS App Store link" },
         "playStoreLink": { "type": "string", "format": "uri", "description": "Android Play Store link" },
         "demoLink": { "type": "string", "format": "uri", "description": "Live demo link for web/desktop" },

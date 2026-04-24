@@ -38,6 +38,7 @@ export default function NodeManager() {
     developer: 'PymmCore Solutions',
     price: 'Free',
     isPymmcoreProduct: true,
+    expectedLaunchDate: '',
     appStoreLink: '',
     playStoreLink: '',
     demoLink: '',
@@ -126,7 +127,7 @@ export default function NodeManager() {
 
       setForm({ 
         name: '', description: '', type: 'Web', link: '', tags: '', status: 'production', version: '1.0.0',
-        developer: 'PymmCore Solutions', price: 'Free', isPymmcoreProduct: true,
+        developer: 'PymmCore Solutions', price: 'Free', isPymmcoreProduct: true, expectedLaunchDate: '',
         appStoreLink: '', playStoreLink: '', demoLink: '', features: '', icon: '', screenshots: ''
       });
       setIsAdding(false);
@@ -149,6 +150,7 @@ export default function NodeManager() {
       developer: app.developer || 'PymmCore Solutions',
       price: app.price || 'Free',
       isPymmcoreProduct: app.isPymmcoreProduct ?? true,
+      expectedLaunchDate: app.expectedLaunchDate || '',
       appStoreLink: app.appStoreLink || '',
       playStoreLink: app.playStoreLink || '',
       demoLink: app.demoLink || '',
@@ -200,6 +202,7 @@ export default function NodeManager() {
                 developer: 'PymmCore Solutions',
                 price: 'Free',
                 isPymmcoreProduct: true,
+                expectedLaunchDate: '',
                 appStoreLink: '',
                 playStoreLink: '',
                 demoLink: '',
@@ -312,6 +315,16 @@ export default function NodeManager() {
                   className="w-4 h-4 rounded border-white/10 bg-black/40 text-blue-600 focus:ring-blue-500"
                 />
                 <label className="text-xs font-bold uppercase tracking-widest text-white/60">Official PymmCore Product</label>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Expected Launch Date</label>
+                <input
+                  value={form.expectedLaunchDate}
+                  onChange={e => setForm({ ...form, expectedLaunchDate: e.target.value })}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition-all text-sm"
+                  placeholder="e.g. Q4 2026 or Coming Soon"
+                />
               </div>
             </div>
 

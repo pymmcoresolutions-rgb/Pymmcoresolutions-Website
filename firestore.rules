@@ -143,6 +143,7 @@ service cloud.firestore {
              (!('demoLink' in data) || isValidUrl(data.demoLink)) &&
              (!('status' in data) || data.status in ['staging', 'production']) &&
              (!('icon' in data) || (data.icon is string && data.icon.size() <= 1000000)) &&
+             (!('expectedLaunchDate' in data) || (data.expectedLaunchDate is string && data.expectedLaunchDate.size() <= 100)) &&
              (!('screenshots' in data) || (data.screenshots is list && data.screenshots.size() <= 10));
     }
 
@@ -185,6 +186,7 @@ service cloud.firestore {
              isValidEmail(data.email) &&
              data.subscribed is bool &&
              data.createdAt is timestamp &&
+             (!('targetAppId' in data) || (data.targetAppId is string && data.targetAppId.size() <= 100)) &&
              (!('name' in data) || (data.name is string && data.name.size() <= 100));
     }
 

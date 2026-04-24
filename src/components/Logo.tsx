@@ -12,6 +12,7 @@ interface LogoProps {
 export default function Logo({ className = '', showText = true, variant = 'light', size = 'md' }: LogoProps) {
   const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(null);
   const [hideEmblem, setHideEmblem] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(doc(db, 'settings', 'global'), (snapshot) => {
@@ -20,9 +21,15 @@ export default function Logo({ className = '', showText = true, variant = 'light
         setCustomLogoUrl(data.customLogoUrl || null);
         setHideEmblem(data.hideEmblem || false);
       }
+      setIsLoaded(true);
+    }, (error) => {
+      console.warn("Error loading logo settings:", error);
+      setIsLoaded(true);
     });
     return () => unsubscribe();
   }, []);
+
+  if (!isLoaded) return null;
 
   const sizes = {
     sm: 'h-10',
@@ -128,7 +135,7 @@ export default function Logo({ className = '', showText = true, variant = 'light
               <circle cx="40" cy="70" r="1" fill="#fbbf24" />
             </g>
 
-            {/* YMM Identifier Plate */}
+            {/* Identifier Plate */}
             <path 
               d="M40,105 L100,105 L115,140 L55,140 Z" 
               fill="#0f172a" 
@@ -144,7 +151,7 @@ export default function Logo({ className = '', showText = true, variant = 'light
               fontWeight="900" 
               style={{fontFamily: 'sans-serif', letterSpacing: '1px'}}
             >
-              YMM
+              PC
             </text>
 
             {/* Circuit Patterns / Glowing Nodes */}
