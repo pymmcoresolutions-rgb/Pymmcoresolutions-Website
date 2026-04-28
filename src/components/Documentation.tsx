@@ -3,14 +3,84 @@ import {
   Book, Code, Terminal, Cpu, Shield, 
   Zap, Layers, Globe, Smartphone, Monitor,
   ArrowRight, CheckCircle2, Copy, Search,
-  ExternalLink, FileText, Settings, Activity
+  ExternalLink, FileText, Settings, Activity,
+  Heart
 } from 'lucide-react';
 import { useState } from 'react';
 
-export default function Documentation() {
-  const [activeSection, setActiveSection] = useState('getting-started');
+export default function Documentation({ isEditor = false }: { isEditor?: boolean }) {
+  const userSections = [
+    {
+      id: 'user-welcome',
+      title: 'Welcome',
+      icon: Book,
+      content: (
+        <div className="space-y-8">
+          <div>
+            <h2 className="text-4xl font-bold mb-4 tracking-tight">Marketplace Guide</h2>
+            <p className="text-xl text-white/40 leading-relaxed max-w-2xl">
+              Discover how to navigate the PymmCore ecosystem and find the perfect digital solutions for your workflow.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8">
+            <div className="p-8 rounded-[2rem] bg-white/5 border border-white/10 hover:border-teal-500/30 transition-all">
+              <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center mb-6">
+                <Search className="w-6 h-6 text-teal-400" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Smart Discovery</h3>
+              <p className="text-sm text-white/40 leading-relaxed">
+                Use our global search and multi-platform filters to drill down into specific environments including Web, iOS, and Desktop.
+              </p>
+            </div>
+            <div className="p-8 rounded-[2rem] bg-white/5 border border-white/10 hover:border-amber-500/30 transition-all">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center mb-6">
+                <Heart className="w-6 h-6 text-amber-400" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Your Collection</h3>
+              <p className="text-sm text-white/40 leading-relaxed">
+                Synchronize your wishlist across all devices. Save applications you're interested in and receive updates on version releases.
+              </p>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'browsing-apps',
+      title: 'Browsing Apps',
+      icon: Globe,
+      content: (
+        <div className="space-y-8">
+          <h2 className="text-3xl font-bold tracking-tight">Navigating the Catalog</h2>
+          <div className="space-y-6">
+            <div className="flex gap-6 items-start">
+              <div className="w-8 h-8 rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold text-xs shrink-0">1</div>
+              <div>
+                <h4 className="font-bold mb-2">Category Selection</h4>
+                <p className="text-sm text-white/40">Use the platform badges (iOS, Android, Web, Desktop) to filter the marketplace for compatible software.</p>
+              </div>
+            </div>
+            <div className="flex gap-6 items-start">
+              <div className="w-8 h-8 rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold text-xs shrink-0">2</div>
+              <div>
+                <h4 className="font-bold mb-2">Detailed Analytics</h4>
+                <p className="text-sm text-white/40">Click any application card to see detailed specifications, screenshots, and developer information.</p>
+              </div>
+            </div>
+            <div className="flex gap-6 items-start">
+              <div className="w-8 h-8 rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold text-xs shrink-0">3</div>
+              <div>
+                <h4 className="font-bold mb-2">Reviews & Community</h4>
+                <p className="text-sm text-white/40">Consult the community rating system to gauge performance and stability before deployment.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+  ];
 
-  const sections = [
+  const adminSections = [
     {
       id: 'getting-started',
       title: 'Getting Started',
@@ -149,6 +219,9 @@ export default function Documentation() {
     }
   ];
 
+  const sections = isEditor ? [...userSections, ...adminSections] : userSections;
+  const [activeSection, setActiveSection] = useState(sections[0].id);
+
   return (
     <div className="min-h-screen bg-[#050505] text-white pt-24 pb-32">
       <div className="max-w-7xl mx-auto px-6">
@@ -184,7 +257,7 @@ export default function Documentation() {
               <div className="p-6 rounded-2xl bg-blue-500/5 border border-blue-500/10">
                 <h4 className="text-[10px] font-bold uppercase tracking-widest text-blue-400 mb-2">Need Help?</h4>
                 <p className="text-xs text-white/40 leading-relaxed mb-4">
-                  Our engineering team is available 24/7 for protocol support.
+                  Our {isEditor ? 'engineering' : 'customer success'} team is available 24/7 for protocol support.
                 </p>
                 <a href="#contact" className="text-xs font-bold text-white hover:text-blue-400 transition-colors flex items-center gap-2">
                   Contact Support <ArrowRight className="w-3 h-3" />

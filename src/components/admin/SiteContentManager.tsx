@@ -1,13 +1,49 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../lib/auth';
 import { motion, AnimatePresence } from 'motion/react';
+import Cropper from 'react-easy-crop';
 import { 
   Layout, Save, Loader2, CheckCircle2, 
   Info, Target, Eye, User, Image as ImageIcon,
-  MessageSquare, FileText, Upload, Trash2, X
+  MessageSquare, FileText, Upload, Trash2, X,
+  Maximize2, MousePointer2
 } from 'lucide-react';
+
+// Helper for image cropping
+const getCroppedImg = async (imageSrc: string, pixelCrop: any, rotation = 0): Promise<string> => {
+  const image = new Image();
+  image.src = imageSrc;
+  await new Promise((resolve) => (image.onload = resolve));
+
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  if (!ctx) return '';
+
+  const rotRad = (rotation * Math.PI) / 180;
+  const { width: bWidth, height: bHeight } = {
+    width: Math.abs(Math.cos(rotRad) * image.width) + Math.abs(Math.sin(rotRad) * image.height),
+    height: Math.abs(Math.sin(rotRad) * image.width) + Math.abs(Math.cos(rotRad) * image.height),
+  };
+
+  canvas.width = bWidth;
+  canvas.height = bHeight;
+
+  ctx.translate(bWidth / 2, bHeight / 2);
+  ctx.rotate(rotRad);
+  ctx.translate(-image.width / 2, -image.height / 2);
+  ctx.drawImage(image, 0, 0);
+
+  const data = ctx.getImageData(pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height);
+
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+  ctx.putImageData(data, 0, 0);
+
+  return canvas.toDataURL('image/jpeg', 0.85);
+};
 
 export default function SiteContentManager() {
   const { logActivity } = useAuth();
@@ -25,6 +61,15 @@ export default function SiteContentManager() {
   });
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  // Cropper state
+  const [showCropper, setShowCropper] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(doc(db, 'settings', 'global'), (snapshot) => {
@@ -64,20 +109,58 @@ export default function SiteContentManager() {
     setLoading(false);
   };
 
+  const onCropComplete = useCallback((_croppedArea: any, croppedAreaPixels: any) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 1024 * 1024) {
-      alert("Image too large. Max 1MB.");
+    if (file.size > 2 * 1024 * 1024) { // Increase to 2MB for raw, we will crop to < 1MB
+      alert("Source image too large. Max 2MB.");
       return;
     }
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      setForm(prev => ({ ...prev, founderPhotoUrl: reader.result as string }));
+      setImageToCrop(reader.result as string);
+      setShowCropper(true);
+      setZoom(1);
+      setRotation(0);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleApplyCrop = async () => {
+    if (!imageToCrop || !croppedAreaPixels) return;
+    
+    setIsProcessing(true);
+    try {
+      const croppedBase64 = await getCroppedImg(imageToCrop, croppedAreaPixels, rotation);
+      setForm(prev => ({ ...prev, founderPhotoUrl: croppedBase64 }));
+      setShowCropper(false);
+      setImageToCrop(null);
+    } catch (err) {
+      console.error("Cropping failed:", err);
+    }
+    setIsProcessing(false);
+  };
+
+  const savePhotoOnly = async () => {
+    setLoading(true);
+    try {
+      await setDoc(doc(db, 'settings', 'global'), {
+        founderPhotoUrl: form.founderPhotoUrl,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      await logActivity('site_founder_photo_updated');
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (error) {
+      console.error("Photo update failed:", error);
+    }
+    setLoading(false);
   };
 
   const removePhoto = () => {
@@ -201,8 +284,19 @@ export default function SiteContentManager() {
                           onClick={() => fileInputRef.current?.click()}
                           className="flex-1 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2"
                         >
-                          <Upload className="w-3 h-3" /> Upload Photo
+                          <Upload className="w-3 h-3" /> Select Asset
                         </button>
+                        {form.founderPhotoUrl && (
+                          <button
+                            type="button"
+                            onClick={savePhotoOnly}
+                            disabled={loading}
+                            className="flex-1 py-2 bg-purple-600 hover:bg-purple-500 text-white border border-purple-500/20 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                          >
+                            {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />} 
+                            Activate Photo
+                          </button>
+                        )}
                         {form.founderPhotoUrl && (
                           <button
                             type="button"
@@ -213,17 +307,29 @@ export default function SiteContentManager() {
                           </button>
                         )}
                       </div>
-                      <p className="text-[9px] text-white/30 uppercase tracking-[0.2em]">PNG, JPG, or SVG • Max 1MB</p>
+                      <p className="text-[9px] text-white/30 uppercase tracking-[0.2em]">PNG, JPG, or SVG • Max 1MB • 1:1 Recommended</p>
                     </div>
                   </div>
                   <div className="relative">
                     <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                    <input
-                      value={form.founderPhotoUrl}
-                      onChange={e => setForm({ ...form, founderPhotoUrl: e.target.value })}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 focus:border-purple-500 outline-none transition-all text-sm"
-                      placeholder="Or enter image URL..."
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        value={form.founderPhotoUrl}
+                        onChange={e => setForm({ ...form, founderPhotoUrl: e.target.value })}
+                        className="flex-1 bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 focus:border-purple-500 outline-none transition-all text-sm"
+                        placeholder="Or enter image URL..."
+                      />
+                      {form.founderPhotoUrl && !form.founderPhotoUrl.startsWith('data:') && (
+                        <button
+                          type="button"
+                          onClick={savePhotoOnly}
+                          disabled={loading}
+                          className="px-4 bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 border border-purple-500/20 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
+                        >
+                          Save
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <input 
                     type="file"
@@ -287,6 +393,113 @@ export default function SiteContentManager() {
           </button>
         </div>
       </form>
+
+      {/* Photo Adjustment Modal */}
+      <AnimatePresence>
+        {showCropper && imageToCrop && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col"
+            >
+              <div className="p-8 border-b border-white/10 flex justify-between items-center">
+                <div>
+                  <h3 className="text-xl font-bold flex items-center gap-2">
+                    <Maximize2 className="w-5 h-5 text-purple-400" /> Adjust Founder Photo
+                  </h3>
+                  <p className="text-xs text-white/40 mt-1">Scale and position the asset to align with the interface grid.</p>
+                </div>
+                <button
+                  onClick={() => setShowCropper(false)}
+                  className="p-2 hover:bg-white/5 rounded-full transition-all text-white/40 hover:text-white"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="relative h-[400px] bg-black/50">
+                <Cropper
+                  image={imageToCrop}
+                  crop={crop}
+                  zoom={zoom}
+                  rotation={rotation}
+                  aspect={1} // 1:1 aspect for bio photos
+                  onCropChange={setCrop}
+                  onCropComplete={onCropComplete}
+                  onZoomChange={setZoom}
+                  onRotationChange={setRotation}
+                />
+              </div>
+
+              <div className="p-8 space-y-8 bg-white/[0.02]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-white/40">
+                      <span>Digital Zoom Protocol</span>
+                      <span>{Math.round(zoom * 100)}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      value={zoom}
+                      min={1}
+                      max={3}
+                      step={0.1}
+                      aria-labelledby="Zoom"
+                      onChange={(e) => setZoom(Number(e.target.value))}
+                      className="w-full accent-purple-500 bg-white/10 h-1 rounded-full appearance-none cursor-pointer"
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-white/40">
+                      <span>Angular Vector Shift</span>
+                      <span>{rotation}°</span>
+                    </div>
+                    <input
+                      type="range"
+                      value={rotation}
+                      min={0}
+                      max={360}
+                      step={1}
+                      aria-labelledby="Rotation"
+                      onChange={(e) => setRotation(Number(e.target.value))}
+                      className="w-full accent-purple-500 bg-white/10 h-1 rounded-full appearance-none cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setShowCropper(false)}
+                    className="flex-1 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleApplyCrop}
+                    disabled={isProcessing}
+                    className="flex-1 py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-600/20 disabled:opacity-50"
+                  >
+                    {isProcessing ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <MousePointer2 className="w-5 h-5" />
+                    )}
+                    Apply {isProcessing ? 'Processing...' : 'Photo Asset'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

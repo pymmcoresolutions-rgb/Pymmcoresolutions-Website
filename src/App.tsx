@@ -35,9 +35,9 @@ function MainContent() {
     );
   }
 
-  const isLegalPath = ['#privacy', '#terms', '#security', '#status'].includes(currentPath);
+  const isPublicPath = ['#privacy', '#terms', '#security', '#status', '#docs'].includes(currentPath);
 
-  if (!isLegalPath && (currentPath === '#home' || (!isLaunched && !user))) {
+  if (!isPublicPath && (currentPath === '#home' || (!isLaunched && !user))) {
     return <LandingPage onLaunch={() => {
       setIsLaunched(true);
       setCurrentPath('#');
@@ -50,8 +50,8 @@ function MainContent() {
 
   return (
     <Layout currentPath={currentPath} onNavigate={setCurrentPath}>
-      {isLegalPath ? (
-        <Legal />
+      {isPublicPath ? (
+        currentPath === '#docs' ? <Documentation isEditor={isEditor} /> : <Legal />
       ) : (!user || needsVerification) ? (
         <div className="py-20">
           <AuthInterface onComplete={() => setIsLaunched(true)} />
@@ -62,8 +62,6 @@ function MainContent() {
         <div className="max-w-7xl mx-auto px-4 py-12">
           <AIAdvisor isFullPage />
         </div>
-      ) : currentPath === '#docs' ? (
-        <Documentation />
       ) : currentPath === '#about' ? (
         <About />
       ) : currentPath === '#contact' ? (
