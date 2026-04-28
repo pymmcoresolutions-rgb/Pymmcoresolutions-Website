@@ -14,6 +14,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import AuthInterface from './components/AuthInterface';
 import Documentation from './components/Documentation';
 import CookieConsent from './components/CookieConsent';
+import ThemeManager from './components/ThemeManager';
 
 function MainContent() {
   const { user, profile, isAdmin, isEditor, loading, isEmailVerified } = useAuth();
@@ -83,6 +84,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
+        <ThemeManager />
         <MainContent />
         <CookieConsent />
       </AuthProvider>

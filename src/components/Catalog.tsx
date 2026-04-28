@@ -10,7 +10,7 @@ import {
   Plus, Shield, Activity, ArrowUpRight, Lock,
   CheckCircle2, Clock, Search, ShoppingCart,
   Apple, Play, Download, Sparkles, Box, Star,
-  Loader2, Heart
+  Loader2, Heart, X, Info
 } from 'lucide-react';
 
 // Helper to render dynamic Lucide icons
@@ -82,7 +82,7 @@ const StarRating = ({
 };
 
 export default function Catalog() {
-  const { user, profile, isEditor, isAdmin, login } = useAuth();
+  const { user, profile, isEditor, isAdmin, login, loginLoading } = useAuth();
   const [apps, setApps] = useState<any[]>([]);
   const [userRatings, setUserRatings] = useState<Record<string, number>>({});
   const [wishlist, setWishlist] = useState<Set<string>>(new Set());
@@ -90,6 +90,9 @@ export default function Catalog() {
   const [search, setSearch] = useState('');
   const [showStaging, setShowStaging] = useState(false);
   const [showWishlistOnly, setShowWishlistOnly] = useState(false);
+  const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
+
+  const selectedApp = apps.find(a => a.id === selectedAppId);
 
   useEffect(() => {
     const path = 'apps';
@@ -148,7 +151,7 @@ export default function Catalog() {
 
   const handleRateApp = async (appId: string, newRating: number) => {
     if (!user) {
-      login();
+      if (!loginLoading) login();
       return;
     }
 
@@ -196,7 +199,7 @@ export default function Catalog() {
 
   const handleToggleWishlist = async (appId: string) => {
     if (!user) {
-      login();
+      if (!loginLoading) login();
       return;
     }
 
@@ -305,7 +308,8 @@ export default function Catalog() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ delay: idx * 0.05 }}
-              className="group relative p-8 rounded-[2.5rem] bg-white/5 border border-white/10 hover:border-blue-500/50 transition-all hover:shadow-2xl hover:shadow-blue-500/10 flex flex-col h-full overflow-hidden"
+              onClick={() => setSelectedAppId(app.id)}
+              className="group relative p-8 rounded-[2.5rem] bg-white/5 border border-white/10 hover:border-blue-500/50 transition-all hover:shadow-2xl hover:shadow-blue-500/10 flex flex-col h-full overflow-hidden cursor-pointer"
             >
               {/* Featured Badge */}
               {app.isPymmcoreProduct && (
@@ -314,9 +318,12 @@ export default function Catalog() {
                 </div>
               )}
 
-              <div className="absolute top-6 right-6 flex items-center gap-4">
+              <div className="absolute top-6 right-6 flex items-center gap-4 z-10">
                 <button
-                  onClick={() => handleToggleWishlist(app.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleWishlist(app.id);
+                  }}
                   className={`p-2 rounded-xl transition-all ${
                     wishlist.has(app.id) 
                       ? 'bg-red-500/10 text-red-500 border border-red-500/20 shadow-lg shadow-red-500/20' 
@@ -350,7 +357,7 @@ export default function Catalog() {
                 <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">{app.developer}</div>
                 <h3 className="text-2xl font-bold mb-2 group-hover:text-blue-400 transition-colors tracking-tight">{app.name}</h3>
                 
-                <div className="mb-4">
+                <div className="mb-4" onClick={e => e.stopPropagation()}>
                   <StarRating 
                     appId={app.id}
                     currentRating={app.ratingCount ? app.sumOfRatings / app.ratingCount : 0}
@@ -376,7 +383,7 @@ export default function Catalog() {
                 )}
 
                 {app.screenshots && app.screenshots.length > 0 && (
-                  <div className="mb-6 space-y-3">
+                  <div className="mb-6 space-y-3" onClick={e => e.stopPropagation()}>
                     <div className="text-[10px] font-bold uppercase tracking-widest text-white/30">Screenshots</div>
                     <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                       {app.screenshots.map((src: string, idx: number) => (
@@ -394,7 +401,7 @@ export default function Catalog() {
                 )}
               </div>
 
-              <div className="mt-auto space-y-6">
+              <div className="mt-auto space-y-6" onClick={e => e.stopPropagation()}>
                 <div className="flex flex-wrap gap-2">
                   {app.tags?.map((tag: string) => (
                     <span key={tag} className="px-2 py-1 rounded-md bg-white/5 border border-white/10 text-[9px] font-bold uppercase tracking-widest text-white/30">
@@ -477,6 +484,204 @@ export default function Catalog() {
           </div>
         )}
       </div>
+      {/* Detailed App View Modal */}
+      <AnimatePresence>
+        {selectedApp && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 overflow-y-auto bg-black/80 backdrop-blur-md"
+            onClick={() => setSelectedAppId(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-[#0a0a0a] border border-white/10 rounded-[3rem] w-full max-w-5xl overflow-hidden shadow-2xl relative"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button 
+                onClick={() => setSelectedAppId(null)}
+                className="absolute top-8 right-8 p-3 rounded-full bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all z-20"
+              >
+                <X className="w-6 h-6" />
+              </button>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2">
+                {/* Left Side: Visuals & Links */}
+                <div className="p-8 lg:p-12 space-y-8 bg-white/[0.02]">
+                  <div className="flex flex-wrap gap-4 items-start justify-between">
+                    <div className="w-24 h-24 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shadow-xl">
+                      {selectedApp.icon ? (
+                        selectedApp.icon.startsWith('data:image') ? (
+                          <img src={selectedApp.icon} alt={selectedApp.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <DynamicIcon name={selectedApp.icon} className="w-12 h-12 text-blue-400" />
+                        )
+                      ) : (
+                        <Box className="w-12 h-12 text-blue-400" />
+                      )}
+                    </div>
+
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleToggleWishlist(selectedApp.id)}
+                        className={`p-4 rounded-2xl transition-all ${
+                          wishlist.has(selectedApp.id) 
+                            ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' 
+                            : 'bg-white/5 text-white/40 border border-white/10 hover:text-white'
+                        }`}
+                      >
+                        <Heart className={`w-6 h-6 ${wishlist.has(selectedApp.id) ? 'fill-current' : ''}`} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <span className="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold uppercase tracking-widest">
+                        {selectedApp.type}
+                      </span>
+                      <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/40 text-[10px] font-bold uppercase tracking-widest">
+                        v{selectedApp.version || '1.0.0'}
+                      </span>
+                    </div>
+                    <h2 className="text-5xl font-bold tracking-tighter">{selectedApp.name}</h2>
+                    <p className="text-xl text-blue-400 font-bold">{selectedApp.price}</p>
+                  </div>
+
+                  <div className="pt-8 border-t border-white/5 space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      {selectedApp.appStoreLink && (
+                        <a 
+                          href={selectedApp.appStoreLink} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="flex items-center gap-3 p-4 bg-white/5 hover:bg-white/10 rounded-2xl transition-all group"
+                        >
+                          <Apple className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+                          <div className="text-left">
+                            <div className="text-[8px] font-bold text-white/20 uppercase tracking-widest">Download on</div>
+                            <div className="text-xs font-bold">App Store</div>
+                          </div>
+                        </a>
+                      )}
+                      {selectedApp.playStoreLink && (
+                        <a 
+                          href={selectedApp.playStoreLink} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="flex items-center gap-3 p-4 bg-white/5 hover:bg-white/10 rounded-2xl transition-all group"
+                        >
+                          <Play className="w-6 h-6 text-green-500 group-hover:scale-110 transition-transform" />
+                          <div className="text-left">
+                            <div className="text-[8px] font-bold text-white/20 uppercase tracking-widest">Get it on</div>
+                            <div className="text-xs font-bold">Google Play</div>
+                          </div>
+                        </a>
+                      )}
+                    </div>
+                    
+                    <a 
+                      href={selectedApp.link} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="w-full py-5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl shadow-blue-600/20"
+                    >
+                      <ExternalLink className="w-5 h-5" />
+                      {selectedApp.type === 'Desktop' ? 'Download for Desktop' : 'Launch Application'}
+                    </a>
+
+                    {selectedApp.demoLink && (
+                      <a 
+                        href={selectedApp.demoLink} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="w-full py-5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-3"
+                      >
+                        <Globe className="w-5 h-5" />
+                        Explore Interactive Demo
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right Side: Details */}
+                <div className="p-8 lg:p-12 space-y-10 max-h-[80vh] overflow-y-auto">
+                  <section className="space-y-4">
+                    <div className="flex items-center gap-2 text-blue-400">
+                      <Info className="w-4 h-4" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest">Overview</span>
+                    </div>
+                    <p className="text-white/60 leading-relaxed text-lg">
+                      {selectedApp.description}
+                    </p>
+                  </section>
+
+                  {selectedApp.features && selectedApp.features.length > 0 && (
+                    <section className="space-y-6">
+                      <div className="flex items-center gap-2 text-blue-400">
+                        <Sparkles className="w-4 h-4" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Core Capabilities</span>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {selectedApp.features.map((f: string, i: number) => (
+                          <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
+                            <CheckCircle2 className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
+                            <span className="text-sm text-white/80">{f}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {selectedApp.screenshots && selectedApp.screenshots.length > 0 && (
+                    <section className="space-y-6">
+                      <div className="flex items-center gap-2 text-blue-400">
+                        <Monitor className="w-4 h-4" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Visual Deployment</span>
+                      </div>
+                      <div className="grid grid-cols-1 gap-4">
+                        {selectedApp.screenshots.map((src: string, idx: number) => (
+                          <img 
+                            key={idx} 
+                            src={src} 
+                            alt={`${selectedApp.name} view ${idx + 1}`} 
+                            className="w-full rounded-2xl border border-white/10 hover:border-blue-500/50 transition-colors"
+                            referrerPolicy="no-referrer"
+                          />
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  <section className="pt-8 border-t border-white/5 grid grid-cols-2 gap-8">
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/20 mb-2">Developed By</div>
+                      <div className="text-sm font-bold text-white/80">{selectedApp.developer}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/20 mb-2">Review Status</div>
+                      <div className="scale-75 origin-left">
+                        <StarRating 
+                          appId={selectedApp.id}
+                          currentRating={selectedApp.ratingCount ? selectedApp.sumOfRatings / selectedApp.ratingCount : 0}
+                          ratingCount={selectedApp.ratingCount || 0}
+                          sumOfRatings={selectedApp.sumOfRatings || 0}
+                          userRating={userRatings[selectedApp.id] || null}
+                          onRate={(rating) => handleRateApp(selectedApp.id, rating)}
+                        />
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

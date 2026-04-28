@@ -9,9 +9,8 @@ import {
 import Logo from './Logo';
 
 export default function AuthInterface({ onComplete }: { onComplete?: () => void }) {
-  const { login, loginWithEmail, registerWithEmail, user, isEmailVerified, resendVerification, resetPassword } = useAuth();
+  const { login, loginWithEmail, registerWithEmail, user, isEmailVerified, resendVerification, resetPassword, loginLoading } = useAuth();
   const [mode, setMode] = useState<'login' | 'register' | 'reset'>('register');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -25,7 +24,6 @@ export default function AuthInterface({ onComplete }: { onComplete?: () => void 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
     setSuccess(null);
     try {
@@ -60,11 +58,9 @@ export default function AuthInterface({ onComplete }: { onComplete?: () => void 
       }
       setError(message);
     }
-    setLoading(false);
   };
 
   const handleGoogleLogin = async () => {
-    setLoading(true);
     setError(null);
     setSuccess(null);
     try {
@@ -73,17 +69,14 @@ export default function AuthInterface({ onComplete }: { onComplete?: () => void 
     } catch (err: any) {
       console.error("Google Auth Error:", err);
       if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
-        setLoading(false);
         return;
       }
       setError('Google authentication failed. Please try again.');
     }
-    setLoading(false);
   };
 
   const handleResend = async () => {
     if (resendCooldown > 0) return;
-    setLoading(true);
     try {
       await resendVerification();
       setSuccess('Verification email resent.');
@@ -100,7 +93,6 @@ export default function AuthInterface({ onComplete }: { onComplete?: () => void 
     } catch (err: any) {
       setError('Failed to resend verification email.');
     }
-    setLoading(false);
   };
 
   if (user && !isEmailVerified && user.providerData[0]?.providerId === 'password') {
@@ -129,10 +121,10 @@ export default function AuthInterface({ onComplete }: { onComplete?: () => void 
           <div className="space-y-4">
             <button
               onClick={handleResend}
-              disabled={loading || resendCooldown > 0}
+              disabled={loginLoading || resendCooldown > 0}
               className="w-full py-4 bg-teal-700 hover:bg-teal-600 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mail className="w-5 h-5" />}
+              {loginLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mail className="w-5 h-5" />}
               {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Verification Email'}
             </button>
             <button
@@ -275,10 +267,10 @@ export default function AuthInterface({ onComplete }: { onComplete?: () => void 
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loginLoading}
             className="w-full py-4 bg-teal-700 hover:bg-teal-600 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-teal-900/20 disabled:opacity-50"
           >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowRight className="w-5 h-5" />}
+            {loginLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowRight className="w-5 h-5" />}
             {mode === 'login' ? 'Authenticate' : mode === 'reset' ? 'Send Reset Link' : 'Register Identity'}
           </button>
         </form>
@@ -306,10 +298,15 @@ export default function AuthInterface({ onComplete }: { onComplete?: () => void 
         <div className="grid grid-cols-1 gap-4">
           <button
             onClick={handleGoogleLogin}
-            disabled={loading}
+            disabled={loginLoading}
             className="flex items-center justify-center gap-3 py-4 bg-white text-black hover:bg-white/90 rounded-xl transition-all text-sm font-bold disabled:opacity-50 shadow-lg shadow-white/10"
           >
-            <Chrome className="w-5 h-5" /> Secure Google Authentication
+            {loginLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Chrome className="w-5 h-5" />
+            )}
+            {loginLoading ? 'Authenticating...' : 'Secure Google Authentication'}
           </button>
         </div>
 

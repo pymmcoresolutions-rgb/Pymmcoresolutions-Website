@@ -231,6 +231,7 @@ service cloud.firestore {
              (!('founderBio' in data) || (data.founderBio is string && data.founderBio.size() <= 30000)) &&
              (!('contactTitle' in data) || (data.contactTitle is string && data.contactTitle.size() <= 500)) &&
              (!('contactDescription' in data) || (data.contactDescription is string && data.contactDescription.size() <= 10000)) &&
+             (!('themeMode' in data) || data.themeMode in ['dark', 'light', 'system']) &&
              (!('updatedAt' in data) || data.updatedAt is timestamp);
     }
 

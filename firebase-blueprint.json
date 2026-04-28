@@ -94,7 +94,8 @@
         "founderPhotoUrl": { "type": "string" },
         "contactTitle": { "type": "string" },
         "contactDescription": { "type": "string" },
-        "customLogoUrl": { "type": "string", "description": "Base64 encoded logo or external URL" }
+        "customLogoUrl": { "type": "string", "description": "Base64 encoded logo or external URL" },
+        "themeMode": { "type": "string", "enum": ["dark", "light", "system"], "description": "Global visual theme for the platform." }
       }
     },
     "User": {

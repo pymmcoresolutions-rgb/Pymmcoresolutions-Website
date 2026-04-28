@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-import { collection, query, orderBy, onSnapshot, doc, addDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, addDoc, updateDoc, deleteDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Image as ImageIcon, Upload, Trash2, Edit3, Save, X, Plus, 
-  Settings2, Eye, EyeOff, Layers, Sliders, Palette, AlertCircle
+  Settings2, Eye, EyeOff, Layers, Sliders, Palette, AlertCircle,
+  Moon, Sun, Monitor
 } from 'lucide-react';
 import ConfirmDialog from './ConfirmDialog';
 
@@ -29,7 +30,9 @@ const BLEND_MODES = [
 
 export default function BackgroundManager() {
   const [assets, setAssets] = useState<BackgroundAsset[]>([]);
+  const [themeMode, setThemeMode] = useState<'dark' | 'light' | 'system'>('dark');
   const [loading, setLoading] = useState(false);
+  const [savingTheme, setSavingTheme] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -55,6 +58,31 @@ export default function BackgroundManager() {
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, 'settings', 'global'), (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (data.themeMode) setThemeMode(data.themeMode);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleUpdateTheme = async (mode: 'dark' | 'light' | 'system') => {
+    setSavingTheme(true);
+    try {
+      await setDoc(doc(db, 'settings', 'global'), { 
+        themeMode: mode,
+        updatedAt: serverTimestamp() 
+      }, { merge: true });
+      setThemeMode(mode);
+    } catch (err: any) {
+      console.error("Theme update failed:", err);
+      setError("Theme protocol synchronization failure.");
+    }
+    setSavingTheme(false);
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -295,7 +323,47 @@ export default function BackgroundManager() {
         </div>
 
         {/* Assets List */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-8">
+          {/* Theme Selection */}
+          <div className="p-8 rounded-[2.5rem] bg-white/5 border border-white/10 space-y-6">
+            <div>
+              <h4 className="text-sm font-bold tracking-tight mb-2">Global Environment Theme</h4>
+              <p className="text-xs text-white/40">Select the master visual protocol for the entire platform interface.</p>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                { id: 'dark', name: 'Dark Mode', icon: Moon, color: 'bg-indigo-500' },
+                { id: 'light', name: 'Light Mode', icon: Sun, color: 'bg-amber-500' },
+                { id: 'system', name: 'System Default', icon: Monitor, color: 'bg-emerald-500' }
+              ].map((theme) => (
+                <button
+                  key={theme.id}
+                  onClick={() => handleUpdateTheme(theme.id as any)}
+                  disabled={savingTheme}
+                  className={`relative p-6 rounded-3xl border transition-all flex flex-col items-center gap-4 group ${
+                    themeMode === theme.id 
+                      ? 'bg-white/10 border-teal-500/50 ring-1 ring-teal-500/50' 
+                      : 'bg-black/20 border-white/5 hover:border-white/10 hover:bg-white/5'
+                  }`}
+                >
+                  {themeMode === theme.id && (
+                    <motion.div 
+                      layoutId="theme-active"
+                      className="absolute top-3 right-3 w-2 h-2 rounded-full bg-teal-400 shadow-[0_0_10px_rgba(45,212,191,0.5)]"
+                    />
+                  )}
+                  <div className={`p-4 rounded-2xl ${theme.color}/10 border border-${theme.color.split('-')[1]}-500/20 text-${theme.color.split('-')[1]}-400 group-hover:scale-110 transition-transform`}>
+                    <theme.icon className="w-6 h-6" />
+                  </div>
+                  <span className={`text-[10px] font-bold uppercase tracking-widest ${themeMode === theme.id ? 'text-white' : 'text-white/40'}`}>
+                    {theme.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {assets.map((asset) => (
               <motion.div 

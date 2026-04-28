@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Home, Rocket, Shield, Cpu, Globe, LayoutDashboard, LogOut, Menu, X, Sparkles, Bell, Award, Mail, Star } from 'lucide-react';
+import { Home, Rocket, Shield, Cpu, Globe, LayoutDashboard, LogOut, Menu, X, Sparkles, Bell, Award, Mail, Star, Loader2 } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import { useState } from 'react';
 import Notifications from './Notifications';
@@ -7,7 +7,7 @@ import Logo from './Logo';
 import GlobalBackground from './GlobalBackground';
 
 export default function Layout({ children, currentPath, onNavigate }: { children: React.ReactNode, currentPath?: string, onNavigate?: (path: string) => void }) {
-  const { user, profile, isAdmin, isEditor, login, logout } = useAuth();
+  const { user, profile, isAdmin, isEditor, login, logout, loginLoading } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
@@ -87,9 +87,11 @@ export default function Layout({ children, currentPath, onNavigate }: { children
               ) : (
                 <button 
                   onClick={() => login()}
-                  className="px-4 py-2 bg-white text-black text-sm font-bold rounded-lg hover:bg-white/90 transition-colors"
+                  disabled={loginLoading}
+                  className="px-4 py-2 bg-white text-black text-sm font-bold rounded-lg hover:bg-white/90 transition-colors flex items-center gap-2 disabled:opacity-50"
                 >
-                  Initialize
+                  {loginLoading && <Loader2 className="w-3 h-3 animate-spin" />}
+                  {loginLoading ? 'Loading...' : 'Initialize'}
                 </button>
               )}
             </div>
@@ -174,9 +176,11 @@ export default function Layout({ children, currentPath, onNavigate }: { children
               ) : (
                 <button 
                   onClick={() => login()}
-                  className="w-full py-4 bg-white text-black font-bold rounded-2xl text-lg shadow-xl"
+                  disabled={loginLoading}
+                  className="w-full py-4 bg-white text-black font-bold rounded-2xl text-lg shadow-xl flex items-center justify-center gap-3 disabled:opacity-50"
                 >
-                  Initialize Session
+                  {loginLoading && <Loader2 className="w-5 h-5 animate-spin" />}
+                  {loginLoading ? 'Loading...' : 'Initialize Session'}
                 </button>
               )}
             </div>

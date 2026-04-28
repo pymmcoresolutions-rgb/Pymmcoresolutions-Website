@@ -11,8 +11,40 @@
 
 @layer base {
   body {
-    @apply bg-[#050505] text-white;
+    @apply bg-[#050505] text-white transition-colors duration-500;
   }
+}
+
+:root.light body {
+  @apply bg-neutral-50 text-neutral-900;
+}
+
+:root.light .bg-white\/5 {
+  @apply bg-white/50;
+}
+
+:root.light .bg-black\/40 {
+  @apply bg-white/20;
+}
+
+:root.light .border-white\/10 {
+  @apply border-neutral-200;
+}
+
+:root.light .border-white\/5 {
+  @apply border-neutral-100;
+}
+
+:root.light .text-white\/40 {
+  @apply text-neutral-400;
+}
+
+:root.light .text-white\/60 {
+  @apply text-neutral-600;
+}
+
+:root.dark body {
+  @apply bg-[#050505] text-white;
 }
 
 @layer utilities {

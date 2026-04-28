@@ -23,6 +23,7 @@ interface AuthContextType {
   isEditor: boolean;
   isSuspended: boolean;
   isEmailVerified: boolean;
+  loginLoading: boolean;
   login: () => Promise<void>;
   loginWithEmail: (email: string, pass: string) => Promise<void>;
   registerWithEmail: (email: string, pass: string, data: { name: string; phone: string; address: string }) => Promise<void>;
@@ -38,6 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loginLoading, setLoginLoading] = useState(false);
 
   const logActivity = async (action: string, details: any = {}) => {
     if (!auth.currentUser) return;
@@ -118,6 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async () => {
+    setLoginLoading(true);
     try {
       // Ensure auth is ready
       if (!auth) {
@@ -138,29 +141,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       console.error("Detailed Auth Error:", error);
       throw error;
+    } finally {
+      setLoginLoading(false);
     }
   };
 
   const loginWithEmail = async (email: string, pass: string) => {
-    await signInWithEmailAndPassword(auth, email, pass);
+    setLoginLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } finally {
+      setLoginLoading(false);
+    }
   };
 
   const registerWithEmail = async (email: string, pass: string, data: { name: string; phone: string; address: string }) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-    await updateProfile(userCredential.user, { displayName: data.name });
-    await sendEmailVerification(userCredential.user);
-    
-    // Create the user profile immediately with the extra data
-    const userDoc = doc(db, 'users', userCredential.user.uid);
-    await setDoc(userDoc, {
-      role: 'viewer',
-      email: email,
-      name: data.name,
-      phone: data.phone,
-      address: data.address,
-      status: 'active',
-      createdAt: new Date().toISOString()
-    });
+    setLoginLoading(true);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+      await updateProfile(userCredential.user, { displayName: data.name });
+      await sendEmailVerification(userCredential.user);
+      
+      // Create the user profile immediately with the extra data
+      const userDoc = doc(db, 'users', userCredential.user.uid);
+      await setDoc(userDoc, {
+        role: 'viewer',
+        email: email,
+        name: data.name,
+        phone: data.phone,
+        address: data.address,
+        status: 'active',
+        createdAt: new Date().toISOString()
+      });
+    } finally {
+      setLoginLoading(false);
+    }
   };
 
   const logout = async () => {
@@ -170,12 +185,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const resendVerification = async () => {
     if (auth.currentUser) {
-      await sendEmailVerification(auth.currentUser);
+      setLoginLoading(true);
+      try {
+        await sendEmailVerification(auth.currentUser);
+      } finally {
+        setLoginLoading(false);
+      }
     }
   };
 
   const resetPassword = async (email: string) => {
-    await sendPasswordResetEmail(auth, email);
+    setLoginLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } finally {
+      setLoginLoading(false);
+    }
   };
 
   const isAdmin = profile?.role === 'admin' || user?.email === "pymmcoresolutions@gmail.com";
@@ -188,6 +213,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user, 
       profile, 
       loading, 
+      loginLoading,
       isAdmin, 
       isEditor, 
       isSuspended, 
