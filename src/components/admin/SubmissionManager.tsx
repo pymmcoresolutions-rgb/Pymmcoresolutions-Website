@@ -9,9 +9,18 @@ import {
   CheckCircle2, XCircle, Clock, Search, 
   Filter, Edit3, Trash2, ExternalLink, 
   MessageSquare, Save, AlertCircle, Loader2,
-  Layout, Smartphone, Monitor, ShieldCheck
+  Layout, Smartphone, Monitor, ShieldCheck,
+  ImageIcon, Sparkles, Box
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
+import ImageUploader from '../ui/ImageUploader';
+import { suggestAppIcon } from '../../services/geminiService';
+import * as LucideIcons from 'lucide-react';
+
+const DynamicIcon = ({ name, className }: { name: string; className?: string }) => {
+  const Icon = (LucideIcons as any)[name] || Box;
+  return <Icon className={className} />;
+};
 
 interface AppSubmission {
   id: string;
@@ -30,6 +39,8 @@ interface AppSubmission {
   createdAt: any;
   link?: string;
   sourceCodeUrl?: string;
+  icon?: string;
+  screenshots?: string[];
 }
 
 export default function SubmissionManager() {
@@ -40,6 +51,7 @@ export default function SubmissionManager() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<AppSubmission>>({});
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isSuggestingIcon, setIsSuggestingIcon] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -137,6 +149,19 @@ export default function SubmissionManager() {
     }
   };
 
+  const handleSuggestIcon = async () => {
+    if (!editForm.name || !editForm.description) return;
+    setIsSuggestingIcon(true);
+    try {
+      const suggestion = await suggestAppIcon(editForm.name, editForm.description);
+      setEditForm(prev => ({ ...prev, icon: suggestion.iconName }));
+    } catch (err) {
+      console.error("Icon suggestion failed:", err);
+    } finally {
+      setIsSuggestingIcon(false);
+    }
+  };
+
   const startEdit = (sub: AppSubmission) => {
     setEditingId(sub.id);
     setEditForm(sub);
@@ -211,27 +236,88 @@ export default function SubmissionManager() {
               }`}
             >
               {editingId === sub.id ? (
-                /* EDIT FORM ... SAME AS BEFORE ... */
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-white/20">Display Name</label>
-                      <input 
-                        value={editForm.name}
-                        onChange={e => setEditForm({...editForm, name: e.target.value})}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl outline-none focus:border-blue-500 transition-all font-medium"
+                <div className="space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div className="md:col-span-1">
+                      <ImageUploader 
+                        label="Icon Refinement"
+                        currentImage={editForm.icon}
+                        onUpload={(base64) => setEditForm({ ...editForm, icon: base64 })}
+                        maxSizeMB={0.5}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-white/20">Description Refinement</label>
-                      <textarea 
-                        value={editForm.description}
-                        onChange={e => setEditForm({...editForm, description: e.target.value})}
-                        rows={5}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-blue-500 transition-all font-medium resize-none text-sm"
-                      />
+                    <div className="md:col-span-3 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/20">Icon Selection</label>
+                        <button
+                          onClick={handleSuggestIcon}
+                          disabled={isSuggestingIcon}
+                          className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg text-[10px] font-black uppercase text-blue-400 hover:bg-blue-500/20 transition-all disabled:opacity-50"
+                        >
+                          {isSuggestingIcon ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                          AI Icon Intelligence
+                        </button>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-[8px] font-bold uppercase tracking-widest text-white/10">Dynamic Icon Glyph</label>
+                          <div className="relative">
+                            <input 
+                              value={editForm.icon}
+                              onChange={e => setEditForm({...editForm, icon: e.target.value})}
+                              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl outline-none focus:border-blue-500 transition-all font-medium text-sm"
+                              placeholder="e.g. Shield, Cpu, Rocket"
+                            />
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                              {editForm.icon && !editForm.icon.startsWith('data:image') && (
+                                <DynamicIcon name={editForm.icon} className="w-5 h-5 text-blue-400" />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-white/20">Display Name</label>
+                          <input 
+                            value={editForm.name}
+                            onChange={e => setEditForm({...editForm, name: e.target.value})}
+                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl outline-none focus:border-blue-500 transition-all font-medium"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/20">Description Refinement</label>
+                        <textarea 
+                          value={editForm.description}
+                          onChange={e => setEditForm({...editForm, description: e.target.value})}
+                          rows={3}
+                          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-blue-500 transition-all font-medium resize-none text-sm"
+                        />
+                      </div>
                     </div>
                   </div>
+
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-white/20">Visual Proof Refinement</label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {[0, 1, 2, 3].map(idx => (
+                        <ImageUploader 
+                          key={idx}
+                          aspectRatio="video"
+                          currentImage={editForm.screenshots?.[idx]}
+                          onUpload={(base64) => {
+                            const next = [...(editForm.screenshots || [])];
+                            if (base64) next[idx] = base64;
+                            else if (next[idx]) next.splice(idx, 1);
+                            setEditForm({ ...editForm, screenshots: next });
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-6">
                     <div className="space-y-2">
                       <label className="text-[10px] font-bold uppercase tracking-widest text-white/20">Admin Review Notes / Feedback</label>
@@ -260,7 +346,8 @@ export default function SubmissionManager() {
                     </div>
                   </div>
                 </div>
-              ) : (
+              </div>
+            ) : (
                 <div className="flex flex-col md:flex-row justify-between items-start gap-8 relative">
                   <div 
                     onClick={() => toggleSelect(sub.id)}

@@ -73,3 +73,38 @@ export async function auditApplication(appData: {
     };
   }
 }
+
+export async function suggestAppIcon(name: string, description: string): Promise<{ iconName: string; reason: string }> {
+  const prompt = `
+    Suggest a single icon name from the Lucide React library that best represents the following application.
+    
+    App Name: ${name}
+    Description: ${description}
+
+    The icon name must be a valid PascalCase Lucide icon name (e.g., 'Shield', 'Cpu', 'Rocket', 'Activity', 'Globe').
+    Return only a JSON object.
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            iconName: { type: Type.STRING },
+            reason: { type: Type.STRING }
+          },
+          required: ["iconName", "reason"]
+        }
+      }
+    });
+
+    return JSON.parse(response.text);
+  } catch (error) {
+    console.error("Icon suggestion failed:", error);
+    return { iconName: 'Box', reason: 'Default fallback Protocol.' };
+  }
+}

@@ -331,18 +331,20 @@ export default function Catalog() {
             ))}
           </div>
 
-          <button 
-            onClick={() => {
-              if (!user) {
-                login();
-              } else {
-                setShowDeveloperPortal(true);
-              }
-            }}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-blue-600/20"
-          >
-            <Plus className="w-4 h-4" /> List Application
-          </button>
+          {!isAdmin && (
+            <button 
+              onClick={() => {
+                if (!user) {
+                  login();
+                } else {
+                  setShowDeveloperPortal(true);
+                }
+              }}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-blue-600/20"
+            >
+              <Plus className="w-4 h-4" /> List Application
+            </button>
+          )}
         </div>
       </div>
 
