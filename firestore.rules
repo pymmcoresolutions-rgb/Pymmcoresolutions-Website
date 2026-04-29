@@ -127,24 +127,35 @@ service cloud.firestore {
     // ===============================================================
 
     function isValidApp(data) {
-      return data.keys().hasAll(['name', 'description', 'type', 'link', 'tags', 'authorUid', 'createdAt', 'developer', 'price']) &&
-             data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
-             data.description is string && data.description.size() >= 1 && data.description.size() <= 1000 &&
+      return data.keys().hasAll(['name', 'description', 'type', 'category', 'authorUid', 'createdAt', 'developer', 'price', 'approvalStatus', 'paymentStatus']) &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 200 &&
+             data.description is string && data.description.size() >= 1 && data.description.size() <= 5000 &&
              data.type in ['Web', 'Mobile', 'Desktop'] &&
-             isValidUrl(data.link) &&
-             data.tags is list && data.tags.size() <= 20 &&
+             data.category is string && data.category.size() >= 2 &&
              data.authorUid == request.auth.uid &&
              data.createdAt is timestamp &&
-             data.developer is string && data.developer.size() >= 1 && data.developer.size() <= 100 &&
-             data.price is string && data.price.size() <= 50 &&
+             data.developer is string && data.developer.size() >= 1 &&
+             data.price is string &&
+             data.approvalStatus in ['pending', 'approved', 'rejected'] &&
+             data.paymentStatus in ['unpaid', 'paid', 'refunded'] &&
+             (!('status' in data) || data.status in ['active', 'inactive']) &&
+             (!('paymentReference' in data) || (data.paymentReference is string && data.paymentReference.size() <= 100)) &&
+             (!('adminNotes' in data) || (data.adminNotes is string && data.adminNotes.size() <= 2000)) &&
+             (!('aiRiskScore' in data) || data.aiRiskScore in ['Safe', 'Suspicious', 'Dangerous']) &&
+             (!('aiReport' in data) || (data.aiReport is string && data.aiReport.size() <= 10000)) &&
+             (!('sourceCodeUrl' in data) || (data.sourceCodeUrl is string && data.sourceCodeUrl.size() <= 1000)) &&
+             (!('link' in data) || (data.link is string && data.link.size() <= 1000)) &&
+             (!('version' in data) || data.version is string) &&
+             (!('tags' in data) || (data.tags is list && data.tags.size() <= 20)) &&
              (!('isPymmcoreProduct' in data) || data.isPymmcoreProduct is bool) &&
              (!('appStoreLink' in data) || isValidUrl(data.appStoreLink)) &&
              (!('playStoreLink' in data) || isValidUrl(data.playStoreLink)) &&
              (!('demoLink' in data) || isValidUrl(data.demoLink)) &&
-             (!('status' in data) || data.status in ['staging', 'production']) &&
              (!('icon' in data) || (data.icon is string && data.icon.size() <= 1000000)) &&
              (!('expectedLaunchDate' in data) || (data.expectedLaunchDate is string && data.expectedLaunchDate.size() <= 100)) &&
-             (!('screenshots' in data) || (data.screenshots is list && data.screenshots.size() <= 10));
+             (!('screenshots' in data) || (data.screenshots is list && data.screenshots.size() <= 10)) &&
+             (!('ratingCount' in data) || data.ratingCount is number) &&
+             (!('sumOfRatings' in data) || data.sumOfRatings is number);
     }
 
     function isValidUser(data) {
@@ -178,6 +189,20 @@ service cloud.firestore {
              data.active is bool &&
              data.createdAt is timestamp &&
              (!('blendMode' in data) || data.blendMode is string) &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp);
+    }
+
+    function isValidOnboardingSlide(data) {
+      return data.keys().hasAll(['title', 'subtitle', 'order', 'active', 'createdAt']) &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+             data.subtitle is string && data.subtitle.size() >= 1 && data.subtitle.size() <= 1000 &&
+             data.order is number &&
+             data.active is bool &&
+             data.createdAt is timestamp &&
+             (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1000000)) &&
+             (!('icon' in data) || (data.icon is string && data.icon.size() <= 100)) &&
+             (!('buttonText' in data) || (data.buttonText is string && data.buttonText.size() <= 50)) &&
+             (!('buttonLink' in data) || (data.buttonLink is string && data.buttonLink.size() <= 200)) &&
              (!('updatedAt' in data) || data.updatedAt is timestamp);
     }
 
@@ -241,9 +266,21 @@ service cloud.firestore {
 
     match /apps/{appId} {
       allow read: if true;
-      allow create: if isEditor() && isNotSuspended() && isValidApp(request.resource.data);
+      allow create: if isAuthenticated() && isNotSuspended() && 
+                    isValidApp(request.resource.data) &&
+                    request.resource.data.approvalStatus == 'pending' &&
+                    request.resource.data.paymentStatus == 'unpaid';
       allow update: if isAdmin() || 
-                    (isEditor() && isNotSuspended() && request.auth.uid == resource.data.authorUid && isValidApp(request.resource.data)) ||
+                    (isAuthenticated() && isNotSuspended() && resource.data.authorUid == request.auth.uid && 
+                     isValidApp(request.resource.data) &&
+                     resource.data.approvalStatus == 'pending' &&
+                     request.resource.data.approvalStatus == 'pending' &&
+                     request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                       'name', 'description', 'type', 'category', 'link', 'tags', 'developer', 
+                       'price', 'version', 'appStoreLink', 'playStoreLink', 'demoLink', 
+                       'expectedLaunchDate', 'features', 'icon', 'screenshots', 
+                       'paymentStatus', 'paymentReference', 'sourceCodeUrl', 'aiRiskScore', 'aiReport'
+                     ])) ||
                     (isAuthenticated() && isNotSuspended() && 
                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ratingCount', 'sumOfRatings']) &&
                      (
@@ -289,7 +326,8 @@ service cloud.firestore {
 
     match /settings/{settingId} {
       allow read: if true;
-      allow write: if isAdmin() && isValidSettings(request.resource.data);
+      allow create, update: if isAdmin() && isValidSettings(request.resource.data);
+      allow delete: if isAdmin();
     }
 
     match /messages/{messageId} {
@@ -332,6 +370,12 @@ service cloud.firestore {
     match /background_assets/{assetId} {
       allow read, get, list: if true;
       allow create, update: if isAdmin() && isValidBackgroundAsset(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /onboarding_slides/{slideId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidOnboardingSlide(request.resource.data);
       allow delete: if isAdmin();
     }
 

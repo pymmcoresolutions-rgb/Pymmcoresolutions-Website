@@ -8,11 +8,19 @@
         "name": { "type": "string", "description": "Application title" },
         "description": { "type": "string", "description": "AI-optimized marketing copy" },
         "type": { "type": "string", "enum": ["Web", "Mobile", "Desktop"], "description": "Platform type" },
+        "category": { "type": "string", "description": "App category (e.g. Productivity, Finance)" },
         "link": { "type": "string", "format": "uri", "description": "Primary link (Web URL or Desktop Download)" },
         "tags": { "type": "array", "items": { "type": "string" }, "description": "Searchable metadata" },
         "authorUid": { "type": "string", "description": "Reference to the creator" },
         "createdAt": { "type": "string", "format": "date-time", "description": "System-generated creation date" },
-        "status": { "type": "string", "enum": ["staging", "production"], "description": "Listing status" },
+        "status": { "type": "string", "enum": ["active", "inactive"], "description": "Visibility in storefront" },
+        "approvalStatus": { "type": "string", "enum": ["pending", "approved", "rejected"], "description": "Admin review state" },
+        "paymentStatus": { "type": "string", "enum": ["unpaid", "paid", "refunded"], "description": "Listing fee status" },
+        "paymentReference": { "type": "string", "description": "Paystack transaction reference" },
+        "sourceCodeUrl": { "type": "string", "format": "uri", "description": "Link to repository or source bundle" },
+        "aiRiskScore": { "type": "string", "enum": ["Safe", "Suspicious", "Dangerous"], "description": "AI-generated risk assessment" },
+        "aiReport": { "type": "string", "description": "Detailed technical audit report from Matrix Intelligence" },
+        "adminNotes": { "type": "string", "description": "Feedback from admin reviews" },
         "version": { "type": "string", "description": "Current version string" },
         "developer": { "type": "string", "description": "Name of the developer or company" },
         "price": { "type": "string", "description": "Price or 'Free'" },
@@ -25,7 +33,7 @@
         "icon": { "type": "string", "description": "Base64 encoded icon or URL" },
         "screenshots": { "type": "array", "items": { "type": "string" }, "description": "URLs for app screenshots" }
       },
-      "required": ["name", "type", "link", "authorUid", "createdAt", "developer", "price"]
+      "required": ["name", "type", "category", "authorUid", "createdAt", "developer", "price", "approvalStatus", "paymentStatus"]
     },
     "Page": {
       "title": "CMS Page",
@@ -160,6 +168,23 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["url", "opacity", "blur", "grayscale", "active", "createdAt"]
+    },
+    "OnboardingSlide": {
+      "title": "Onboarding Slide",
+      "description": "A slide for the homepage onboarding showcase.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Primary heading" },
+        "subtitle": { "type": "string", "description": "Secondary description" },
+        "imageUrl": { "type": "string", "description": "Asset URL or base64" },
+        "icon": { "type": "string", "description": "Lucide icon name" },
+        "order": { "type": "number", "description": "Display sequence" },
+        "buttonText": { "type": "string", "description": "Optional CTA button text" },
+        "buttonLink": { "type": "string", "description": "Optional CTA button destination" },
+        "active": { "type": "boolean", "description": "Visibility toggle" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "subtitle", "order", "active", "createdAt"]
     }
   },
   "firestore": {
@@ -174,6 +199,7 @@
     "/reviews/{reviewId}": { "schema": "Review", "description": "Public website reviews." },
     "/waitlist/{entryId}": { "schema": "WaitlistEntry", "description": "Marketing leads and waitlisted users." },
     "/wishlists/{wishId}": { "schema": "WishlistItem", "description": "User's collection of saved apps." },
-    "/background_assets/{assetId}": { "schema": "BackgroundAsset", "description": "Environment branding elements." }
+    "/background_assets/{assetId}": { "schema": "BackgroundAsset", "description": "Environment branding elements." },
+    "/onboarding_slides/{slideId}": { "schema": "OnboardingSlide", "description": "Homepage onboarding sequence." }
   }
 }

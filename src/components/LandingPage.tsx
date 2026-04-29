@@ -11,6 +11,8 @@ import Logo from './Logo';
 import Reviews from './Reviews';
 import WaitlistPortal from './WaitlistPortal';
 import GlobalBackground from './GlobalBackground';
+import OnboardingShowcase from './OnboardingShowcase';
+import SystemHealthIndicator from './SystemHealthIndicator';
 
 export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
   const { login } = useAuth();
@@ -53,8 +55,9 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-black/40 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center">
+          <div className="flex items-center gap-8">
             <Logo size="sm" />
+            <SystemHealthIndicator />
           </div>
           <button 
             onClick={onLaunch}
@@ -221,6 +224,9 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
           </motion.div>
         </div>
       </section>
+
+      {/* Onboarding Showcase */}
+      <OnboardingShowcase />
 
       {/* Value Prop Section */}
       <section className="py-24 border-y border-white/5 bg-white/[0.02]">

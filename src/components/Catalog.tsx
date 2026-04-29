@@ -5,12 +5,13 @@ import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
 import { useAuth } from '../lib/auth';
 import { motion, AnimatePresence } from 'motion/react';
 import * as LucideIcons from 'lucide-react';
+import DeveloperPortal from './DeveloperPortal';
 import { 
   ExternalLink, Tag, Globe, Smartphone, Monitor, 
   Plus, Shield, Activity, ArrowUpRight, Lock,
   CheckCircle2, Clock, Search, ShoppingCart,
   Apple, Play, Download, Sparkles, Box, Star,
-  Loader2, Heart, X, Info
+  Loader2, Heart, X, Info, Rocket
 } from 'lucide-react';
 
 // Helper to render dynamic Lucide icons
@@ -91,6 +92,7 @@ export default function Catalog() {
   const [showStaging, setShowStaging] = useState(false);
   const [showWishlistOnly, setShowWishlistOnly] = useState(false);
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
+  const [showDeveloperPortal, setShowDeveloperPortal] = useState(false);
 
   const selectedApp = apps.find(a => a.id === selectedAppId);
 
@@ -225,15 +227,38 @@ export default function Catalog() {
 
   const filteredApps = apps.filter(app => {
     const typeMatch = filter === 'All' || app.type === filter;
-    const statusMatch = isEditor ? (showStaging || app.status === 'production') : app.status === 'production';
+    
+    // Safety check for regular users vs admins
+    // Visible if approved AND active OR if admin/editor and staging is toggled
+    const statusMatch = isAdmin || isEditor 
+      ? (showStaging || (app.approvalStatus === 'approved' && app.status === 'active'))
+      : (app.approvalStatus === 'approved' && app.status === 'active');
+
     const wishlistMatch = !showWishlistOnly || wishlist.has(app.id);
     const searchMatch = !search || 
       app.name.toLowerCase().includes(search.toLowerCase()) || 
       app.description.toLowerCase().includes(search.toLowerCase()) ||
       app.developer?.toLowerCase().includes(search.toLowerCase()) ||
       app.tags?.some((t: string) => t.toLowerCase().includes(search.toLowerCase()));
+    
     return typeMatch && statusMatch && searchMatch && wishlistMatch;
   });
+
+  if (showDeveloperPortal) {
+    return (
+      <div className="min-h-screen bg-black">
+        <div className="max-w-7xl mx-auto px-6 py-8 flex justify-between items-center">
+          <button 
+            onClick={() => setShowDeveloperPortal(false)}
+            className="flex items-center gap-2 text-white/40 hover:text-white transition-colors font-bold uppercase tracking-widest text-xs"
+          >
+            <X className="w-4 h-4" /> Exit Portal
+          </button>
+        </div>
+        <DeveloperPortal />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
@@ -287,14 +312,18 @@ export default function Catalog() {
             ))}
           </div>
 
-          {isEditor && (
-            <a 
-              href="#admin"
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-blue-600/20"
-            >
-              <Plus className="w-4 h-4" /> List Application
-            </a>
-          )}
+          <button 
+            onClick={() => {
+              if (!user) {
+                login();
+              } else {
+                setShowDeveloperPortal(true);
+              }
+            }}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-blue-600/20"
+          >
+            <Plus className="w-4 h-4" /> List Application
+          </button>
         </div>
       </div>
 

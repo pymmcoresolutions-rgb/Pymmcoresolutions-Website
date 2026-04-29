@@ -20,11 +20,35 @@
 }
 
 :root.light .bg-white\/5 {
-  @apply bg-white/50;
+  @apply bg-neutral-100;
 }
 
 :root.light .bg-black\/40 {
-  @apply bg-white/20;
+  @apply bg-neutral-50;
+}
+
+:root.light .bg-black\/20 {
+  @apply bg-neutral-200/50;
+}
+
+:root.light .bg-neutral-900 {
+  @apply bg-white;
+}
+
+:root.light .bg-neutral-950 {
+  @apply bg-white border-neutral-200;
+}
+
+:root.light .text-white\/40 {
+  @apply text-neutral-400;
+}
+
+:root.light .text-white\/60 {
+  @apply text-neutral-500;
+}
+
+:root.light .text-white\/20 {
+  @apply text-neutral-300;
 }
 
 :root.light .border-white\/10 {
@@ -33,14 +57,6 @@
 
 :root.light .border-white\/5 {
   @apply border-neutral-100;
-}
-
-:root.light .text-white\/40 {
-  @apply text-neutral-400;
-}
-
-:root.light .text-white\/60 {
-  @apply text-neutral-600;
 }
 
 :root.dark body {

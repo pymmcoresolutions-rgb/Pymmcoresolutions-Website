@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Users, FileText, History, Settings, 
   Plus, Shield, Activity, Globe, Smartphone, Monitor,
   AlertCircle, CheckCircle2, Clock, Search, Filter, Mail,
-  MoreVertical, UserMinus, UserPlus, ShieldCheck, Ban, Star, Image
+  MoreVertical, UserMinus, UserPlus, ShieldCheck, Ban, Star, Image, Rocket
 } from 'lucide-react';
 import NodeManager from './admin/NodeManager';
 import UserManager from './admin/UserManager';
@@ -17,6 +17,8 @@ import InquiryManager from './admin/InquiryManager';
 import ReviewsManager from './admin/ReviewsManager';
 import SettingsManager from './admin/SettingsManager';
 import SiteContentManager from './admin/SiteContentManager';
+import SystemIntelligence from './admin/SystemIntelligence';
+import SubmissionManager from './admin/SubmissionManager';
 import LogoManager from './admin/LogoManager';
 import WaitlistManager from './admin/WaitlistManager';
 import BrandingSettings from './BrandingSettings';
@@ -92,8 +94,10 @@ export default function AdminDashboard() {
     { id: 'waitlist', label: 'Waitlist', icon: Mail, roles: ['admin'] },
     { id: 'reviews', label: 'Reviews', icon: Star, roles: ['admin', 'editor'] },
     { id: 'inquiries', label: 'Inquiries', icon: Mail, roles: ['admin'] },
+    { id: 'submissions', label: 'Submissions', icon: Rocket, roles: ['admin', 'editor'] },
     { id: 'cms', label: 'CMS', icon: FileText, roles: ['admin', 'editor'] },
     { id: 'content', label: 'Site Content', icon: Globe, roles: ['admin', 'editor'] },
+    { id: 'intelligence', label: 'Intelligence', icon: Shield, roles: ['admin'] },
     { id: 'branding', label: 'Branding', icon: Image, roles: ['admin'] },
     { id: 'audit', label: 'Audit', icon: History, roles: ['admin'] },
     { id: 'settings', label: 'Settings', icon: Settings, roles: ['admin'] },
@@ -120,14 +124,22 @@ export default function AdminDashboard() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+              className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                 activeTab === tab.id 
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
                   : 'text-white/40 hover:text-white hover:bg-white/5'
               }`}
             >
-              <tab.icon className="w-4 h-4" />
-              {tab.label}
+              <div className="flex items-center gap-3">
+                <tab.icon className="w-4 h-4" />
+                {tab.label}
+              </div>
+              {tab.id === 'intelligence' && (
+                <div className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                </div>
+              )}
             </button>
           ))}
         </aside>
@@ -193,8 +205,10 @@ export default function AdminDashboard() {
             {activeTab === 'waitlist' && <WaitlistManager key="waitlist" />}
             {activeTab === 'reviews' && <ReviewsManager key="reviews" />}
             {activeTab === 'inquiries' && <InquiryManager key="inquiries" />}
+            {activeTab === 'submissions' && <SubmissionManager key="submissions" />}
             {activeTab === 'cms' && <ContentManager key="cms" />}
             {activeTab === 'content' && <SiteContentManager key="content" />}
+            {activeTab === 'intelligence' && <SystemIntelligence key="intelligence" />}
             {activeTab === 'audit' && <AuditViewer key="audit" />}
             {activeTab === 'branding' && <BrandingSettings key="branding" />}
             {activeTab === 'settings' && <SettingsManager key="settings" />}
