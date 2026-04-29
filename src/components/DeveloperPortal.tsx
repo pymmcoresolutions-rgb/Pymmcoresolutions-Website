@@ -4,15 +4,18 @@ import {
   Rocket, Shield, CheckCircle2, AlertCircle, 
   Upload, Layout, Globe, Smartphone, Monitor,
   Plus, X, HelpCircle, Loader2, Sparkles,
-  ExternalLink, CreditCard, DollarSign, Info
+  ExternalLink, CreditCard, DollarSign, Info,
+  Save, Eye, History
 } from 'lucide-react';
 import { usePaystackPayment } from 'react-paystack';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../lib/auth';
 import { auditApplication } from '../services/geminiService';
+import ImageUploader from './ui/ImageUploader';
 
 interface AppSubmissionForm {
+  id?: string;
   name: string;
   description: string;
   type: 'Web' | 'Mobile' | 'Desktop';
@@ -27,7 +30,9 @@ interface AppSubmissionForm {
   playStoreLink: string;
   expectedLaunchDate: string;
   icon: string;
+  screenshots: string[];
   sourceCodeUrl: string;
+  isDraft?: boolean;
 }
 
 const CATEGORIES = [
@@ -48,6 +53,9 @@ export default function DeveloperPortal() {
   const [step, setStep] = useState<'guidelines' | 'form' | 'payment' | 'success'>('guidelines');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  
+  const [drafts, setDrafts] = useState<AppSubmissionForm[]>([]);
   
   const [form, setForm] = useState<AppSubmissionForm>({
     name: '',
@@ -64,8 +72,58 @@ export default function DeveloperPortal() {
     playStoreLink: '',
     expectedLaunchDate: '',
     icon: '',
-    sourceCodeUrl: ''
+    screenshots: [],
+    sourceCodeUrl: '',
+    isDraft: true
   });
+
+  useEffect(() => {
+    if (!user) return;
+
+    // Check for existing drafts
+    const q = query(
+      collection(db, 'apps'), 
+      where('authorUid', '==', user.uid),
+      where('isDraft', '==', true)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const draftList = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as AppSubmissionForm));
+      setDrafts(draftList);
+      
+      // If we don't have an active form ID yet, and we found drafts, auto-load the first one
+      // BUT only if the form hasn't been touched much. 
+      // Actually, let's let the user choose if multiple exist.
+      if (!form.id && draftList.length === 1) {
+        setForm(draftList[0]);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [user, form.id]);
+
+  const startNewSubmission = () => {
+    setForm({
+      name: '',
+      description: '',
+      type: 'Web',
+      category: '',
+      link: '',
+      developer: '',
+      price: 'Free',
+      tags: [],
+      features: [],
+      demoLink: '',
+      appStoreLink: '',
+      playStoreLink: '',
+      expectedLaunchDate: '',
+      icon: '',
+      screenshots: [],
+      sourceCodeUrl: '',
+      isDraft: true
+    });
+    setStep('form');
+  };
 
   const [tagInput, setTagInput] = useState('');
 
@@ -76,7 +134,7 @@ export default function DeveloperPortal() {
     amount: 25 * 100 * 1600, // $25 in Kobo (1600 NGN exchange rate approx or use flat USD if supported)
     // AI Studio uses NGN for Paystack usually if in NG, otherwise depends on public key currency.
     // Let's assume NGN for the demo or base it on $25 equivalent.
-    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '',
+    publicKey: (import.meta as any).env.VITE_PAYSTACK_PUBLIC_KEY || '',
   };
 
   const onSuccess = (reference: any) => {
@@ -123,6 +181,35 @@ export default function DeveloperPortal() {
     return true;
   };
 
+  const handleSaveDraft = async () => {
+    if (!user) return;
+    setSaveStatus('saving');
+    try {
+      if (form.id) {
+        await updateDoc(doc(db, 'apps', form.id), {
+          ...form,
+          updatedAt: serverTimestamp()
+        });
+      } else {
+        const newDoc = await addDoc(collection(db, 'apps'), {
+          ...form,
+          authorUid: user.uid,
+          createdAt: serverTimestamp(),
+          isDraft: true,
+          approvalStatus: 'pending',
+          paymentStatus: 'unpaid',
+          status: 'inactive'
+        });
+        setForm(prev => ({ ...prev, id: newDoc.id }));
+      }
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch (err) {
+      console.error("Draft save failed:", err);
+      setError("Failed to synchronize draft with cloud storage.");
+    }
+  };
+
   const handleSubmit = async (paymentRef: string) => {
     setLoading(true);
     setError(null);
@@ -136,17 +223,27 @@ export default function DeveloperPortal() {
         sourceCodeUrl: form.sourceCodeUrl
       });
 
-      await addDoc(collection(db, 'apps'), {
+      const submissionData = {
         ...form,
         authorUid: user?.uid,
-        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
         approvalStatus: 'pending',
         paymentStatus: 'paid',
         paymentReference: paymentRef,
         status: 'inactive',
+        isDraft: false, // NO LONGER A DRAFT
         aiRiskScore: audit.riskScore,
         aiReport: audit.report
-      });
+      };
+
+      if (form.id) {
+        await updateDoc(doc(db, 'apps', form.id), submissionData);
+      } else {
+        await addDoc(collection(db, 'apps'), {
+          ...submissionData,
+          createdAt: serverTimestamp()
+        });
+      }
       setStep('success');
     } catch (err) {
       console.error("Submission failed:", err);
@@ -196,8 +293,38 @@ export default function DeveloperPortal() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="space-y-8"
+            className="space-y-12"
           >
+            {drafts.length > 0 && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <History className="w-5 h-5 text-blue-400" />
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-white/40">In-Progress Recovered Sessions</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {drafts.map(draft => (
+                    <button
+                      key={draft.id}
+                      onClick={() => {
+                        setForm(draft);
+                        setStep('form');
+                      }}
+                      className="p-6 rounded-3xl bg-blue-500/5 border border-blue-500/20 hover:border-blue-500/40 text-left transition-all group"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-bold text-white group-hover:text-blue-400 transition-colors">{draft.name || 'Untitled Draft'}</h4>
+                        <span className="text-[10px] font-bold text-white/20">{draft.type}</span>
+                      </div>
+                      <p className="text-[10px] text-white/40 line-clamp-1 italic mb-4">{draft.description || 'No description provided yet.'}</p>
+                      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-400">
+                        Resume Session <ExternalLink className="w-3 h-3" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {GUIDELINES.map((g, i) => (
                 <div key={i} className="p-6 rounded-3xl bg-white/5 border border-white/10 space-y-2">
@@ -218,10 +345,10 @@ export default function DeveloperPortal() {
             </div>
 
             <button 
-              onClick={() => setStep('form')}
+              onClick={startNewSubmission}
               className="w-full py-5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl transition-all shadow-xl shadow-blue-600/20"
             >
-              Initialize Submission Matrix
+              {drafts.length > 0 ? 'Initialize New Infrastructure Node' : 'Initialize Submission Matrix'}
             </button>
           </motion.div>
         )}
@@ -239,31 +366,56 @@ export default function DeveloperPortal() {
           >
             {/* Basic Info */}
             <div className="space-y-6">
-              <div className="flex items-center gap-3 pb-2 border-b border-white/5">
-                <Layout className="w-5 h-5 text-blue-400" />
-                <h3 className="text-xs font-bold uppercase tracking-widest text-white/40">Core Identity</h3>
+              <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                <div className="flex items-center gap-3">
+                  <Layout className="w-5 h-5 text-blue-400" />
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-white/40">Core Identity</h3>
+                </div>
+                <button 
+                  type="button"
+                  onClick={handleSaveDraft}
+                  disabled={saveStatus === 'saving'}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
+                >
+                  {saveStatus === 'saving' ? <Loader2 className="w-3 h-3 animate-spin" /> : 
+                   saveStatus === 'saved' ? <CheckCircle2 className="w-3 h-3 text-green-500" /> : <Save className="w-3 h-3" />}
+                  {saveStatus === 'saved' ? 'Synchronized' : 'Save as Draft'}
+                </button>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-white/30 px-2">App Name *</label>
-                  <input 
-                    required
-                    value={form.name}
-                    onChange={e => setForm({ ...form, name: e.target.value })}
-                    className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-blue-500 transition-all font-medium"
-                    placeholder="Enter application title"
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div className="md:col-span-1">
+                  <ImageUploader 
+                    label="App Icon *"
+                    currentImage={form.icon}
+                    onUpload={(base64) => setForm({ ...form, icon: base64 })}
+                    maxSizeMB={0.5}
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-white/30 px-2">Developer / Company *</label>
-                  <input 
-                    required
-                    value={form.developer}
-                    onChange={e => setForm({ ...form, developer: e.target.value })}
-                    className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-blue-500 transition-all font-medium"
-                    placeholder="e.g. Acme Innovations"
-                  />
+                
+                <div className="md:col-span-3 space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-white/30 px-2">App Name *</label>
+                      <input 
+                        required
+                        value={form.name}
+                        onChange={e => setForm({ ...form, name: e.target.value })}
+                        className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-blue-500 transition-all font-medium"
+                        placeholder="Enter application title"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-white/30 px-2">Developer / Company *</label>
+                      <input 
+                        required
+                        value={form.developer}
+                        onChange={e => setForm({ ...form, developer: e.target.value })}
+                        className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-blue-500 transition-all font-medium"
+                        placeholder="e.g. Acme Innovations"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -339,6 +491,26 @@ export default function DeveloperPortal() {
                 className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-3xl outline-none focus:border-blue-500 transition-all font-medium resize-none"
                 placeholder="Explain the value proposition, tech stack, and modular benefits..."
               />
+            </div>
+
+            {/* Screenshots */}
+            <div className="space-y-4">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-white/30 px-2">Visual Proof / Screenshots (Up to 4)</label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[0, 1, 2, 3].map(idx => (
+                  <ImageUploader 
+                    key={idx}
+                    aspectRatio="video"
+                    currentImage={form.screenshots[idx]}
+                    onUpload={(base64) => {
+                      const next = [...form.screenshots];
+                      if (base64) next[idx] = base64;
+                      else next.splice(idx, 1);
+                      setForm({ ...form, screenshots: next });
+                    }}
+                  />
+                ))}
+              </div>
             </div>
 
             {/* Tags */}

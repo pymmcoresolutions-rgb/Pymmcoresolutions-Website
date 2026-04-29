@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import ConfirmDialog from './ConfirmDialog';
 
+import ImageUploader from '../ui/ImageUploader';
+
 interface OnboardingSlide {
   id: string;
   title: string;
@@ -203,15 +205,12 @@ export default function OnboardingManager() {
                   placeholder="Zap, Shield, Globe..."
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 flex items-center gap-2">
-                  <ImageIcon className="w-3 h-3" /> Image URL
-                </label>
-                <input
-                  value={form.imageUrl}
-                  onChange={e => setForm({ ...form, imageUrl: e.target.value })}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-teal-500 outline-none transition-all text-sm"
-                  placeholder="https://..."
+              <div className="space-y-4">
+                <ImageUploader 
+                  label="Display Artwork"
+                  aspectRatio="video"
+                  currentImage={form.imageUrl}
+                  onUpload={(base64) => setForm({ ...form, imageUrl: base64 })}
                 />
               </div>
             </div>

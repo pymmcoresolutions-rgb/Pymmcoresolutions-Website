@@ -138,6 +138,7 @@ service cloud.firestore {
              data.price is string &&
              data.approvalStatus in ['pending', 'approved', 'rejected'] &&
              data.paymentStatus in ['unpaid', 'paid', 'refunded'] &&
+             (!('isDraft' in data) || data.isDraft is bool) &&
              (!('status' in data) || data.status in ['active', 'inactive']) &&
              (!('paymentReference' in data) || (data.paymentReference is string && data.paymentReference.size() <= 100)) &&
              (!('adminNotes' in data) || (data.adminNotes is string && data.adminNotes.size() <= 2000)) &&
@@ -279,7 +280,7 @@ service cloud.firestore {
                        'name', 'description', 'type', 'category', 'link', 'tags', 'developer', 
                        'price', 'version', 'appStoreLink', 'playStoreLink', 'demoLink', 
                        'expectedLaunchDate', 'features', 'icon', 'screenshots', 
-                       'paymentStatus', 'paymentReference', 'sourceCodeUrl', 'aiRiskScore', 'aiReport'
+                       'paymentStatus', 'paymentReference', 'sourceCodeUrl', 'aiRiskScore', 'aiReport', 'isDraft'
                      ])) ||
                     (isAuthenticated() && isNotSuspended() && 
                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ratingCount', 'sumOfRatings']) &&

@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Activity, Shield, Zap, AlertCircle, CheckCircle2,
   BarChart3, Cpu, Database, HardDrive, 
-  RefreshCcw, Serve, TrendingUp, TrendingDown,
-  Clock, Server, Globe, Signal, ArrowUpRight, ArrowDownRight
+  RefreshCcw, Server, TrendingUp, TrendingDown,
+  Clock, Globe, Signal, ArrowUpRight, ArrowDownRight,
+  Loader2
 } from 'lucide-react';
+import { useAuth } from '../../lib/auth';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, 
   Tooltip, ResponsiveContainer, LineChart, Line,
@@ -65,11 +67,13 @@ function MetricCard({ title, value, trend, trendValue, icon: Icon, color }: Metr
 }
 
 export default function SystemIntelligence() {
+  const { logActivity } = useAuth();
   const [timestamp, setTimestamp] = useState(new Date());
   const [trafficData, setTrafficData] = useState(generateTimeData(12, 450, 100));
   const [latencyData, setLatencyData] = useState(generateTimeData(12, 120, 40));
   const [dbHealth, setDbHealth] = useState(98.4);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [commandStatus, setCommandStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -90,6 +94,22 @@ export default function SystemIntelligence() {
   const handleRefresh = () => {
     setIsSyncing(true);
     setTimeout(() => setIsSyncing(false), 1500);
+  };
+
+  const executeCommand = async (cmd: any) => {
+    setIsSyncing(true);
+    setCommandStatus(`Initiating ${cmd.label}...`);
+    try {
+      await logActivity('admin_system_command', { command: cmd.id, label: cmd.label });
+      setTimeout(() => {
+        setCommandStatus(`Command ${cmd.label} executed and logged.`);
+        setIsSyncing(false);
+        setTimeout(() => setCommandStatus(null), 3000);
+      }, 2000);
+    } catch (err) {
+      setCommandStatus(`Command failure.`);
+      setIsSyncing(false);
+    }
   };
 
   return (
@@ -449,11 +469,9 @@ export default function SystemIntelligence() {
             ].map((cmd) => (
               <button
                 key={cmd.id}
-                onClick={() => {
-                  setIsSyncing(true);
-                  setTimeout(() => setIsSyncing(false), 2000);
-                }}
-                className="p-6 rounded-3xl bg-white/5 border border-white/10 hover:border-white/20 transition-all text-left flex flex-col gap-4 group"
+                onClick={() => executeCommand(cmd)}
+                disabled={isSyncing}
+                className="p-6 rounded-3xl bg-white/5 border border-white/10 hover:border-white/20 transition-all text-left flex flex-col gap-4 group disabled:opacity-50"
               >
                 <div className={`w-10 h-10 rounded-xl bg-${cmd.color}-500/10 border border-${cmd.color}-500/20 flex items-center justify-center text-${cmd.color}-400 group-hover:scale-110 transition-transform`}>
                   <cmd.icon className="w-5 h-5" />
@@ -467,8 +485,16 @@ export default function SystemIntelligence() {
           </div>
 
           <div className="flex items-center gap-4 p-4 rounded-2xl bg-black/40 border border-white/5">
-            <AlertCircle className="w-4 h-4 text-white/20" />
-            <p className="text-[10px] text-white/20 uppercase tracking-widest">Caution: Commands executed here impact global infrastructure state. All actions are logged to the Matrix Audit Protocol.</p>
+            {commandStatus ? (
+              <div className="flex items-center gap-3 text-blue-400 font-bold text-[10px] uppercase tracking-widest w-full">
+                <Loader2 className="w-4 h-4 animate-spin" /> {commandStatus}
+              </div>
+            ) : (
+              <>
+                <AlertCircle className="w-4 h-4 text-white/20" />
+                <p className="text-[10px] text-white/20 uppercase tracking-widest">Caution: Commands executed here impact global infrastructure state. All actions are logged to the Matrix Audit Protocol.</p>
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -17,6 +17,7 @@
         "approvalStatus": { "type": "string", "enum": ["pending", "approved", "rejected"], "description": "Admin review state" },
         "paymentStatus": { "type": "string", "enum": ["unpaid", "paid", "refunded"], "description": "Listing fee status" },
         "paymentReference": { "type": "string", "description": "Paystack transaction reference" },
+        "isDraft": { "type": "boolean", "description": "Whether this submission is a work-in-progress" },
         "sourceCodeUrl": { "type": "string", "format": "uri", "description": "Link to repository or source bundle" },
         "aiRiskScore": { "type": "string", "enum": ["Safe", "Suspicious", "Dangerous"], "description": "AI-generated risk assessment" },
         "aiReport": { "type": "string", "description": "Detailed technical audit report from Matrix Intelligence" },

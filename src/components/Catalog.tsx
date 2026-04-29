@@ -287,8 +287,27 @@ export default function Catalog() {
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
-          <div className="relative flex-1 lg:flex-none lg:w-64">
+          <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
+            {(isAdmin || isEditor) && (
+              <div className="flex items-center gap-3 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-2xl">
+                <Shield className="w-4 h-4 text-purple-400" />
+                <span className="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Staging Mesh</span>
+                <button
+                  onClick={() => setShowStaging(!showStaging)}
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    showStaging ? 'bg-purple-600' : 'bg-white/10'
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      showStaging ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+            )}
+            
+            <div className="relative flex-1 lg:flex-none lg:w-64">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
             <input 
               value={search}
