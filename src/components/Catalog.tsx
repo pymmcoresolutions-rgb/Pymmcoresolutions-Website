@@ -237,11 +237,10 @@ export default function Catalog() {
                       platformList.includes('All') || 
                       platformList.includes(filter);
     
-    // Safety check for regular users vs admins
-    // Visible if approved AND active OR if admin/editor and staging is toggled
+    // Visible if approved AND production OR if admin/editor and staging is toggled
     const statusMatch = isAdmin || isEditor 
-      ? (showStaging || (app.approvalStatus === 'approved' && app.status === 'active'))
-      : (app.approvalStatus === 'approved' && app.status === 'active');
+      ? (showStaging || (app.approvalStatus === 'approved' && app.status === 'production'))
+      : (app.approvalStatus === 'approved' && app.status === 'production');
 
     const wishlistMatch = !showWishlistOnly || wishlist.has(app.id);
     const searchMatch = !search || 
@@ -471,7 +470,7 @@ export default function Catalog() {
                 </div>
 
                 <div className="pt-6 border-t border-white/5 grid grid-cols-1 gap-3">
-                  {app.type === 'Mobile' ? (
+                  {app.type === 'Mobile' || (Array.isArray(app.type) && app.type.includes('Mobile')) ? (
                     <div className="flex gap-2">
                       {app.appStoreLink && (
                         <a 
@@ -639,13 +638,13 @@ export default function Catalog() {
                     </div>
                     
                     <a 
-                      href={(Array.isArray(selectedApp.type) ? selectedApp.type.includes('Desktop') : selectedApp.type === 'Desktop') && selectedApp.demoLink ? selectedApp.demoLink : selectedApp.link} 
+                      href={((Array.isArray(selectedApp.type) ? selectedApp.type.includes('Desktop') : selectedApp.type === 'Desktop') || (Array.isArray(selectedApp.type) ? selectedApp.type.includes('All') : selectedApp.type === 'All')) && selectedApp.demoLink ? selectedApp.demoLink : selectedApp.link} 
                       target="_blank" 
                       rel="noreferrer"
                       className="w-full py-5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl shadow-blue-600/20"
                     >
                       <ExternalLink className="w-5 h-5" />
-                      {(Array.isArray(selectedApp.type) ? selectedApp.type.includes('Desktop') : selectedApp.type === 'Desktop') ? 'Download for Desktop' : 'Launch Application'}
+                      {((Array.isArray(selectedApp.type) ? selectedApp.type.includes('Desktop') : selectedApp.type === 'Desktop') || (Array.isArray(selectedApp.type) ? selectedApp.type.includes('All') : selectedApp.type === 'All')) ? 'Download for Desktop' : 'Launch Application'}
                     </a>
 
                     {selectedApp.demoLink && (

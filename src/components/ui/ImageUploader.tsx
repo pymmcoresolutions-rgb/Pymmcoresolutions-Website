@@ -17,7 +17,7 @@ export default function ImageUploader({
   label, 
   id,
   aspectRatio = 'square',
-  maxSizeMB = 2
+  maxSizeMB = 0.8
 }: ImageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,10 +40,37 @@ export default function ImageUploader({
 
     try {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        onUpload(base64);
-        setIsProcessing(false);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Limit dimensions for base64 storage
+          const MAX_DIM = 800;
+          if (width > MAX_DIM || height > MAX_DIM) {
+            if (width > height) {
+              height *= MAX_DIM / width;
+              width = MAX_DIM;
+            } else {
+              width *= MAX_DIM / height;
+              height = MAX_DIM;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            // Use WebP for better compression if supported, fallback to JPEG
+            const compressedBase64 = canvas.toDataURL('image/webp', 0.7);
+            onUpload(compressedBase64);
+          }
+          setIsProcessing(false);
+        };
+        img.src = e.target?.result as string;
       };
       reader.onerror = () => {
         setError('Failed to process image transmission.');
@@ -139,7 +166,7 @@ export default function ImageUploader({
                   {isDragging ? 'Release to Transmit' : 'Drag & Drop Artwork'}
                 </p>
                 <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] mt-1">
-                  PNG, JPG or WebP up to {maxSizeMB}MB
+                  Optimized for Cloud (Max {maxSizeMB}MB)
                 </p>
               </div>
             </motion.div>

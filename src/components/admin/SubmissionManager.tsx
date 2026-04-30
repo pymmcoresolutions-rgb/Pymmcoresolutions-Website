@@ -88,7 +88,7 @@ export default function SubmissionManager() {
       const promises = Array.from(selectedIds).map(id => 
         updateDoc(doc(db, 'apps', id), {
           approvalStatus: status,
-          status: status === 'approved' ? 'active' : 'inactive',
+          status: status === 'approved' ? 'production' : 'staging',
           adminNotes: status === 'approved' ? 'Bulk approved via Matrix Protocol.' : 'Bulk rejected. Review guidelines.',
           updatedAt: serverTimestamp()
         })
@@ -108,7 +108,7 @@ export default function SubmissionManager() {
     try {
       await updateDoc(doc(db, 'apps', id), {
         approvalStatus: status,
-        status: status === 'approved' ? 'active' : 'inactive',
+        status: status === 'approved' ? 'production' : 'staging',
         adminNotes: notes || '',
         updatedAt: serverTimestamp()
       });
@@ -126,7 +126,7 @@ export default function SubmissionManager() {
     setIsProcessing(true);
     try {
       await updateDoc(doc(db, 'apps', id), {
-        status: 'inactive',
+        status: 'staging',
         approvalStatus: 'rejected',
         adminNotes: 'Manually decommissioned by administration due to protocol violation.',
         updatedAt: serverTimestamp()
@@ -356,6 +356,7 @@ export default function SubmissionManager() {
                             else if (next[idx]) next.splice(idx, 1);
                             setEditForm({ ...editForm, screenshots: next });
                           }}
+                          maxSizeMB={0.5}
                         />
                       ))}
                     </div>

@@ -129,8 +129,6 @@ export default function NodeManager() {
       }
 
       // Success feedback
-      setLoading(false);
-      
       // The user specifically requested a page refresh/redirect behavior
       // We will reset the view and provide a slight delay for the Firestore snapshot to catch up
       setTimeout(() => {
@@ -139,16 +137,14 @@ export default function NodeManager() {
           developer: 'PymmCore Solutions', price: 'Free', isPymmcoreProduct: true, expectedLaunchDate: '',
           appStoreLink: '', playStoreLink: '', demoLink: '', features: '', icon: '', screenshots: ''
         });
+        setLoading(false);
         setIsAdding(false);
         setEditingId(null);
-        
-        // Optional: Hard refresh if consistent environment state is needed
-        // window.location.reload(); 
       }, 1000);
     } catch (error) {
       console.error("Submission failed:", error);
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleEdit = (app: any) => {
@@ -248,7 +244,7 @@ export default function NodeManager() {
                     label="Custom Image Upload"
                     currentImage={form.icon?.startsWith('data:image') ? form.icon : ''}
                     onUpload={(base64) => setForm({ ...form, icon: base64 })}
-                    maxSizeMB={2}
+                    maxSizeMB={0.5}
                   />
                   <div className="space-y-4">
                     <div className="p-6 rounded-3xl bg-white/5 border border-white/10 flex flex-col items-center justify-center text-center">
@@ -386,36 +382,39 @@ export default function NodeManager() {
                   placeholder="https://..."
                 />
               </div>
-              {form.type === 'Mobile' && (
+              {(form.type?.includes('Mobile') || form.type?.includes('All')) && (
                 <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">App Store Link</label>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">App Store Link (iOS)</label>
                     <input
                       type="url"
                       value={form.appStoreLink}
                       onChange={e => setForm({ ...form, appStoreLink: e.target.value })}
                       className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition-all text-sm"
+                      placeholder="https://apps.apple.com/..."
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Play Store Link</label>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Play Store Link (Android)</label>
                     <input
                       type="url"
                       value={form.playStoreLink}
                       onChange={e => setForm({ ...form, playStoreLink: e.target.value })}
                       className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition-all text-sm"
+                      placeholder="https://play.google.com/..."
                     />
                   </div>
                 </div>
               )}
-              {(form.type === 'Web' || form.type === 'Desktop') && (
+              {(form.type?.includes('Web') || form.type?.includes('Desktop') || form.type?.includes('All')) && (
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Demo Link</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Interactive Demo URL</label>
                   <input
                     type="url"
                     value={form.demoLink}
                     onChange={e => setForm({ ...form, demoLink: e.target.value })}
                     className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition-all text-sm"
+                    placeholder="https://demo.example.com"
                   />
                 </div>
               )}

@@ -29,14 +29,14 @@ export default function LogoManager() {
   }, []);
 
   const validateFile = (file: File) => {
-    const validTypes = ['image/png', 'image/jpeg', 'image/svg+xml'];
-    const maxSize = 500 * 1024; // 500KB
+    const validTypes = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'];
+    const maxSize = 2 * 1024 * 1024; // 2MB
 
     if (!validTypes.includes(file.type)) {
-      throw new Error('Unsupported format. Please use PNG, JPG, or SVG.');
+      throw new Error('Unsupported format. Please use PNG, JPG, SVG, or WebP.');
     }
     if (file.size > maxSize) {
-      throw new Error('File too large. Maximum size is 500KB.');
+      throw new Error('File too large. Maximum size is 2MB.');
     }
   };
 

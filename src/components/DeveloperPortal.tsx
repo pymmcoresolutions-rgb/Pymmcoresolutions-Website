@@ -541,6 +541,7 @@ export default function DeveloperPortal() {
                       else next.splice(idx, 1);
                       setForm({ ...form, screenshots: next });
                     }}
+                    maxSizeMB={0.5}
                   />
                 ))}
               </div>
