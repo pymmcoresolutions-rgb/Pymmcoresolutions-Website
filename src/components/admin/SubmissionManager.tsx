@@ -321,6 +321,18 @@ export default function SubmissionManager() {
                           </div>
                         </div>
                         <div className="space-y-2">
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-white/20">Primary Category</label>
+                          <select 
+                            value={editForm.category}
+                            onChange={e => setEditForm({...editForm, category: e.target.value})}
+                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl outline-none focus:border-blue-500 transition-all font-medium text-sm appearance-none"
+                          >
+                            {['Productivity', 'Finance', 'Education', 'Entertainment', 'Health & Fitness', 'Lifestyle', 'Utilities', 'Social', 'Business', 'Developer Tools', 'Other'].map(c => (
+                              <option key={c} value={c}>{c}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="space-y-2">
                           <label className="text-[10px] font-bold uppercase tracking-widest text-white/20">Display Name</label>
                           <input 
                             value={editForm.name}

@@ -139,7 +139,7 @@ service cloud.firestore {
              data.approvalStatus in ['pending', 'approved', 'rejected'] &&
              data.paymentStatus in ['unpaid', 'paid', 'refunded'] &&
              (!('isDraft' in data) || data.isDraft is bool) &&
-             (!('status' in data) || data.status in ['active', 'inactive']) &&
+             (!('status' in data) || data.status in ['production', 'staging', 'active', 'inactive']) &&
              (!('paymentReference' in data) || (data.paymentReference is string && data.paymentReference.size() <= 100)) &&
              (!('adminNotes' in data) || (data.adminNotes is string && data.adminNotes.size() <= 2000)) &&
              (!('aiRiskScore' in data) || data.aiRiskScore in ['Safe', 'Suspicious', 'Dangerous']) &&
@@ -270,10 +270,12 @@ service cloud.firestore {
 
     match /apps/{appId} {
       allow read: if true;
-      allow create: if isAuthenticated() && isNotSuspended() && 
+      allow create: if isAdmin() || (
+                    isAuthenticated() && isNotSuspended() && 
                     isValidApp(request.resource.data) &&
                     request.resource.data.approvalStatus == 'pending' &&
-                    request.resource.data.paymentStatus in ['unpaid', 'paid'];
+                    request.resource.data.paymentStatus in ['unpaid', 'paid']
+                  );
       allow update: if isAdmin() || 
                     (isAuthenticated() && isNotSuspended() && resource.data.authorUid == request.auth.uid && 
                      isValidApp(request.resource.data) &&

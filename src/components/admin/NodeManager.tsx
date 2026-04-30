@@ -38,6 +38,7 @@ export default function NodeManager() {
     name: '',
     description: '',
     type: ['Web'],
+    category: 'Utilities',
     link: '',
     tags: '',
     status: 'production',
@@ -61,6 +62,12 @@ export default function NodeManager() {
     });
     return () => unsubscribe();
   }, []);
+
+  const CATEGORIES = [
+    'Productivity', 'Finance', 'Education', 'Entertainment', 
+    'Health & Fitness', 'Lifestyle', 'Utilities', 'Social',
+    'Business', 'Developer Tools', 'Other'
+  ];
 
   const handleOptimize = async () => {
     if (!form.name || !form.description) return;
@@ -133,7 +140,7 @@ export default function NodeManager() {
       // We will reset the view and provide a slight delay for the Firestore snapshot to catch up
       setTimeout(() => {
         setForm({ 
-          name: '', description: '', type: ['Web'], link: '', tags: '', status: 'production', version: '1.0.0',
+          name: '', description: '', type: ['Web'], category: 'Utilities', link: '', tags: '', status: 'production', version: '1.0.0',
           developer: 'PymmCore Solutions', price: 'Free', isPymmcoreProduct: true, expectedLaunchDate: '',
           appStoreLink: '', playStoreLink: '', demoLink: '', features: '', icon: '', screenshots: ''
         });
@@ -152,6 +159,7 @@ export default function NodeManager() {
       name: app.name,
       description: app.description,
       type: Array.isArray(app.type) ? app.type : [app.type || 'Web'],
+      category: app.category || 'Utilities',
       link: app.link,
       tags: Array.isArray(app.tags) ? app.tags.join(', ') : '',
       status: app.status,
@@ -237,6 +245,17 @@ export default function NodeManager() {
         >
           <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-white/30 px-2">Primary Category</label>
+                <select 
+                  required
+                  value={form.category}
+                  onChange={e => setForm({ ...form, category: e.target.value })}
+                  className="w-full px-4 py-3 bg-black/40 border border-white/10 rounded-xl outline-none focus:border-blue-500 transition-all text-sm appearance-none"
+                >
+                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
               <div className="space-y-4">
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 px-2">Node Iconography</label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
