@@ -10,7 +10,7 @@ import {
   Filter, Edit3, Trash2, ExternalLink, 
   MessageSquare, Save, AlertCircle, Loader2,
   Layout, Smartphone, Monitor, ShieldCheck,
-  ImageIcon, Sparkles, Box
+  ImageIcon, Sparkles, Box, Globe
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import ImageUploader from '../ui/ImageUploader';
@@ -18,7 +18,13 @@ import { suggestAppIcon } from '../../services/geminiService';
 import * as LucideIcons from 'lucide-react';
 
 const DynamicIcon = ({ name, className }: { name: string; className?: string }) => {
-  const Icon = (LucideIcons as any)[name] || Box;
+  if (!name) return <LucideIcons.Box className={className} />;
+  
+  if (name.startsWith('data:image') || name.startsWith('http')) {
+    return <img src={name} alt="Icon" className={`${className} object-cover rounded-lg`} />;
+  }
+
+  const Icon = (LucideIcons as any)[name] || LucideIcons.Box;
   return <Icon className={className} />;
 };
 
@@ -27,7 +33,7 @@ interface AppSubmission {
   name: string;
   description: string;
   category: string;
-  type: string;
+  type: string | string[];
   developer: string;
   price: string;
   approvalStatus: 'pending' | 'approved' | 'rejected';
@@ -259,6 +265,44 @@ export default function SubmissionManager() {
                         </button>
                       </div>
                       
+                      <div className="space-y-4">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/20">Platform Coverage</label>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          {['Web', 'Mobile', 'Desktop', 'All'].map((p) => {
+                            const platformList = Array.isArray(editForm.type) ? editForm.type : [editForm.type || ''];
+                            const isActive = platformList.includes(p);
+                            return (
+                              <button
+                                key={p}
+                                type="button"
+                                onClick={() => {
+                                  let next = [...platformList];
+                                  if (p === 'All') {
+                                    next = isActive ? [] : ['All'];
+                                  } else {
+                                    next = next.filter(t => t !== 'All');
+                                    if (isActive) next = next.filter(t => t !== p);
+                                    else next.push(p);
+                                  }
+                                  setEditForm({ ...editForm, type: next });
+                                }}
+                                className={`px-4 py-3 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                                  isActive 
+                                    ? 'bg-blue-600 border-blue-500 text-white shadow-lg' 
+                                    : 'bg-white/5 border-white/10 text-white/40 hover:border-white/20'
+                                }`}
+                              >
+                                {p === 'Web' && <Globe className="w-3 h-3" />}
+                                {p === 'Mobile' && <Smartphone className="w-3 h-3" />}
+                                {p === 'Desktop' && <Monitor className="w-3 h-3" />}
+                                {p === 'All' && <Sparkles className="w-3 h-3" />}
+                                {p}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <label className="text-[8px] font-bold uppercase tracking-widest text-white/10">Dynamic Icon Glyph</label>
@@ -359,8 +403,15 @@ export default function SubmissionManager() {
                       }`}>
                         {selectedIds.has(sub.id) && <CheckCircle2 className="w-3 h-3 text-white" />}
                       </div>
-                      <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
-                        {sub.type === 'Web' ? <Monitor className="w-5 h-5 text-blue-400" /> : <Smartphone className="w-5 h-5 text-purple-400" />}
+                      <div className="flex gap-2 p-3 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
+                        {(Array.isArray(sub.type) ? sub.type : [sub.type]).map(t => (
+                          <div key={t} title={t}>
+                            {t === 'Web' && <Globe className="w-5 h-5 text-blue-400" />}
+                            {t === 'Mobile' && <Smartphone className="w-5 h-5 text-purple-400" />}
+                            {t === 'Desktop' && <Monitor className="w-5 h-5 text-teal-400" />}
+                            {t === 'All' && <Sparkles className="w-5 h-5 text-amber-400" />}
+                          </div>
+                        ))}
                       </div>
                       <div>
                         <h4 className="text-xl font-bold">{sub.name}</h4>

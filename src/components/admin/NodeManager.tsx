@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../lib/auth';
+import ImageUploader from '../ui/ImageUploader';
 import { optimizeMetadata, generateIconSuggestion } from '../../lib/gemini';
 import { motion, AnimatePresence } from 'motion/react';
 import * as LucideIcons from 'lucide-react';
@@ -14,6 +15,12 @@ import ConfirmDialog from './ConfirmDialog';
 
 // Helper to render dynamic Lucide icons
 const DynamicIcon = ({ name, className }: { name: string; className?: string }) => {
+  if (!name) return <ImageIcon className={className} />;
+  
+  if (name.startsWith('data:image') || name.startsWith('http')) {
+    return <img src={name} alt="Icon" className={`${className} object-cover rounded-lg`} />;
+  }
+
   const Icon = (LucideIcons as any)[name] || LucideIcons.Box;
   return <Icon className={className} />;
 };
@@ -27,10 +34,10 @@ export default function NodeManager() {
   const [optimizing, setOptimizing] = useState(false);
   const [generatingIcon, setGeneratingIcon] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<any>({
     name: '',
     description: '',
-    type: 'Web',
+    type: ['Web'],
     link: '',
     tags: '',
     status: 'production',
@@ -83,29 +90,18 @@ export default function NodeManager() {
     setGeneratingIcon(false);
   };
 
-  const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 100 * 1024) { // 100KB limit for base64 in Firestore
-      alert("Icon file too large. Please use a file under 100KB.");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setForm(prev => ({ ...prev, icon: reader.result as string }));
-    };
-    reader.readAsDataURL(file);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    if (!form.type || (Array.isArray(form.type) && form.type.length === 0)) {
+      alert("Please select at least one platform node.");
+      return;
+    }
     setLoading(true);
     try {
       const nodeData = {
         ...form,
+        type: Array.isArray(form.type) ? form.type : [form.type],
         tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
         features: form.features.split('\n').map(f => f.trim()).filter(Boolean),
         screenshots: form.screenshots.split('\n').map(s => s.trim()).filter(Boolean),
@@ -114,24 +110,41 @@ export default function NodeManager() {
       };
 
       if (editingId) {
-        await updateDoc(doc(db, 'apps', editingId), nodeData);
+        await updateDoc(doc(db, 'apps', editingId), {
+          ...nodeData,
+          approvalStatus: 'approved', // Ensure edited items remain approved
+          paymentStatus: 'paid'
+        });
         await logActivity('app_updated', { name: form.name, id: editingId });
       } else {
         const docRef = await addDoc(collection(db, 'apps'), {
           ...nodeData,
-          createdAt: serverTimestamp()
+          createdAt: serverTimestamp(),
+          approvalStatus: 'approved', // Admin direct publish is auto-approved
+          paymentStatus: 'paid',
+          status: 'production' // Force production on initial direct publish
         });
         
         await logActivity('app_published', { name: form.name, id: docRef.id });
       }
 
-      setForm({ 
-        name: '', description: '', type: 'Web', link: '', tags: '', status: 'production', version: '1.0.0',
-        developer: 'PymmCore Solutions', price: 'Free', isPymmcoreProduct: true, expectedLaunchDate: '',
-        appStoreLink: '', playStoreLink: '', demoLink: '', features: '', icon: '', screenshots: ''
-      });
-      setIsAdding(false);
-      setEditingId(null);
+      // Success feedback
+      setLoading(false);
+      
+      // The user specifically requested a page refresh/redirect behavior
+      // We will reset the view and provide a slight delay for the Firestore snapshot to catch up
+      setTimeout(() => {
+        setForm({ 
+          name: '', description: '', type: ['Web'], link: '', tags: '', status: 'production', version: '1.0.0',
+          developer: 'PymmCore Solutions', price: 'Free', isPymmcoreProduct: true, expectedLaunchDate: '',
+          appStoreLink: '', playStoreLink: '', demoLink: '', features: '', icon: '', screenshots: ''
+        });
+        setIsAdding(false);
+        setEditingId(null);
+        
+        // Optional: Hard refresh if consistent environment state is needed
+        // window.location.reload(); 
+      }, 1000);
     } catch (error) {
       console.error("Submission failed:", error);
     }
@@ -142,7 +155,7 @@ export default function NodeManager() {
     setForm({
       name: app.name,
       description: app.description,
-      type: app.type,
+      type: Array.isArray(app.type) ? app.type : [app.type || 'Web'],
       link: app.link,
       tags: Array.isArray(app.tags) ? app.tags.join(', ') : '',
       status: app.status,
@@ -228,39 +241,46 @@ export default function NodeManager() {
         >
           <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="space-y-6">
-              <div className="flex flex-col items-center justify-center p-6 rounded-3xl bg-white/5 border border-white/10 relative group/icon">
-                <div className="w-24 h-24 rounded-3xl bg-black/40 border border-white/10 flex items-center justify-center mb-4 overflow-hidden relative">
-                  {form.icon ? (
-                    form.icon.startsWith('data:image') ? (
-                      <img src={form.icon} alt="App Icon" className="w-full h-full object-cover" />
-                    ) : (
-                      <DynamicIcon name={form.icon} className="w-12 h-12 text-blue-400" />
-                    )
-                  ) : (
-                    <ImageIcon className="w-12 h-12 text-white/10" />
-                  )}
-                  <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/icon:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
-                    <Upload className="w-6 h-6 text-white" />
-                    <input type="file" accept="image/*" onChange={handleIconUpload} className="hidden" />
-                  </label>
+              <div className="space-y-4">
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 px-2">Node Iconography</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <ImageUploader 
+                    label="Custom Image Upload"
+                    currentImage={form.icon?.startsWith('data:image') ? form.icon : ''}
+                    onUpload={(base64) => setForm({ ...form, icon: base64 })}
+                    maxSizeMB={2}
+                  />
+                  <div className="space-y-4">
+                    <div className="p-6 rounded-3xl bg-white/5 border border-white/10 flex flex-col items-center justify-center text-center">
+                      <div className="w-16 h-16 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center mb-4 transition-all group-hover:scale-105">
+                        <DynamicIcon name={form.icon} className="w-8 h-8 text-blue-400" />
+                      </div>
+                      <p className="text-[10px] text-white/40 uppercase tracking-widest leading-relaxed">
+                        Recommended: 512x512px<br/>PNG, JPG or SVG
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handleGenerateIcon}
+                        disabled={generatingIcon || !form.name || !form.description}
+                        className="flex-1 py-3 bg-blue-600/10 hover:bg-blue-600 border border-blue-500/20 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-blue-400 hover:text-white"
+                      >
+                        {generatingIcon ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                        AI Icon Suggestion
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex gap-2 w-full">
-                  <button
-                    type="button"
-                    onClick={handleGenerateIcon}
-                    disabled={generatingIcon || !form.name || !form.description}
-                    className="flex-1 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    {generatingIcon ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                    AI Icon
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setForm({ ...form, icon: '' })}
-                    className="px-3 py-2 bg-white/5 hover:bg-red-500/20 border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all text-white/40 hover:text-red-500"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
+
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Vector Glyph ID (Lucide)</label>
+                  <input
+                    value={form.icon?.startsWith('data:image') ? '' : form.icon}
+                    onChange={e => setForm({ ...form, icon: e.target.value })}
+                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition-all text-sm font-mono"
+                    placeholder="e.g. Shield, Cpu, Zap"
+                  />
                 </div>
               </div>
 
@@ -274,19 +294,44 @@ export default function NodeManager() {
                   placeholder="e.g. Quantum Analytics"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Platform</label>
-                  <select
-                    value={form.type}
-                    onChange={e => setForm({ ...form, type: e.target.value })}
-                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition-all text-sm"
-                  >
-                    <option value="Web">Web</option>
-                    <option value="Mobile">Mobile</option>
-                    <option value="Desktop">Desktop</option>
-                  </select>
+              <div className="space-y-4">
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40">Platform Infrastructure</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {['Web', 'Mobile', 'Desktop', 'All'].map((p) => {
+                    const platformList = Array.isArray(form.type) ? form.type : [form.type || ''];
+                    const isActive = platformList.includes(p);
+                    return (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => {
+                          let next = [...platformList];
+                          if (p === 'All') {
+                            next = isActive ? [] : ['All'];
+                          } else {
+                            next = next.filter(t => t !== 'All');
+                            if (isActive) next = next.filter(t => t !== p);
+                            else next.push(p);
+                          }
+                          setForm({ ...form, type: next });
+                        }}
+                        className={`px-3 py-2 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                          isActive 
+                            ? 'bg-blue-600 border-blue-500 text-white shadow-lg' 
+                            : 'bg-white/5 border-white/10 text-white/40 hover:border-white/20'
+                        }`}
+                      >
+                        {p === 'Web' && <Globe className="w-3 h-3" />}
+                        {p === 'Mobile' && <Smartphone className="w-3 h-3" />}
+                        {p === 'Desktop' && <Monitor className="w-3 h-3" />}
+                        {p === 'All' && <Sparkles className="w-3 h-3" />}
+                        {p}
+                      </button>
+                    );
+                  })}
                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Price</label>
                   <input
@@ -297,16 +342,17 @@ export default function NodeManager() {
                     placeholder="Free or $9.99"
                   />
                 </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Developer</label>
+                  <input
+                    required
+                    value={form.developer}
+                    onChange={e => setForm({ ...form, developer: e.target.value })}
+                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition-all text-sm"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Developer</label>
-                <input
-                  required
-                  value={form.developer}
-                  onChange={e => setForm({ ...form, developer: e.target.value })}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition-all text-sm"
-                />
-              </div>
+
               <div className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
                 <input 
                   type="checkbox"
@@ -442,19 +488,7 @@ export default function NodeManager() {
           <div key={app.id} className="p-6 rounded-2xl bg-white/5 border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 group">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-white/5 rounded-xl group-hover:bg-blue-600/20 transition-colors flex items-center justify-center overflow-hidden">
-                {app.icon ? (
-                  app.icon.startsWith('data:image') ? (
-                    <img src={app.icon} alt={app.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <DynamicIcon name={app.icon} className="w-6 h-6 text-blue-400" />
-                  )
-                ) : (
-                  <>
-                    {app.type === 'Web' && <Globe className="w-5 h-5 text-blue-400" />}
-                    {app.type === 'Mobile' && <Smartphone className="w-5 h-5 text-purple-400" />}
-                    {app.type === 'Desktop' && <Monitor className="w-5 h-5 text-pink-400" />}
-                  </>
-                )}
+                <DynamicIcon name={app.icon} className="w-6 h-6 text-blue-400" />
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1">

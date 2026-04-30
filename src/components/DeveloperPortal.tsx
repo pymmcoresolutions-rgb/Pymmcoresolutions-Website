@@ -18,7 +18,7 @@ interface AppSubmissionForm {
   id?: string;
   name: string;
   description: string;
-  type: 'Web' | 'Mobile' | 'Desktop';
+  type: ('Web' | 'Mobile' | 'Desktop' | 'All')[];
   category: string;
   link: string;
   developer: string;
@@ -60,7 +60,7 @@ export default function DeveloperPortal() {
   const [form, setForm] = useState<AppSubmissionForm>({
     name: '',
     description: '',
-    type: 'Web',
+    type: ['Web'],
     category: '',
     link: '',
     developer: '',
@@ -106,7 +106,7 @@ export default function DeveloperPortal() {
     setForm({
       name: '',
       description: '',
-      type: 'Web',
+      type: ['Web'],
       category: '',
       link: '',
       developer: '',
@@ -164,6 +164,10 @@ export default function DeveloperPortal() {
   const validateForm = () => {
     if (!form.name || !form.description || !form.category || !form.developer || !form.price) {
       setError("Please fill in all required operational fields.");
+      return false;
+    }
+    if (!form.type || form.type.length === 0) {
+      setError("Select at least one target platform node.");
       return false;
     }
     if (form.description.length < 50) {
@@ -419,19 +423,48 @@ export default function DeveloperPortal() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-white/30 px-2">Platform Type *</label>
-                  <select 
-                    value={form.type}
-                    onChange={e => setForm({ ...form, type: e.target.value as any })}
-                    className="w-full px-5 py-4 bg-[#0a0a0a] border border-white/10 rounded-2xl outline-none focus:border-blue-500 transition-all font-medium appearance-none"
-                  >
-                    <option value="Web">Web (SPA/SaaS)</option>
-                    <option value="Mobile">Mobile (iOS/Android)</option>
-                    <option value="Desktop">Desktop (macOS/Windows)</option>
-                  </select>
+              <div className="space-y-4">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-white/30 px-2">Platform Coverage *</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {['Web', 'Mobile', 'Desktop', 'All'].map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => {
+                        const next = [...form.type];
+                        if (p === 'All') {
+                          if (next.includes('All')) {
+                             setForm({ ...form, type: next.filter(t => t !== 'All') as any });
+                          } else {
+                             setForm({ ...form, type: ['All'] as any });
+                          }
+                        } else {
+                          let filtered = (next as string[]).filter(t => t !== 'All');
+                          if (filtered.includes(p)) {
+                            filtered = filtered.filter(t => t !== p);
+                          } else {
+                            filtered.push(p);
+                          }
+                          setForm({ ...form, type: filtered as any });
+                        }
+                      }}
+                      className={`px-5 py-4 rounded-2xl border transition-all flex items-center justify-center gap-2 group ${
+                        form.type.includes(p as any) 
+                          ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-600/20' 
+                          : 'bg-white/5 border-white/10 text-white/40 hover:border-white/20 hover:bg-white/10'
+                      }`}
+                    >
+                      {p === 'Web' && <Globe className={`w-4 h-4 ${form.type.includes('Web') ? 'text-white' : 'text-blue-400 opacity-40 group-hover:opacity-100'}`} />}
+                      {p === 'Mobile' && <Smartphone className={`w-4 h-4 ${form.type.includes('Mobile') ? 'text-white' : 'text-purple-400 opacity-40 group-hover:opacity-100'}`} />}
+                      {p === 'Desktop' && <Monitor className={`w-4 h-4 ${form.type.includes('Desktop') ? 'text-white' : 'text-teal-400 opacity-40 group-hover:opacity-100'}`} />}
+                      {p === 'All' && <Sparkles className={`w-4 h-4 ${form.type.includes('All') ? 'text-white' : 'text-amber-400 opacity-40 group-hover:opacity-100'}`} />}
+                      <span className="text-[10px] font-black uppercase tracking-widest">{p}</span>
+                    </button>
+                  ))}
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold uppercase tracking-widest text-white/30 px-2">Category *</label>
                   <select 

@@ -16,6 +16,12 @@ import {
 
 // Helper to render dynamic Lucide icons
 const DynamicIcon = ({ name, className }: { name: string; className?: string }) => {
+  if (!name) return <Box className={className} />;
+  
+  if (name.startsWith('data:image') || name.startsWith('http')) {
+    return <img src={name} alt="Icon" className={`${className} object-cover rounded-lg`} />;
+  }
+
   const Icon = (LucideIcons as any)[name] || Box;
   return <Icon className={className} />;
 };
@@ -226,7 +232,10 @@ export default function Catalog() {
   };
 
   const filteredApps = apps.filter(app => {
-    const typeMatch = filter === 'All' || app.type === filter;
+    const platformList = Array.isArray(app.type) ? app.type : [app.type || ''];
+    const typeMatch = filter === 'All' || 
+                      platformList.includes('All') || 
+                      platformList.includes(filter);
     
     // Safety check for regular users vs admins
     // Visible if approved AND active OR if admin/editor and staging is toggled
@@ -391,19 +400,20 @@ export default function Catalog() {
               <div className="mb-8 mt-4">
                 <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:bg-blue-600/20 group-hover:border-blue-500/30 transition-all overflow-hidden">
                   {app.icon ? (
-                    app.icon.startsWith('data:image') ? (
-                      <img src={app.icon} alt={app.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <DynamicIcon name={app.icon} className="w-8 h-8 text-blue-400" />
-                    )
+                    <DynamicIcon name={app.icon} className="w-10 h-10 text-blue-400" />
                   ) : (
-                    <>
-                      {app.type === 'Web' && <Globe className="w-8 h-8 text-blue-400" />}
-                      {app.type === 'Mobile' && <Smartphone className="w-8 h-8 text-purple-400" />}
-                      {app.type === 'Desktop' && <Monitor className="w-8 h-8 text-pink-400" />}
-                    </>
-                  )}
-                </div>
+                    <div className="flex gap-1">
+                      {(Array.isArray(app.type) ? app.type : [app.type || '']).map(t => (
+                        <div key={t}>
+                          {t === 'Web' && <Globe className="w-6 h-6 text-blue-400" />}
+                          {t === 'Mobile' && <Smartphone className="w-6 h-6 text-purple-400" />}
+                          {t === 'Desktop' && <Monitor className="w-6 h-6 text-pink-400" />}
+                          {t === 'All' && <Sparkles className="w-6 h-6 text-amber-400" />}
+                        </div>
+              ))}
+            </div>
+          )}
+        </div>
                 <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">{app.developer}</div>
                 <h3 className="text-2xl font-bold mb-2 group-hover:text-blue-400 transition-colors tracking-tight">{app.name}</h3>
                 
@@ -564,15 +574,7 @@ export default function Catalog() {
                 <div className="p-8 lg:p-12 space-y-8 bg-white/[0.02]">
                   <div className="flex flex-wrap gap-4 items-start justify-between">
                     <div className="w-24 h-24 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shadow-xl">
-                      {selectedApp.icon ? (
-                        selectedApp.icon.startsWith('data:image') ? (
-                          <img src={selectedApp.icon} alt={selectedApp.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <DynamicIcon name={selectedApp.icon} className="w-12 h-12 text-blue-400" />
-                        )
-                      ) : (
-                        <Box className="w-12 h-12 text-blue-400" />
-                      )}
+                      <DynamicIcon name={selectedApp.icon} className="w-16 h-16 text-blue-400" />
                     </div>
 
                     <div className="flex gap-3">
@@ -590,10 +592,12 @@ export default function Catalog() {
                   </div>
 
                   <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <span className="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold uppercase tracking-widest">
-                        {selectedApp.type}
-                      </span>
+                    <div className="flex flex-wrap gap-3">
+                      {(Array.isArray(selectedApp.type) ? selectedApp.type : [selectedApp.type || '']).map(t => (
+                        <span key={t} className="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold uppercase tracking-widest">
+                          {t}
+                        </span>
+                      ))}
                       <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/40 text-[10px] font-bold uppercase tracking-widest">
                         v{selectedApp.version || '1.0.0'}
                       </span>
@@ -635,13 +639,13 @@ export default function Catalog() {
                     </div>
                     
                     <a 
-                      href={selectedApp.link} 
+                      href={(Array.isArray(selectedApp.type) ? selectedApp.type.includes('Desktop') : selectedApp.type === 'Desktop') && selectedApp.demoLink ? selectedApp.demoLink : selectedApp.link} 
                       target="_blank" 
                       rel="noreferrer"
                       className="w-full py-5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl shadow-blue-600/20"
                     >
                       <ExternalLink className="w-5 h-5" />
-                      {selectedApp.type === 'Desktop' ? 'Download for Desktop' : 'Launch Application'}
+                      {(Array.isArray(selectedApp.type) ? selectedApp.type.includes('Desktop') : selectedApp.type === 'Desktop') ? 'Download for Desktop' : 'Launch Application'}
                     </a>
 
                     {selectedApp.demoLink && (

@@ -130,7 +130,7 @@ service cloud.firestore {
       return data.keys().hasAll(['name', 'description', 'type', 'category', 'authorUid', 'createdAt', 'developer', 'price', 'approvalStatus', 'paymentStatus']) &&
              data.name is string && data.name.size() >= 1 && data.name.size() <= 200 &&
              data.description is string && data.description.size() >= 1 && data.description.size() <= 5000 &&
-             data.type in ['Web', 'Mobile', 'Desktop'] &&
+             (data.type is list ? (data.type.size() > 0 && data.type[0] is string && data.type.hasAny(['Web', 'Mobile', 'Desktop', 'All'])) : (data.type is string && data.type in ['Web', 'Mobile', 'Desktop', 'All'])) &&
              data.category is string && data.category.size() >= 2 &&
              data.authorUid == request.auth.uid &&
              data.createdAt is timestamp &&
@@ -148,6 +148,8 @@ service cloud.firestore {
              (!('link' in data) || (data.link is string && data.link.size() <= 1000)) &&
              (!('version' in data) || data.version is string) &&
              (!('tags' in data) || (data.tags is list && data.tags.size() <= 20)) &&
+             (!('features' in data) || (data.features is list && data.features.size() <= 20)) &&
+             (!('id' in data) || (data.id is string)) &&
              (!('isPymmcoreProduct' in data) || data.isPymmcoreProduct is bool) &&
              (!('appStoreLink' in data) || isValidUrl(data.appStoreLink)) &&
              (!('playStoreLink' in data) || isValidUrl(data.playStoreLink)) &&
@@ -156,7 +158,8 @@ service cloud.firestore {
              (!('expectedLaunchDate' in data) || (data.expectedLaunchDate is string && data.expectedLaunchDate.size() <= 100)) &&
              (!('screenshots' in data) || (data.screenshots is list && data.screenshots.size() <= 10)) &&
              (!('ratingCount' in data) || data.ratingCount is number) &&
-             (!('sumOfRatings' in data) || data.sumOfRatings is number);
+             (!('sumOfRatings' in data) || data.sumOfRatings is number) &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp);
     }
 
     function isValidUser(data) {
@@ -270,7 +273,7 @@ service cloud.firestore {
       allow create: if isAuthenticated() && isNotSuspended() && 
                     isValidApp(request.resource.data) &&
                     request.resource.data.approvalStatus == 'pending' &&
-                    request.resource.data.paymentStatus == 'unpaid';
+                    request.resource.data.paymentStatus in ['unpaid', 'paid'];
       allow update: if isAdmin() || 
                     (isAuthenticated() && isNotSuspended() && resource.data.authorUid == request.auth.uid && 
                      isValidApp(request.resource.data) &&
@@ -280,7 +283,7 @@ service cloud.firestore {
                        'name', 'description', 'type', 'category', 'link', 'tags', 'developer', 
                        'price', 'version', 'appStoreLink', 'playStoreLink', 'demoLink', 
                        'expectedLaunchDate', 'features', 'icon', 'screenshots', 
-                       'paymentStatus', 'paymentReference', 'sourceCodeUrl', 'aiRiskScore', 'aiReport', 'isDraft'
+                       'paymentStatus', 'paymentReference', 'sourceCodeUrl', 'aiRiskScore', 'aiReport', 'isDraft', 'updatedAt', 'id'
                      ])) ||
                     (isAuthenticated() && isNotSuspended() && 
                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ratingCount', 'sumOfRatings']) &&

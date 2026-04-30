@@ -7,7 +7,7 @@
       "properties": {
         "name": { "type": "string", "description": "Application title" },
         "description": { "type": "string", "description": "AI-optimized marketing copy" },
-        "type": { "type": "string", "enum": ["Web", "Mobile", "Desktop"], "description": "Platform type" },
+        "type": { "type": "array", "items": { "type": "string", "enum": ["Web", "Mobile", "Desktop", "All"] }, "description": "Platform environment coverage" },
         "category": { "type": "string", "description": "App category (e.g. Productivity, Finance)" },
         "link": { "type": "string", "format": "uri", "description": "Primary link (Web URL or Desktop Download)" },
         "tags": { "type": "array", "items": { "type": "string" }, "description": "Searchable metadata" },
