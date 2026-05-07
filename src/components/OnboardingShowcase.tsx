@@ -92,33 +92,33 @@ export default function OnboardingShowcase() {
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                 className="max-w-xl"
               >
-                <div className="flex items-center gap-4 mb-5">
-                  <div className="w-10 h-10 rounded-xl bg-teal-600/10 border border-teal-500/20 flex items-center justify-center backdrop-blur-md">
-                    <Icon className="w-5 h-5 text-teal-400" />
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-6 rounded-md bg-teal-600/10 border border-teal-500/20 flex items-center justify-center backdrop-blur-md">
+                    <Icon className="w-3 h-3 text-teal-400" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[9px] font-black uppercase tracking-[0.4em] text-teal-500/60 mb-1">MODULE_0{currentIndex + 1}</span>
-                    <div className="h-px w-12 bg-gradient-to-r from-teal-500/50 to-transparent" />
+                    <span className="text-[6px] font-black uppercase tracking-[0.4em] text-teal-500/60 mb-0.5">M_0{currentIndex + 1}</span>
+                    <div className="h-px w-6 bg-gradient-to-r from-teal-500/50 to-transparent" />
                   </div>
                 </div>
 
-                <h2 className="text-2xl lg:text-3xl font-black tracking-tighter leading-tight uppercase mb-4 text-white drop-shadow-sm">
+                <h2 className="text-base lg:text-lg font-black tracking-tighter leading-tight uppercase mb-2 text-white drop-shadow-sm">
                   {currentSlide.title}
                 </h2>
                 
-                <p className="text-sm text-white/50 leading-relaxed mb-6 font-medium">
+                <p className="text-[10px] text-white/50 leading-relaxed mb-4 font-medium max-w-md">
                   {currentSlide.subtitle}
                 </p>
 
-                <div className="flex flex-wrap items-center gap-6">
+                <div className="flex flex-wrap items-center gap-4">
                   {currentSlide.buttonText && (
                     <motion.a
                       href={currentSlide.buttonLink || '#'}
-                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileHover={{ scale: 1.05, y: -1 }}
                       whileTap={{ scale: 0.95 }}
-                      className="inline-flex items-center gap-3 px-6 py-3 bg-teal-500 text-black font-black uppercase tracking-tighter rounded-xl transition-all shadow-xl shadow-teal-500/20 text-[10px]"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-500 text-black font-black uppercase tracking-tighter rounded-md transition-all shadow-xl shadow-teal-500/20 text-[7px]"
                     >
-                      {currentSlide.buttonText} <ArrowRight className="w-3.5 h-3.5" />
+                      {currentSlide.buttonText} <ArrowRight className="w-2.5 h-2.5" />
                     </motion.a>
                   )}
                   

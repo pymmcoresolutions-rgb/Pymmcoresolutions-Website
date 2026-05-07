@@ -72,8 +72,8 @@ function FeatureSlideshowPreview({ slides }: { slides: OnboardingSlide[] }) {
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-2xl font-black tracking-tight uppercase text-white leading-none">{current.title}</h4>
-              <p className="text-sm text-white/50 leading-relaxed font-medium px-4">{current.subtitle}</p>
+              <h4 className="text-lg font-black tracking-tight uppercase text-white leading-none">{current.title}</h4>
+              <p className="text-xs text-white/50 leading-relaxed font-medium px-4">{current.subtitle}</p>
             </div>
 
             <div className="flex gap-3 pt-2">
