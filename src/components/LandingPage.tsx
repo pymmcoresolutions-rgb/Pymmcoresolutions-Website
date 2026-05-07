@@ -74,12 +74,6 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
             <div className="flex items-center gap-6">
               <button 
                 onClick={onLaunch}
-                className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 hover:text-cyan-400 transition-colors"
-              >
-                View Platform
-              </button>
-              <button 
-                onClick={onLaunch}
                 className="px-6 py-3 bg-cyan-600/10 border border-cyan-500/50 text-cyan-400 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-cyan-600 hover:text-white transition-all rounded-lg"
               >
                 Get Started
