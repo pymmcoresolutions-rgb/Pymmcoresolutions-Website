@@ -84,13 +84,13 @@ export default function Reviews({ minimal = false }: { minimal?: boolean }) {
             <div className="lg:col-span-1">
               <div className="p-8 rounded-[2.5rem] bg-white/5 border border-white/10 sticky top-24">
                 <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5 text-teal-400" /> Share Your Experience
+                  <MessageSquare className="w-5 h-5 text-cyan-400" /> Share Your Experience
                 </h3>
                 
                 {user ? (
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">Rating</label>
+                      <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3 font-mono">Rating // Feed</label>
                       <div className="flex gap-2">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
@@ -108,19 +108,19 @@ export default function Reviews({ minimal = false }: { minimal?: boolean }) {
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">Your Review</label>
+                      <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3 font-mono">Your Review // Protocol</label>
                       <textarea
                         required
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
                         placeholder="What do you think about our website and services?"
-                        className="w-full h-32 bg-black/40 border border-white/10 rounded-2xl px-4 py-3 focus:border-teal-500 outline-none transition-all resize-none text-sm"
+                        className="w-full h-32 bg-black/40 border border-white/10 rounded-2xl px-4 py-3 focus:border-cyan-500 outline-none transition-all resize-none text-sm"
                       />
                     </div>
 
                     <button
                       disabled={loading}
-                      className="w-full py-4 bg-teal-700 hover:bg-teal-600 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-teal-700/20 disabled:opacity-50"
+                      className="w-full py-4 bg-cyan-700 hover:bg-cyan-600 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-700/20 disabled:opacity-50"
                     >
                       {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Post Review'}
                     </button>
@@ -147,7 +147,7 @@ export default function Reviews({ minimal = false }: { minimal?: boolean }) {
           <div className={`${minimal ? '' : 'lg:col-span-2'} space-y-6`}>
             {fetching ? (
               <div className="flex justify-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-cyan-500" />
               </div>
             ) : reviews.length > 0 ? (
               <div className={`grid grid-cols-1 ${minimal ? 'md:grid-cols-1 overflow-x-auto pb-4' : 'md:grid-cols-2'} gap-6`}>
@@ -159,7 +159,7 @@ export default function Reviews({ minimal = false }: { minimal?: boolean }) {
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className={`${minimal ? 'w-full max-w-md' : ''} p-6 rounded-3xl bg-white/5 border border-white/10 flex flex-col h-full relative group hover:border-teal-500/30 transition-all`}
+                      className={`${minimal ? 'w-full max-w-md' : ''} p-6 rounded-3xl bg-white/5 border border-white/10 flex flex-col h-full relative group hover:border-cyan-500/30 transition-all`}
                     >
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
@@ -188,7 +188,7 @@ export default function Reviews({ minimal = false }: { minimal?: boolean }) {
                       </div>
                       
                       <p className="text-sm text-white/60 leading-relaxed flex-1 italic relative pt-4">
-                        <Quote className="absolute top-0 left-0 w-3 h-3 text-teal-500 opacity-40" />
+                        <Quote className="absolute top-0 left-0 w-3 h-3 text-cyan-500 opacity-40" />
                         "{review.comment}"
                       </p>
 

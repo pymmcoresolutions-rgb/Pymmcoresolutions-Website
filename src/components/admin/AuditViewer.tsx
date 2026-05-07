@@ -36,7 +36,7 @@ export default function AuditViewer() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <h3 className="text-xl font-bold flex items-center gap-2">
-          <History className="w-5 h-5 text-pink-400" /> System Audit Logs
+          <History className="w-5 h-5 text-pink-400" /> Platform Activity Logs
         </h3>
         <div className="relative w-full md:w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />

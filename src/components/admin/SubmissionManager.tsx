@@ -4,13 +4,14 @@ import {
   doc, updateDoc, deleteDoc, serverTimestamp 
 } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { handleFirestoreError, OperationType } from '../../lib/firestore-errors';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   CheckCircle2, XCircle, Clock, Search, 
   Filter, Edit3, Trash2, ExternalLink, 
   MessageSquare, Save, AlertCircle, Loader2,
   Layout, Smartphone, Monitor, ShieldCheck,
-  ImageIcon, Sparkles, Box, Globe
+  ImageIcon, Sparkles, Box, Globe, Plus
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import ImageUploader from '../ui/ImageUploader';
@@ -47,6 +48,7 @@ interface AppSubmission {
   sourceCodeUrl?: string;
   icon?: string;
   screenshots?: string[];
+  features?: string[];
 }
 
 export default function SubmissionManager() {
@@ -89,7 +91,7 @@ export default function SubmissionManager() {
         updateDoc(doc(db, 'apps', id), {
           approvalStatus: status,
           status: status === 'approved' ? 'production' : 'staging',
-          adminNotes: status === 'approved' ? 'Bulk approved via Matrix Protocol.' : 'Bulk rejected. Review guidelines.',
+          adminNotes: status === 'approved' ? 'Bulk approved and synchronized with production.' : 'Bulk rejected. Review guidelines.',
           updatedAt: serverTimestamp()
         })
       );
@@ -97,7 +99,7 @@ export default function SubmissionManager() {
       await logActivity('bulk_moderation_action', { count: selectedIds.size, status });
       setSelectedIds(new Set());
     } catch (err) {
-      console.error("Bulk action failed:", err);
+      handleFirestoreError(err, OperationType.UPDATE, `apps/bulk`);
     } finally {
       setIsProcessing(false);
     }
@@ -115,7 +117,7 @@ export default function SubmissionManager() {
       await logActivity('app_submission_reviewed', { appId: id, status, notes });
       setEditingId(null);
     } catch (err) {
-      console.error("Status update failed:", err);
+      handleFirestoreError(err, OperationType.UPDATE, `apps/${id}`);
     } finally {
       setIsProcessing(false);
     }
@@ -128,12 +130,12 @@ export default function SubmissionManager() {
       await updateDoc(doc(db, 'apps', id), {
         status: 'staging',
         approvalStatus: 'rejected',
-        adminNotes: 'Manually decommissioned by administration due to protocol violation.',
+        adminNotes: 'Manually taken offline by administration due to terms of service violation.',
         updatedAt: serverTimestamp()
       });
       await logActivity('app_decommissioned', { appId: id });
     } catch (err) {
-      console.error("Decommission failed:", err);
+      handleFirestoreError(err, OperationType.UPDATE, `apps/${id}`);
     } finally {
       setIsProcessing(false);
     }
@@ -149,7 +151,7 @@ export default function SubmissionManager() {
       await logActivity('app_submission_refined', { appId: id });
       setEditingId(null);
     } catch (err) {
-      console.error("Save failed:", err);
+      handleFirestoreError(err, OperationType.UPDATE, `apps/${id}`);
     } finally {
       setIsProcessing(false);
     }
@@ -185,8 +187,8 @@ export default function SubmissionManager() {
         <div className="flex items-center gap-4">
           <ShieldCheck className="w-6 h-6 text-blue-400" />
           <div>
-            <h3 className="text-xl font-bold">App Submission Matrix</h3>
-            <p className="text-xs text-white/40 uppercase tracking-widest">Human Review Protocol Active</p>
+            <h3 className="text-xl font-bold">Application Review Dashboard</h3>
+            <p className="text-xs text-white/40 uppercase tracking-widest">Manual Review Pending</p>
           </div>
         </div>
         
@@ -261,7 +263,7 @@ export default function SubmissionManager() {
                           className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg text-[10px] font-black uppercase text-blue-400 hover:bg-blue-500/20 transition-all disabled:opacity-50"
                         >
                           {isSuggestingIcon ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                          AI Icon Intelligence
+                          AI Icon Suggestion
                         </button>
                       </div>
                       
@@ -305,7 +307,7 @@ export default function SubmissionManager() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <label className="text-[8px] font-bold uppercase tracking-widest text-white/10">Dynamic Icon Glyph</label>
+                          <label className="text-[8px] font-bold uppercase tracking-widest text-white/10">Application Icon</label>
                           <div className="relative">
                             <input 
                               value={editForm.icon}
@@ -339,6 +341,64 @@ export default function SubmissionManager() {
                             onChange={e => setEditForm({...editForm, name: e.target.value})}
                             className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl outline-none focus:border-blue-500 transition-all font-medium"
                           />
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/20">Key Features</label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {(Array.isArray(editForm.features) ? editForm.features : []).map((f, idx) => (
+                            <div key={idx} className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl group/feat">
+                              <div className="flex items-center gap-3">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                                <span className="text-xs text-white/70 line-clamp-1">{f}</span>
+                              </div>
+                              <button 
+                                type="button" 
+                                onClick={() => setEditForm(prev => ({ ...prev, features: (prev.features || []).filter((_, i) => i !== idx) }))}
+                                className="text-white/20 hover:text-red-500 transition-colors"
+                              >
+                                <XCircle className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex gap-2">
+                          <input 
+                            id="review-feature-input"
+                            className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl outline-none focus:border-blue-500 transition-all text-sm"
+                            placeholder="Add core capability..."
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const val = (e.target as HTMLInputElement).value.trim();
+                                if (val) {
+                                  const current = Array.isArray(editForm.features) ? editForm.features : [];
+                                  if (!current.includes(val)) {
+                                    setEditForm({ ...editForm, features: [...current, val] });
+                                    (e.target as HTMLInputElement).value = '';
+                                  }
+                                }
+                              }
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const input = document.getElementById('review-feature-input') as HTMLInputElement;
+                              const val = input.value.trim();
+                              if (val) {
+                                const current = Array.isArray(editForm.features) ? editForm.features : [];
+                                if (!current.includes(val)) {
+                                  setEditForm({ ...editForm, features: [...current, val] });
+                                  input.value = '';
+                                }
+                              }
+                            }}
+                            className="p-3 bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/20 rounded-xl transition-all"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
 
@@ -456,7 +516,7 @@ export default function SubmissionManager() {
                             }`}>
                               <ShieldCheck className="w-4 h-4" />
                             </div>
-                            <h5 className="text-[10px] font-black uppercase tracking-[0.2em]">Matrix AI Auditor Assessment</h5>
+                            <h5 className="text-[10px] font-black uppercase tracking-[0.2em]">AI Safety Assessment</h5>
                           </div>
                           <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
                             sub.aiRiskScore === 'Safe' ? 'bg-green-600 text-white' :
@@ -484,7 +544,7 @@ export default function SubmissionManager() {
 
                     {sub.adminNotes && (
                       <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/10 text-[10px] text-red-500/80 leading-relaxed">
-                        <span className="font-black uppercase mr-2 tracking-widest">Protocol Signal:</span>
+                        <span className="font-black uppercase mr-2 tracking-widest">Admin Feedback:</span>
                         {sub.adminNotes}
                       </div>
                     )}

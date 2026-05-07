@@ -26,21 +26,21 @@ export default function SystemHealthIndicator() {
             className="absolute inset-0 bg-teal-500 rounded-full blur-[4px]"
           />
         </div>
-        <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">Network Nominal</span>
+        <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">Network Stable</span>
       </div>
 
       <div className="w-px h-3 bg-white/10" />
 
       <div className="flex items-center gap-2">
         <ShieldCheck className="w-3 h-3 text-blue-500" />
-        <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">Shield Integrity 100%</span>
+        <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">Security Verified</span>
       </div>
 
       <div className="w-px h-3 bg-white/10" />
 
       <div className="flex items-center gap-2">
         <Zap className="w-3 h-3 text-amber-500" />
-        <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">Grid Active</span>
+        <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">System Online</span>
       </div>
     </div>
   );

@@ -45,7 +45,7 @@ export default function WaitlistPortal() {
       
       if (!snap.empty) {
         setStatus('error');
-        setMessage('Your identity is already registered in the protocol.');
+        setMessage('You are already registered.');
         setLoading(false);
         return;
       }
@@ -59,13 +59,13 @@ export default function WaitlistPortal() {
       });
 
       setStatus('success');
-      setMessage('Identity authenticated. You are now on the official waitlist.');
+      setMessage('Success! You are now on our official waitlist.');
       setEmail('');
       setName('');
     } catch (error) {
       console.error("Waitlist registration failed:", error);
       setStatus('error');
-      setMessage('Sync failure. Please check your credentials and try again.');
+      setMessage('Registration failed. Please check your information and try again.');
     }
     setLoading(false);
   };
@@ -78,9 +78,9 @@ export default function WaitlistPortal() {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold uppercase tracking-widest">
             <Clock className="w-3 h-3" /> Coming Soon
           </div>
-          <h2 className="text-4xl font-bold tracking-tight">Vanguard Engineering</h2>
+          <h2 className="text-4xl font-bold tracking-tight">Upcoming Projects</h2>
           <p className="text-white/40 text-sm leading-relaxed">
-            Preview the next generation of mobile and web infrastructure currently in our deployment pipeline.
+            Preview the next generation of mobile and web applications currently in development.
           </p>
         </div>
 
@@ -166,7 +166,7 @@ export default function WaitlistPortal() {
                   <div className="space-y-4">
                     <div className="inline-flex items-center gap-2 text-teal-400">
                       <Info className="w-5 h-5" />
-                      <span className="text-[10px] font-bold uppercase tracking-widest">Protocol Intelligence</span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest">Project Details</span>
                     </div>
                     <h3 className="text-5xl font-bold tracking-tighter">{selectedApp.name}</h3>
                     <p className="text-white/60 leading-relaxed italic">"{selectedApp.description}"</p>
@@ -174,15 +174,15 @@ export default function WaitlistPortal() {
 
                   <div className="grid grid-cols-2 gap-8">
                     <div className="space-y-2">
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Market Category</div>
-                      <div className="text-sm font-bold text-white/80">{selectedApp.type} Infrastructure</div>
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Category</div>
+                      <div className="text-sm font-bold text-white/80">{selectedApp.type} Solution</div>
                     </div>
                     <div className="space-y-2">
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Current Readiness</div>
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Development Phase</div>
                       <div className="text-sm font-bold text-teal-400 uppercase">{selectedApp.status}</div>
                     </div>
                     <div className="space-y-2">
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Operational Target</div>
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Target Launch</div>
                       <div className="text-sm font-bold text-blue-400">{selectedApp.expectedLaunchDate || 'TBD'}</div>
                     </div>
                     <div className="space-y-2">
@@ -194,7 +194,7 @@ export default function WaitlistPortal() {
 
                 <div className="space-y-8 p-8 rounded-[2rem] bg-white/5 border border-white/10">
                    <div className="text-center space-y-2">
-                      <h4 className="text-xl font-bold">Secure Priority Access</h4>
+                      <h4 className="text-xl font-bold">Priority Early Access</h4>
                       <p className="text-xs text-white/40">Register for early access to {selectedApp.name}</p>
                    </div>
                    {/* Inline form or just scroll to main form below */}
@@ -205,7 +205,7 @@ export default function WaitlistPortal() {
                     }}
                     className="w-full py-4 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-2xl transition-all"
                    >
-                     Initialize Registration
+                     Start Registration
                    </button>
                 </div>
               </div>
@@ -220,14 +220,14 @@ export default function WaitlistPortal() {
         
         <div className="relative z-10 text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-[10px] font-bold uppercase tracking-widest">
-            <Sparkles className="w-3 h-3" /> Priority Access Protocol
+            <Sparkles className="w-3 h-3" /> Priority Early Access
           </div>
           
           <h2 className="text-3xl font-bold tracking-tight">
-            {selectedApp ? `Register for ${selectedApp.name}` : `Access the Future of Mobile Infrastructure`}
+            {selectedApp ? `Register for ${selectedApp.name}` : `Access the Future of Mobile Applications`}
           </h2>
           <p className="text-sm text-white/40 leading-relaxed max-w-md mx-auto">
-            Register your administrative identity to receive early priority access and mission-critical updates regarding our upcoming releases.
+            Register to receive early access and important updates regarding our upcoming releases.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4 text-left">
@@ -238,7 +238,7 @@ export default function WaitlistPortal() {
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  placeholder="Full Name (Opt)"
+                  placeholder="Full Name (Optional)"
                   className="w-full bg-black/40 border border-white/10 rounded-2xl pl-12 pr-4 py-4 focus:border-teal-500 outline-none transition-all text-sm text-white"
                 />
               </div>
@@ -249,7 +249,7 @@ export default function WaitlistPortal() {
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  placeholder="Operational Email"
+                  placeholder="Email Address"
                   className="w-full bg-black/40 border border-white/10 rounded-2xl pl-12 pr-4 py-4 focus:border-teal-500 outline-none transition-all text-sm text-white"
                 />
               </div>
@@ -265,7 +265,7 @@ export default function WaitlistPortal() {
               >
                 {subscribed && <CheckCircle2 className="w-3 h-3" />}
               </button>
-              <span className="text-xs text-white/40 select-none">Subscribe to mission-critical product updates</span>
+              <span className="text-xs text-white/40 select-none">Subscribe to important product updates</span>
             </div>
 
             <button
@@ -273,7 +273,7 @@ export default function WaitlistPortal() {
               className="w-full py-4 bg-teal-700 hover:bg-teal-600 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-3 shadow-lg shadow-teal-900/40 disabled:opacity-50"
             >
               {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Send className="w-5 h-5" />}
-              Authenticate Identity
+              Join Waitlist
             </button>
           </form>
 

@@ -21,8 +21,8 @@ export default function About() {
       icon: Rocket,
       title: "App Development",
       description: "Specializing in high-performance applications for Mobile (iOS/Android), Web, and Desktop environments.",
-      color: "text-blue-400",
-      bg: "bg-blue-400/10"
+      color: "text-cyan-400",
+      bg: "bg-cyan-400/10"
     },
     {
       icon: Eye,
@@ -49,7 +49,7 @@ export default function About() {
         className="text-center mb-24"
       >
         <h1 className="text-5xl lg:text-7xl font-bold tracking-tighter mb-6">
-          About <span className="text-blue-500">Pymmcore Solutions</span>
+          About <span className="text-cyan-500 underline decoration-cyan-500/30 decoration-8 underline-offset-8">Pymmcore Solutions</span>
         </h1>
         <p className="text-xl text-white/40 max-w-2xl mx-auto leading-relaxed">
           Pioneering the future of application discovery and deployment through a curated, high-performance marketplace.
@@ -67,7 +67,7 @@ export default function About() {
             <Target className="w-32 h-32" />
           </div>
           <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
-            <Target className="w-8 h-8 text-blue-500" /> Our Mission
+            <Target className="w-8 h-8 text-cyan-500" /> Our Mission
           </h2>
           <p className="text-lg text-white/60 leading-relaxed">
             {settings?.aboutMission || "Our mission is to deliver ready-to-use, premium applications across mobile, web, and desktop platforms. We bridge the gap between complex infrastructure and end-user utility, ensuring that every piece of software we host is polished, secure, and ready for immediate impact."}
@@ -102,9 +102,10 @@ export default function About() {
             <motion.div
               key={idx}
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
-              className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-blue-500/30 transition-all group"
+              className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-cyan-500/30 transition-all group"
             >
               <div className={`w-14 h-14 rounded-2xl ${item.bg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
                 <item.icon className={`w-7 h-7 ${item.color}`} />
@@ -125,24 +126,24 @@ export default function About() {
             viewport={{ once: true }}
             className="lg:col-span-2"
           >
-            <div className="relative aspect-square rounded-[4rem] bg-gradient-to-br from-blue-600 to-purple-600 p-1 overflow-hidden shadow-2xl shadow-blue-600/20">
+            <div className="relative aspect-square rounded-[4rem] bg-gradient-to-br from-cyan-600 to-purple-600 p-1 overflow-hidden shadow-2xl shadow-cyan-600/20">
               <div className="w-full h-full bg-black rounded-[3.8rem] flex items-center justify-center relative overflow-hidden group">
                   {settings?.founderPhotoUrl ? (
                     <img src={settings.founderPhotoUrl} alt={settings.founderName} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" referrerPolicy="no-referrer" />
                   ) : (
                     <User className="w-32 h-32 text-white/10 group-hover:scale-110 transition-transform duration-500" />
                   )}
-                <div className="absolute inset-0 bg-gradient-to-t from-blue-600/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-cyan-600/20 to-transparent" />
                 <div className="absolute bottom-8 left-8 right-8">
                     <div className="text-2xl font-bold mb-1">{settings?.founderName || "Amos Adewale Adedayo"}</div>
-                    <div className="text-sm text-blue-400 font-bold uppercase tracking-widest">{settings?.founderTitle || "Founder & Visionary"}</div>
+                    <div className="text-sm text-cyan-400 font-bold uppercase tracking-widest">{settings?.founderTitle || "Founder & Visionary"}</div>
                 </div>
               </div>
             </div>
           </motion.div>
 
             <div className="lg:col-span-3 space-y-6">
-              <h2 className="text-4xl font-bold tracking-tighter mb-8">The Heart Behind <span className="text-blue-500">Innovation</span></h2>
+              <h2 className="text-4xl font-bold tracking-tighter mb-8">The Heart Behind <span className="text-cyan-500">Innovation</span></h2>
               <div className="space-y-6 text-lg text-white/60 leading-relaxed">
                 {settings?.founderBio ? (
                   <div className="whitespace-pre-wrap">{settings.founderBio}</div>
@@ -175,10 +176,11 @@ export default function About() {
       {/* Background/History */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="p-12 rounded-[3rem] bg-gradient-to-br from-blue-600/20 to-purple-600/10 border border-white/10"
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="p-12 rounded-[3rem] bg-gradient-to-br from-cyan-600/20 to-purple-600/10 border border-white/10"
       >
-        <div className="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-blue-600/40">
+        <div className="w-20 h-20 bg-cyan-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-cyan-600/40">
           <Award className="w-10 h-10 text-white" />
         </div>
         <h2 className="text-3xl font-bold mb-8 text-center">Our Background</h2>
@@ -201,7 +203,7 @@ export default function About() {
                     that enhance productivity, streamline workflows, and unlock new possibilities across diverse fields.
                   </p>
                   <p>
-                    At the core of our innovation is <span className="text-blue-400 font-bold">MAAY (My Algorithmic Assistant You)</span> — an advanced AI assistant designed to support 
+                    At the core of our innovation is <span className="text-cyan-400 font-bold">MAAY (My Algorithmic Assistant You)</span> — an advanced AI assistant designed to support 
                     both professionals and everyday users. MAAY combines intelligence, adaptability, and a rich suite of features to 
                     simplify tasks, provide actionable insights, and deliver exceptional value in real time.
                   </p>

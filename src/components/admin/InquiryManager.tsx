@@ -26,7 +26,7 @@ export default function InquiryManager() {
       setError(null);
     }, (err) => {
       console.error("InquiryManager subscription error:", err);
-      setError("Inquiries sync failure: Access denied.");
+      setError("Messages update failed.");
     });
     return () => unsubscribe();
   }, [loading, isAdmin]);
@@ -77,7 +77,7 @@ export default function InquiryManager() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-bold flex items-center gap-2">
-          <Mail className="w-5 h-5 text-blue-400" /> User Inquiries
+          <Mail className="w-5 h-5 text-blue-400" /> Support Requests
         </h3>
         <span className="text-xs text-white/40 font-bold uppercase tracking-widest">
           {messages.length} Total Messages

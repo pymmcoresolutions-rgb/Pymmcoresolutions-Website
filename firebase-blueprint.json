@@ -170,9 +170,9 @@
       },
       "required": ["url", "opacity", "blur", "grayscale", "active", "createdAt"]
     },
-    "OnboardingSlide": {
-      "title": "Onboarding Slide",
-      "description": "A slide for the homepage onboarding showcase.",
+    "KeyFeature": {
+      "title": "Key Feature",
+      "description": "A highlight feature displayed on the homepage showcase.",
       "type": "object",
       "properties": {
         "title": { "type": "string", "description": "Primary heading" },
@@ -183,7 +183,7 @@
         "buttonText": { "type": "string", "description": "Optional CTA button text" },
         "buttonLink": { "type": "string", "description": "Optional CTA button destination" },
         "active": { "type": "boolean", "description": "Visibility toggle" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "createdAt": { "type": "string", "format": "date-time", "description": "System-generated creation date" }
       },
       "required": ["title", "subtitle", "order", "active", "createdAt"]
     }
@@ -201,6 +201,6 @@
     "/waitlist/{entryId}": { "schema": "WaitlistEntry", "description": "Marketing leads and waitlisted users." },
     "/wishlists/{wishId}": { "schema": "WishlistItem", "description": "User's collection of saved apps." },
     "/background_assets/{assetId}": { "schema": "BackgroundAsset", "description": "Environment branding elements." },
-    "/onboarding_slides/{slideId}": { "schema": "OnboardingSlide", "description": "Homepage onboarding sequence." }
+    "/key_features/{featureId}": { "schema": "KeyFeature", "description": "Homepage highlight sequence." }
   }
 }

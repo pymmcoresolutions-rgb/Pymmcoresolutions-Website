@@ -31,11 +31,12 @@ export default function OnboardingShowcase() {
   const [slides, setSlides] = useState<OnboardingSlide[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const q = query(
-      collection(db, 'onboarding_slides'), 
+      collection(db, 'key_features'), 
       where('active', '==', true),
       orderBy('order', 'asc')
     );
@@ -48,12 +49,12 @@ export default function OnboardingShowcase() {
   }, []);
 
   useEffect(() => {
-    if (slides.length <= 1) return;
+    if (slides.length <= 1 || isHovered) return;
     const timer = setInterval(() => {
       setCurrentIndex(prev => (prev + 1) % slides.length);
-    }, 8000);
+    }, 6000);
     return () => clearInterval(timer);
-  }, [slides.length]);
+  }, [slides.length, isHovered]);
 
   const handleNext = () => {
     setCurrentIndex(prev => (prev + 1) % slides.length);
@@ -69,121 +70,159 @@ export default function OnboardingShowcase() {
   const Icon = IconMap[currentSlide.icon] || Sparkles;
 
   return (
-    <section className="relative w-full max-w-7xl mx-auto px-6 mb-24 mt-8">
-      <div className="relative h-[500px] lg:h-[600px] rounded-[3rem] overflow-hidden group">
-        {/* Background Visual Layer */}
-        <div className="absolute inset-0 bg-[#0a0a0a] border border-white/5">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentIndex + '-bg'}
-              initial={{ opacity: 0, scale: 1.1 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.05 }}
-              transition={{ duration: 0.8 }}
-              className="absolute inset-0"
-            >
-              {currentSlide.imageUrl ? (
-                <>
-                  <img 
-                    src={currentSlide.imageUrl} 
-                    alt="" 
-                    className="w-full h-full object-cover opacity-40 blur-[2px]"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent" />
-                </>
-              ) : (
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-teal-500/10 via-transparent to-transparent" />
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+    <section 
+      className="relative w-full max-w-7xl mx-auto px-6 mb-24 mt-8"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className="relative min-h-[400px] lg:h-[480px] rounded-[3rem] overflow-hidden group bg-[#0a0a0a] border border-white/5">
+        {/* Decorative Grid Overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_80%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(20,184,166,0.05),transparent_50%)]" />
 
-        {/* Content Layer */}
-        <div className="relative h-full z-10 flex flex-col justify-end p-8 lg:p-20">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentIndex}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5, ease: "circOut" }}
-              className="max-w-3xl"
-            >
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-16 h-16 rounded-2xl bg-teal-600/10 border border-teal-500/20 flex items-center justify-center backdrop-blur-md">
-                  <Icon className="w-8 h-8 text-teal-400" />
+        <div className="relative h-full z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-0">
+          {/* Left: Content Layer */}
+          <div className="flex flex-col justify-center p-8 lg:p-12">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentIndex}
+                initial={{ opacity: 0, x: -20, filter: 'blur(10px)' }}
+                animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, x: 20, filter: 'blur(10px)' }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="max-w-xl"
+              >
+                <div className="flex items-center gap-4 mb-5">
+                  <div className="w-10 h-10 rounded-xl bg-teal-600/10 border border-teal-500/20 flex items-center justify-center backdrop-blur-md">
+                    <Icon className="w-5 h-5 text-teal-400" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[9px] font-black uppercase tracking-[0.4em] text-teal-500/60 mb-1">MODULE_0{currentIndex + 1}</span>
+                    <div className="h-px w-12 bg-gradient-to-r from-teal-500/50 to-transparent" />
+                  </div>
                 </div>
-                <div className="h-px flex-1 bg-gradient-to-r from-teal-500/20 to-transparent" />
-              </div>
 
-              <h2 className="text-4xl lg:text-7xl font-bold tracking-tighter leading-[0.9] mb-8 lg:mb-10">
-                {currentSlide.title}
-              </h2>
-              
-              <p className="text-xl lg:text-2xl text-white/40 leading-relaxed mb-12 max-w-xl">
-                {currentSlide.subtitle}
-              </p>
+                <h2 className="text-2xl lg:text-3xl font-black tracking-tighter leading-tight uppercase mb-4 text-white drop-shadow-sm">
+                  {currentSlide.title}
+                </h2>
+                
+                <p className="text-sm text-white/50 leading-relaxed mb-6 font-medium">
+                  {currentSlide.subtitle}
+                </p>
 
-              {currentSlide.buttonText && (
-                <div className="flex items-center gap-6">
-                  <motion.a
-                    href={currentSlide.buttonLink || '#'}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="inline-flex items-center gap-3 px-10 py-5 bg-white text-black font-bold rounded-2xl transition-all shadow-xl shadow-white/5"
-                  >
-                    {currentSlide.buttonText} <ExternalLink className="w-5 h-5" />
-                  </motion.a>
+                <div className="flex flex-wrap items-center gap-6">
+                  {currentSlide.buttonText && (
+                    <motion.a
+                      href={currentSlide.buttonLink || '#'}
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="inline-flex items-center gap-3 px-6 py-3 bg-teal-500 text-black font-black uppercase tracking-tighter rounded-xl transition-all shadow-xl shadow-teal-500/20 text-[10px]"
+                    >
+                      {currentSlide.buttonText} <ArrowRight className="w-3.5 h-3.5" />
+                    </motion.a>
+                  )}
                   
-                  <div className="flex gap-2">
+                  {/* Desktop Indicators */}
+                  <div className="hidden lg:flex items-center gap-2">
                     {slides.map((_, i) => (
                       <button
                         key={i}
                         onClick={() => setCurrentIndex(i)}
-                        className={`h-1.5 rounded-full transition-all ${
-                          currentIndex === i ? 'w-8 bg-teal-500' : 'w-2 bg-white/10'
-                        }`}
-                      />
+                        className="group relative h-8 w-1.5 flex items-center justify-center cursor-pointer"
+                        aria-label={`Go to slide ${i + 1}`}
+                      >
+                        <div className={`w-0.5 rounded-full transition-all duration-500 ${
+                          currentIndex === i ? 'h-6 bg-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.5)]' : 'h-3 bg-white/10 group-hover:bg-white/30'
+                        }`} />
+                      </button>
                     ))}
                   </div>
                 </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Right: Visual Preview Layer */}
+          <div className="relative min-h-[300px] lg:h-full bg-white/[0.02] border-l border-white/5 overflow-hidden">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentIndex + '-visual'}
+                initial={{ opacity: 0, scale: 1.1, filter: 'blur(20px)' }}
+                animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, scale: 0.9, filter: 'blur(20px)' }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute inset-0 flex items-center justify-center p-8 lg:p-16"
+              >
+                {currentSlide.imageUrl ? (
+                  <div className="relative w-full h-full rounded-[2rem] overflow-hidden border border-white/10 group/img shadow-2xl">
+                    <img 
+                      src={currentSlide.imageUrl} 
+                      alt="" 
+                      className="w-full h-full object-cover transition-transform duration-1000 group-hover/img:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  </div>
+                ) : (
+                  <div className="w-full h-fit py-16 px-10 rounded-[2.5rem] bg-white/[0.03] backdrop-blur-2xl border border-white/10 shadow-2xl flex flex-col items-center text-center space-y-6 relative group/box">
+                    <div className="absolute -inset-[1px] bg-gradient-to-r from-teal-500/20 to-blue-500/20 rounded-[2.5rem] -z-10 opacity-30 group-hover/box:opacity-60 transition-opacity" />
+                    <div className="w-20 h-20 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(20,184,166,0.1)]">
+                      <Icon className="w-10 h-10 text-teal-400" />
+                    </div>
+                    <div className="space-y-4">
+                      <h4 className="text-2xl font-black tracking-tight uppercase text-white leading-none">{currentSlide.title}</h4>
+                      <p className="text-sm text-white/40 leading-relaxed font-medium px-4">System Visualization Matrix Active</p>
+                    </div>
+                    <div className="absolute bottom-6 right-6 text-[8px] font-black tracking-widest text-teal-500/40 uppercase">LIVE_PREVIEW</div>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Global Progress Bar */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/5 overflow-hidden z-30">
+          {slides.length > 1 && (
+            <motion.div
+              key={currentIndex + '-progress'}
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: isHovered ? (isHovered ? 0 : 0) : 1 }}
+              transition={{ duration: isHovered ? 0 : 6, ease: "linear" }}
+              className="absolute inset-0 bg-teal-500 origin-left"
+            />
+          )}
         </div>
 
         {/* Navigation Arrows */}
-        <div className="absolute top-1/2 -translate-y-1/2 left-8 right-8 flex justify-between z-20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+        <div className="absolute bottom-8 right-8 flex gap-3 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-            className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:scale-110 pointer-events-auto transition-all"
+            className="w-12 h-12 rounded-2xl bg-black/60 backdrop-blur-xl border border-white/10 flex items-center justify-center hover:bg-teal-500 hover:border-teal-400 group/btn transition-all"
           >
-            <ArrowLeft className="w-6 h-6" />
+            <ArrowLeft className="w-5 h-5 text-white group-hover/btn:text-black transition-colors" />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); handleNext(); }}
-            className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:scale-110 pointer-events-auto transition-all"
+            className="w-12 h-12 rounded-2xl bg-black/60 backdrop-blur-xl border border-white/10 flex items-center justify-center hover:bg-teal-500 hover:border-teal-400 group/btn transition-all"
           >
-            <ArrowRight className="w-6 h-6" />
+            <ArrowRight className="w-5 h-5 text-white group-hover/btn:text-black transition-colors" />
           </button>
         </div>
-
-        {/* Decorative Grid Overlay */}
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03] pointer-events-none" />
       </div>
 
-      {/* Slide Indicators Mobile */}
-      <div className="flex lg:hidden justify-center gap-3 mt-8">
+      {/* Mobile Indicators */}
+      <div className="flex lg:hidden justify-center gap-3 mt-6">
         {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => setCurrentIndex(i)}
-            className={`h-1.5 rounded-full transition-all ${
-              currentIndex === i ? 'w-12 bg-teal-500' : 'w-3 bg-white/10'
+            className={`h-1.5 rounded-full transition-all duration-500 ${
+              currentIndex === i ? 'w-10 bg-teal-500' : 'w-2 bg-white/10'
             }`}
           />
         ))}
       </div>
     </section>
+
   );
 }

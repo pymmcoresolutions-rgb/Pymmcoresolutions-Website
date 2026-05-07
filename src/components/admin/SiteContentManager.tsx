@@ -8,8 +8,9 @@ import {
   Layout, Save, Loader2, CheckCircle2, 
   Info, Target, Eye, User, Image as ImageIcon,
   MessageSquare, FileText, Upload, Trash2, X,
-  Maximize2, MousePointer2
+  Maximize2, MousePointer2, Sparkles
 } from 'lucide-react';
+import KeyFeaturesManager from './KeyFeaturesManager';
 
 // Helper for image cropping
 const getCroppedImg = async (imageSrc: string, pixelCrop: any, rotation = 0): Promise<string> => {
@@ -393,6 +394,20 @@ export default function SiteContentManager() {
           </button>
         </div>
       </form>
+
+      {/* Global Key Features */}
+      <section className="space-y-6 border-t border-white/10 pt-12">
+        <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+          <Sparkles className="w-5 h-5 text-teal-400" />
+          <div>
+            <h4 className="text-lg font-bold">Landing Page Key Features</h4>
+            <p className="text-xs text-white/40">Manage the highlights and capabilities displayed on the main showcase.</p>
+          </div>
+        </div>
+        <div className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-8">
+          <KeyFeaturesManager />
+        </div>
+      </section>
 
       {/* Photo Adjustment Modal */}
       <AnimatePresence>

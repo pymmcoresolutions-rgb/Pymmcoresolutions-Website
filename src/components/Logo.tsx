@@ -52,7 +52,7 @@ export default function Logo({ className = '', showText = true, variant = 'light
         />
         {showText && (
           <div className="flex flex-col z-10">
-            <h1 className={`text-xl md:text-3xl font-bold tracking-tighter leading-none ${textColor}`}>
+            <h1 className={`text-lg md:text-2xl font-bold tracking-tighter leading-none ${textColor}`}>
               pymmcore<span className="text-teal-500">solutions</span>
             </h1>
             <p className={`text-[8px] md:text-[11px] font-black uppercase tracking-[0.3em] ${subTextColor} mt-1`}>
@@ -168,7 +168,7 @@ export default function Logo({ className = '', showText = true, variant = 'light
       {/* Text Section */}
       {showText && (
         <div className={`flex flex-col ${!hideEmblem ? 'ml-[-15px]' : ''} z-10`}>
-          <h1 className={`text-xl md:text-3xl font-bold tracking-tighter leading-none ${textColor}`}>
+          <h1 className={`text-lg md:text-2xl font-bold tracking-tighter leading-none ${textColor}`}>
             pymmcore<span className="text-teal-500">solutions</span>
           </h1>
           <p className={`text-[8px] md:text-[11px] font-black uppercase tracking-[0.3em] ${subTextColor} mt-1`}>

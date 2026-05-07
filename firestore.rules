@@ -87,15 +87,17 @@ service cloud.firestore {
     function isAdmin() {
       return isAuthenticated() &&
         (request.auth.token.email == "pymmcoresolutions@gmail.com" ||
-         (request.auth.uid != null && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
+         request.auth.uid == "cBjT0eC3nnVIEE0BD4Xj9Kr1y8h1" ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"));
     }
 
     function isEditor() {
       return isAuthenticated() && 
         (request.auth.token.email == "pymmcoresolutions@gmail.com" ||
-         (request.auth.uid != null && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'editor']));
+         request.auth.uid == "cBjT0eC3nnVIEE0BD4Xj9Kr1y8h1" ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ["admin", "editor"]));
     }
 
     function isViewer() {
@@ -128,38 +130,16 @@ service cloud.firestore {
 
     function isValidApp(data) {
       return data.keys().hasAll(['name', 'description', 'type', 'category', 'authorUid', 'createdAt', 'developer', 'price', 'approvalStatus', 'paymentStatus']) &&
-             data.name is string && data.name.size() >= 1 && data.name.size() <= 200 &&
-             data.description is string && data.description.size() >= 1 && data.description.size() <= 5000 &&
-             (data.type is list ? (data.type.size() > 0 && data.type[0] is string && data.type.hasAny(['Web', 'Mobile', 'Desktop', 'All'])) : (data.type is string && data.type in ['Web', 'Mobile', 'Desktop', 'All'])) &&
-             data.category is string && data.category.size() >= 2 &&
+             data.name is string &&
+             data.description is string &&
+             data.category is string &&
              data.authorUid == request.auth.uid &&
              data.createdAt is timestamp &&
-             data.developer is string && data.developer.size() >= 1 &&
+             data.developer is string &&
              data.price is string &&
              data.approvalStatus in ['pending', 'approved', 'rejected'] &&
              data.paymentStatus in ['unpaid', 'paid', 'refunded'] &&
-             (!('isDraft' in data) || data.isDraft is bool) &&
-             (!('status' in data) || data.status in ['production', 'staging', 'active', 'inactive']) &&
-             (!('paymentReference' in data) || (data.paymentReference is string && data.paymentReference.size() <= 100)) &&
-             (!('adminNotes' in data) || (data.adminNotes is string && data.adminNotes.size() <= 2000)) &&
-             (!('aiRiskScore' in data) || data.aiRiskScore in ['Safe', 'Suspicious', 'Dangerous']) &&
-             (!('aiReport' in data) || (data.aiReport is string && data.aiReport.size() <= 10000)) &&
-             (!('sourceCodeUrl' in data) || (data.sourceCodeUrl is string && data.sourceCodeUrl.size() <= 1000)) &&
-             (!('link' in data) || (data.link is string && data.link.size() <= 1000)) &&
-             (!('version' in data) || data.version is string) &&
-             (!('tags' in data) || (data.tags is list && data.tags.size() <= 20)) &&
-             (!('features' in data) || (data.features is list && data.features.size() <= 20)) &&
-             (!('id' in data) || (data.id is string)) &&
-             (!('isPymmcoreProduct' in data) || data.isPymmcoreProduct is bool) &&
-             (!('appStoreLink' in data) || isValidUrl(data.appStoreLink)) &&
-             (!('playStoreLink' in data) || isValidUrl(data.playStoreLink)) &&
-             (!('demoLink' in data) || isValidUrl(data.demoLink)) &&
-             (!('icon' in data) || (data.icon is string && data.icon.size() <= 1000000)) &&
-             (!('expectedLaunchDate' in data) || (data.expectedLaunchDate is string && data.expectedLaunchDate.size() <= 100)) &&
-             (!('screenshots' in data) || (data.screenshots is list && data.screenshots.size() <= 10)) &&
-             (!('ratingCount' in data) || data.ratingCount is number) &&
-             (!('sumOfRatings' in data) || data.sumOfRatings is number) &&
-             (!('updatedAt' in data) || data.updatedAt is timestamp);
+             (!('features' in data) || (data.features is list && data.features.size() <= 20));
     }
 
     function isValidUser(data) {
@@ -196,17 +176,17 @@ service cloud.firestore {
              (!('updatedAt' in data) || data.updatedAt is timestamp);
     }
 
-    function isValidOnboardingSlide(data) {
+    function isValidKeyFeature(data) {
       return data.keys().hasAll(['title', 'subtitle', 'order', 'active', 'createdAt']) &&
-             data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
-             data.subtitle is string && data.subtitle.size() >= 1 && data.subtitle.size() <= 1000 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 500 &&
+             data.subtitle is string && data.subtitle.size() >= 1 && data.subtitle.size() <= 2000 &&
              data.order is number &&
              data.active is bool &&
              data.createdAt is timestamp &&
-             (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1000000)) &&
+             (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1500000)) &&
              (!('icon' in data) || (data.icon is string && data.icon.size() <= 100)) &&
-             (!('buttonText' in data) || (data.buttonText is string && data.buttonText.size() <= 50)) &&
-             (!('buttonLink' in data) || (data.buttonLink is string && data.buttonLink.size() <= 200)) &&
+             (!('buttonText' in data) || (data.buttonText is string && data.buttonText.size() <= 100)) &&
+             (!('buttonLink' in data) || (data.buttonLink is string && data.buttonLink.size() <= 500)) &&
              (!('updatedAt' in data) || data.updatedAt is timestamp);
     }
 
@@ -269,24 +249,24 @@ service cloud.firestore {
     // ===============================================================
 
     match /apps/{appId} {
-      allow read: if true;
+      allow read, get, list: if true;
       allow create: if isAdmin() || (
                     isAuthenticated() && isNotSuspended() && 
                     isValidApp(request.resource.data) &&
                     request.resource.data.approvalStatus == 'pending' &&
                     request.resource.data.paymentStatus in ['unpaid', 'paid']
                   );
-      allow update: if isAdmin() || 
-                    (isAuthenticated() && isNotSuspended() && resource.data.authorUid == request.auth.uid && 
-                     isValidApp(request.resource.data) &&
-                     resource.data.approvalStatus == 'pending' &&
-                     request.resource.data.approvalStatus == 'pending' &&
-                     request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-                       'name', 'description', 'type', 'category', 'link', 'tags', 'developer', 
-                       'price', 'version', 'appStoreLink', 'playStoreLink', 'demoLink', 
-                       'expectedLaunchDate', 'features', 'icon', 'screenshots', 
-                       'paymentStatus', 'paymentReference', 'sourceCodeUrl', 'aiRiskScore', 'aiReport', 'isDraft', 'updatedAt', 'id'
-                     ])) ||
+      allow update: if isAdmin() || (
+                    isAuthenticated() && isNotSuspended() && resource.data.authorUid == request.auth.uid && 
+                    isValidApp(request.resource.data) &&
+                    resource.data.approvalStatus == 'pending' &&
+                    request.resource.data.approvalStatus == 'pending' &&
+                    request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                      'name', 'description', 'type', 'category', 'link', 'tags', 'developer', 
+                      'price', 'version', 'appStoreLink', 'playStoreLink', 'demoLink', 
+                      'expectedLaunchDate', 'features', 'icon', 'screenshots', 'approvalStatus',
+                      'paymentStatus', 'paymentReference', 'sourceCodeUrl', 'aiRiskScore', 'aiReport', 'isDraft', 'updatedAt', 'id', 'status'
+                    ])) ||
                     (isAuthenticated() && isNotSuspended() && 
                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ratingCount', 'sumOfRatings']) &&
                      (
@@ -379,9 +359,9 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    match /onboarding_slides/{slideId} {
+    match /key_features/{featureId} {
       allow read: if true;
-      allow create, update: if isAdmin() && isValidOnboardingSlide(request.resource.data);
+      allow create, update: if isAdmin() && isValidKeyFeature(request.resource.data);
       allow delete: if isAdmin();
     }
 

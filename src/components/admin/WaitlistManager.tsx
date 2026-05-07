@@ -25,7 +25,7 @@ export default function WaitlistManager() {
       setError(null);
     }, (err) => {
       console.error("WaitlistManager subscription error:", err);
-      setError("Leads sync failure: Access denied.");
+      setError("Waitlist update failed.");
     });
     return () => unsubscribe();
   }, [loading, isAdmin]);
@@ -72,7 +72,7 @@ export default function WaitlistManager() {
             <input
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              placeholder="Search leads..."
+              placeholder="Search waitlist..."
               className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm focus:border-teal-500 outline-none transition-all"
             />
           </div>
@@ -103,8 +103,8 @@ export default function WaitlistManager() {
                   className="rounded border-white/10 bg-black/40 text-teal-600 focus:ring-teal-500"
                 />
               </th>
-              <th className="px-6 py-2 text-left">Identity</th>
-              <th className="px-6 py-2 text-left">Subscription</th>
+              <th className="px-6 py-2 text-left">User</th>
+              <th className="px-6 py-2 text-left">Marketing Emails</th>
               <th className="px-6 py-2 text-left">Registration Date</th>
               <th className="px-6 py-2 text-right">Actions</th>
             </tr>
@@ -186,13 +186,13 @@ function BroadcastModal({ selectedUsers, onClose }: any) {
       
       const data = await response.json();
       if (response.ok) {
-        setResult({ type: 'success', message: `${emails.length} missions dispatched successfully.` });
+        setResult({ type: 'success', message: `${emails.length} messages sent successfully.` });
         setTimeout(onClose, 2000);
       } else {
         throw new Error(data.error);
       }
     } catch (err: any) {
-      setResult({ type: 'error', message: err.message || 'Dispatch sync failure.' });
+      setResult({ type: 'error', message: err.message || 'Message sending failed.' });
     }
     setSending(false);
   };
@@ -206,7 +206,7 @@ function BroadcastModal({ selectedUsers, onClose }: any) {
       >
         <div className="flex justify-between items-center mb-8">
           <h4 className="text-xl font-bold flex items-center gap-2">
-            <Send className="w-5 h-5 text-teal-400" /> Administrative Broadcast
+            <Send className="w-5 h-5 text-teal-400" /> System Announcement
           </h4>
           <button onClick={onClose} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
             <Trash2 className="w-4 h-4" />
@@ -215,26 +215,26 @@ function BroadcastModal({ selectedUsers, onClose }: any) {
 
         <div className="space-y-6">
           <div className="p-4 rounded-xl bg-teal-500/5 border border-teal-500/20">
-            <p className="text-[10px] text-teal-400 font-bold uppercase tracking-widest mb-1">Target Segment</p>
-            <p className="text-sm font-medium">{selectedUsers.length} identified recipients</p>
+            <p className="text-[10px] text-teal-400 font-bold uppercase tracking-widest mb-1">Recipient Group</p>
+            <p className="text-sm font-medium">{selectedUsers.length} selected recipients</p>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Internal Subject</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Email Subject</label>
               <input 
                 value={subject}
                 onChange={e => setSubject(e.target.value)}
-                placeholder="Product Launch: PymmCore Infrastructure v6"
+                placeholder="PymmCore Updates"
                 className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-teal-500 outline-none transition-all"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Broadcast Intelligence (HTML Supported)</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Message Content</label>
               <textarea 
                 value={content}
                 onChange={e => setContent(e.target.value)}
-                placeholder="Compose mission briefing..."
+                placeholder="Type your message..."
                 className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-teal-500 outline-none transition-all h-40 resize-none"
               />
             </div>
@@ -268,13 +268,13 @@ function BroadcastModal({ selectedUsers, onClose }: any) {
               className="py-4 bg-teal-600 text-white font-bold rounded-xl hover:bg-teal-500 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-teal-900/40 disabled:opacity-50"
             >
               {sending ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Send className="w-4 h-4" />}
-              Initiate Broadcast
+              Send Announcement
             </button>
           </div>
           
           <p className="text-[9px] text-white/20 text-center leading-relaxed">
             CRITICAL: By initiating this broadcast, you confirm compliance with global anti-spam regulations (GDPR/CAN-SPAM). 
-            Unsubscribe links will be automatically appended to the footer of all dispatched briefs.
+            Unsubscribe links will be automatically appended to the footer of all sent messages.
           </p>
         </div>
       </motion.div>

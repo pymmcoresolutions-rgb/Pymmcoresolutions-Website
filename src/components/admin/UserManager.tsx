@@ -28,13 +28,13 @@ function BroadcastModal({ selectedUsers, onClose }: any) {
       
       const data = await response.json();
       if (response.ok) {
-        setResult({ type: 'success', message: `${emails.length} missions dispatched successfully.` });
+        setResult({ type: 'success', message: `${emails.length} messages sent successfully.` });
         setTimeout(onClose, 2000);
       } else {
         throw new Error(data.error);
       }
     } catch (err: any) {
-      setResult({ type: 'error', message: err.message || 'Dispatch sync failure.' });
+      setResult({ type: 'error', message: err.message || 'Message sending failed.' });
     }
     setSending(false);
   };
@@ -48,7 +48,7 @@ function BroadcastModal({ selectedUsers, onClose }: any) {
       >
         <div className="flex justify-between items-center mb-8">
           <h4 className="text-xl font-bold flex items-center gap-2">
-            <Send className="w-5 h-5 text-purple-400" /> Infrastructure Broadcast
+            <Send className="w-5 h-5 text-purple-400" /> System Announcement
           </h4>
           <button onClick={onClose} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
             <Trash2 className="w-4 h-4" />
@@ -57,26 +57,26 @@ function BroadcastModal({ selectedUsers, onClose }: any) {
 
         <div className="space-y-6">
           <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20">
-            <p className="text-[10px] text-purple-400 font-bold uppercase tracking-widest mb-1">Target Segment</p>
-            <p className="text-sm font-medium">{selectedUsers.length} identified recipients</p>
+            <p className="text-[10px] text-purple-400 font-bold uppercase tracking-widest mb-1">Recipient Group</p>
+            <p className="text-sm font-medium">{selectedUsers.length} selected recipients</p>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Internal Subject</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Email Subject</label>
               <input 
                 value={subject}
                 onChange={e => setSubject(e.target.value)}
-                placeholder="Product Launch: PymmCore Infrastructure v6"
+                placeholder="PymmCore Updates"
                 className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-purple-500 outline-none transition-all"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Broadcast Intelligence (HTML Supported)</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Message Content</label>
               <textarea 
                 value={content}
                 onChange={e => setContent(e.target.value)}
-                placeholder="Compose mission briefing..."
+                placeholder="Type your message..."
                 className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-purple-500 outline-none transition-all h-40 resize-none"
               />
             </div>
@@ -110,7 +110,7 @@ function BroadcastModal({ selectedUsers, onClose }: any) {
               className="py-4 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-500 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-purple-900/40 disabled:opacity-50"
             >
               {sending ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Send className="w-4 h-4" />}
-              Initiate Broadcast
+              Send Announcement
             </button>
           </div>
         </div>
@@ -137,7 +137,7 @@ export default function UserManager() {
       setError(null);
     }, (err) => {
       console.error("UserManager subscription error:", err);
-      setError("Sync failure: Access restricted.");
+      setError("Data loading failed.");
     });
     return () => unsubscribe();
   }, [loading, isAdmin]);
@@ -223,7 +223,7 @@ export default function UserManager() {
             <input
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              placeholder="Search identites..."
+              placeholder="Search users..."
               className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm focus:border-purple-500 outline-none transition-all"
             />
           </div>
@@ -250,8 +250,8 @@ export default function UserManager() {
                   className="rounded border-white/10 bg-black/40 text-purple-600 focus:ring-purple-500"
                 />
               </th>
-              <th className="px-6 py-2 text-left">Identity</th>
-              <th className="px-6 py-2 text-left">Classification</th>
+              <th className="px-6 py-2 text-left">User</th>
+              <th className="px-6 py-2 text-left">Access Level</th>
               <th className="px-6 py-2 text-left">Status</th>
               <th className="px-6 py-2 text-right">Actions</th>
             </tr>

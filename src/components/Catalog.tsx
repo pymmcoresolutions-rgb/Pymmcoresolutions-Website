@@ -6,6 +6,7 @@ import { useAuth } from '../lib/auth';
 import { motion, AnimatePresence } from 'motion/react';
 import * as LucideIcons from 'lucide-react';
 import DeveloperPortal from './DeveloperPortal';
+import ScreenshotModal from './ScreenshotModal';
 import { 
   ExternalLink, Tag, Globe, Smartphone, Monitor, 
   Plus, Shield, Activity, ArrowUpRight, Lock,
@@ -77,10 +78,10 @@ const StarRating = ({
         <span className="text-[10px] font-bold text-white/40 ml-2 uppercase tracking-widest">
           {currentRating.toFixed(1)} ({ratingCount})
         </span>
-        {loading && <Loader2 className="w-3 h-3 animate-spin text-blue-500 ml-2" />}
+        {loading && <Loader2 className="w-3 h-3 animate-spin text-cyan-500 ml-2" />}
       </div>
       {initialUserRating && (
-        <div className="text-[8px] font-bold text-blue-400 uppercase tracking-widest">
+        <div className="text-[8px] font-bold text-cyan-400 uppercase tracking-widest">
           Your rating: {initialUserRating} stars
         </div>
       )}
@@ -99,6 +100,7 @@ export default function Catalog() {
   const [showWishlistOnly, setShowWishlistOnly] = useState(false);
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
   const [showDeveloperPortal, setShowDeveloperPortal] = useState(false);
+  const [viewingScreenshots, setViewingScreenshots] = useState<{ images: string[]; index: number; appName: string } | null>(null);
 
   const selectedApp = apps.find(a => a.id === selectedAppId);
 
@@ -272,7 +274,7 @@ export default function Catalog() {
     <div className="max-w-7xl mx-auto px-4 py-12">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-12 gap-8">
         <div className="space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold uppercase tracking-widest">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-bold uppercase tracking-widest">
             <ShoppingCart className="w-3 h-3" /> Curated Marketplace
           </div>
           <h2 className="text-4xl font-bold tracking-tighter">App Storefront</h2>
@@ -299,7 +301,7 @@ export default function Catalog() {
             {(isAdmin || isEditor) && (
               <div className="flex items-center gap-3 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-2xl">
                 <Shield className="w-4 h-4 text-purple-400" />
-                <span className="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Staging Mesh</span>
+                <span className="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Internal Preview</span>
                 <button
                   onClick={() => setShowStaging(!showStaging)}
                   className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
@@ -321,7 +323,7 @@ export default function Catalog() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search apps or developers..."
-              className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-blue-500 outline-none transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-cyan-500 outline-none transition-all"
             />
           </div>
 
@@ -348,7 +350,7 @@ export default function Catalog() {
                   setShowDeveloperPortal(true);
                 }
               }}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-blue-600/20"
+              className="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-cyan-600/20"
             >
               <Plus className="w-4 h-4" /> List Application
             </button>
@@ -367,11 +369,11 @@ export default function Catalog() {
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ delay: idx * 0.05 }}
               onClick={() => setSelectedAppId(app.id)}
-              className="group relative p-8 rounded-[2.5rem] bg-white/5 border border-white/10 hover:border-blue-500/50 transition-all hover:shadow-2xl hover:shadow-blue-500/10 flex flex-col h-full overflow-hidden cursor-pointer"
+              className="group relative p-8 rounded-[2.5rem] bg-white/5 border border-white/10 hover:border-cyan-500/50 transition-all hover:shadow-2xl hover:shadow-cyan-500/10 flex flex-col h-full overflow-hidden cursor-pointer"
             >
               {/* Featured Badge */}
               {app.isPymmcoreProduct && (
-                <div className="absolute top-0 left-0 px-4 py-1.5 bg-blue-600 text-[9px] font-black uppercase tracking-[0.2em] rounded-br-2xl flex items-center gap-1.5">
+                <div className="absolute top-0 left-0 px-4 py-1.5 bg-cyan-600 text-[9px] font-black uppercase tracking-[0.2em] rounded-br-2xl flex items-center gap-1.5">
                   <Sparkles className="w-3 h-3" /> Official
                 </div>
               )}
@@ -391,20 +393,20 @@ export default function Catalog() {
                 >
                   <Heart className={`w-4 h-4 ${wishlist.has(app.id) ? 'fill-current' : ''}`} />
                 </button>
-                <div className="text-xl font-bold text-blue-400">
+                <div className="text-xl font-bold text-cyan-400">
                   {app.price}
                 </div>
               </div>
 
               <div className="mb-8 mt-4">
-                <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:bg-blue-600/20 group-hover:border-blue-500/30 transition-all overflow-hidden">
+                <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:bg-cyan-600/20 group-hover:border-cyan-500/30 transition-all overflow-hidden">
                   {app.icon ? (
-                    <DynamicIcon name={app.icon} className="w-10 h-10 text-blue-400" />
+                    <DynamicIcon name={app.icon} className="w-10 h-10 text-cyan-400" />
                   ) : (
                     <div className="flex gap-1">
                       {(Array.isArray(app.type) ? app.type : [app.type || '']).map(t => (
                         <div key={t}>
-                          {t === 'Web' && <Globe className="w-6 h-6 text-blue-400" />}
+                          {t === 'Web' && <Globe className="w-6 h-6 text-cyan-400" />}
                           {t === 'Mobile' && <Smartphone className="w-6 h-6 text-purple-400" />}
                           {t === 'Desktop' && <Monitor className="w-6 h-6 text-pink-400" />}
                           {t === 'All' && <Sparkles className="w-6 h-6 text-amber-400" />}
@@ -414,7 +416,7 @@ export default function Catalog() {
           )}
         </div>
                 <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">{app.developer}</div>
-                <h3 className="text-2xl font-bold mb-2 group-hover:text-blue-400 transition-colors tracking-tight">{app.name}</h3>
+                <h3 className="text-2xl font-bold mb-2 group-hover:text-cyan-400 transition-colors tracking-tight">{app.name}</h3>
                 
                 <div className="mb-4" onClick={e => e.stopPropagation()}>
                   <StarRating 
@@ -432,13 +434,17 @@ export default function Catalog() {
                 </p>
 
                 {app.features && app.features.length > 0 && (
-                  <ul className="space-y-2 mb-6">
-                    {app.features.slice(0, 3).map((f: string, i: number) => (
-                      <li key={i} className="flex items-center gap-2 text-xs text-white/60">
-                        <CheckCircle2 className="w-3 h-3 text-blue-500" /> {f}
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="space-y-3 mb-6">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-white/20">Key Highlights</div>
+                    <ul className="space-y-2.5">
+                      {app.features.slice(0, 3).map((f: string, i: number) => (
+                        <li key={i} className="flex items-start gap-2.5 text-xs text-white/50 group-hover:text-white/70 transition-colors">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-cyan-500 shrink-0 mt-0.5" /> 
+                          <span className="line-clamp-1">{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
 
                 {app.screenshots && app.screenshots.length > 0 && (
@@ -450,9 +456,12 @@ export default function Catalog() {
                           key={idx} 
                           src={src} 
                           alt={`${app.name} screenshot ${idx + 1}`} 
-                          className="h-32 rounded-lg border border-white/10 object-cover shrink-0 hover:border-blue-500/50 transition-colors cursor-zoom-in"
+                          className="h-32 rounded-lg border border-white/10 object-cover shrink-0 hover:border-cyan-500/50 transition-colors cursor-zoom-in"
                           referrerPolicy="no-referrer"
-                          onClick={() => window.open(src, '_blank')}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setViewingScreenshots({ images: app.screenshots, index: idx, appName: app.name });
+                          }}
                         />
                       ))}
                     </div>
@@ -499,7 +508,7 @@ export default function Catalog() {
                         href={app.type === 'Desktop' && app.demoLink ? app.demoLink : app.link} 
                         target="_blank" 
                         rel="noreferrer"
-                        className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20"
+                        className="flex-1 py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-cyan-600/20"
                       >
                         <Globe className="w-4 h-4" /> Launch App
                       </a>
@@ -573,7 +582,7 @@ export default function Catalog() {
                 <div className="p-8 lg:p-12 space-y-8 bg-white/[0.02]">
                   <div className="flex flex-wrap gap-4 items-start justify-between">
                     <div className="w-24 h-24 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shadow-xl">
-                      <DynamicIcon name={selectedApp.icon} className="w-16 h-16 text-blue-400" />
+                      <DynamicIcon name={selectedApp.icon} className="w-16 h-16 text-cyan-400" />
                     </div>
 
                     <div className="flex gap-3">
@@ -593,7 +602,7 @@ export default function Catalog() {
                   <div className="space-y-4">
                     <div className="flex flex-wrap gap-3">
                       {(Array.isArray(selectedApp.type) ? selectedApp.type : [selectedApp.type || '']).map(t => (
-                        <span key={t} className="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold uppercase tracking-widest">
+                        <span key={t} className="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-bold uppercase tracking-widest">
                           {t}
                         </span>
                       ))}
@@ -602,7 +611,7 @@ export default function Catalog() {
                       </span>
                     </div>
                     <h2 className="text-5xl font-bold tracking-tighter">{selectedApp.name}</h2>
-                    <p className="text-xl text-blue-400 font-bold">{selectedApp.price}</p>
+                    <p className="text-xl text-cyan-400 font-bold">{selectedApp.price}</p>
                   </div>
 
                   <div className="pt-8 border-t border-white/5 space-y-6">
@@ -641,7 +650,7 @@ export default function Catalog() {
                       href={((Array.isArray(selectedApp.type) ? selectedApp.type.includes('Desktop') : selectedApp.type === 'Desktop') || (Array.isArray(selectedApp.type) ? selectedApp.type.includes('All') : selectedApp.type === 'All')) && selectedApp.demoLink ? selectedApp.demoLink : selectedApp.link} 
                       target="_blank" 
                       rel="noreferrer"
-                      className="w-full py-5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl shadow-blue-600/20"
+                      className="w-full py-5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl shadow-cyan-600/20"
                     >
                       <ExternalLink className="w-5 h-5" />
                       {((Array.isArray(selectedApp.type) ? selectedApp.type.includes('Desktop') : selectedApp.type === 'Desktop') || (Array.isArray(selectedApp.type) ? selectedApp.type.includes('All') : selectedApp.type === 'All')) ? 'Download for Desktop' : 'Launch Application'}
@@ -661,29 +670,29 @@ export default function Catalog() {
                   </div>
                 </div>
 
-                {/* Right Side: Details */}
-                <div className="p-8 lg:p-12 space-y-10 max-h-[80vh] overflow-y-auto">
+                 {/* Right Side: Details */}
+                <div className="p-8 lg:p-12 space-y-10 max-h-[80vh] overflow-y-auto scrollbar-hide">
                   <section className="space-y-4">
-                    <div className="flex items-center gap-2 text-blue-400">
+                    <div className="flex items-center gap-2 text-cyan-400">
                       <Info className="w-4 h-4" />
                       <span className="text-[10px] font-bold uppercase tracking-widest">Overview</span>
                     </div>
-                    <p className="text-white/60 leading-relaxed text-lg">
+                    <p className="text-white/60 leading-relaxed text-lg font-light">
                       {selectedApp.description}
                     </p>
                   </section>
 
                   {selectedApp.features && selectedApp.features.length > 0 && (
                     <section className="space-y-6">
-                      <div className="flex items-center gap-2 text-blue-400">
+                      <div className="flex items-center gap-2 text-cyan-400">
                         <Sparkles className="w-4 h-4" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Core Capabilities</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Key Features</span>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {selectedApp.features.map((f: string, i: number) => (
-                          <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
-                            <CheckCircle2 className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
-                            <span className="text-sm text-white/80">{f}</span>
+                          <div key={i} className="flex items-start gap-3 p-5 rounded-2xl bg-white/5 border border-white/10 group hover:border-cyan-500/30 transition-all">
+                            <CheckCircle2 className="w-4 h-4 text-cyan-500 mt-0.5 shrink-0" />
+                            <span className="text-sm text-white/50 group-hover:text-white/80 transition-colors uppercase tracking-tight font-mono">{f}</span>
                           </div>
                         ))}
                       </div>
@@ -692,9 +701,9 @@ export default function Catalog() {
 
                   {selectedApp.screenshots && selectedApp.screenshots.length > 0 && (
                     <section className="space-y-6">
-                      <div className="flex items-center gap-2 text-blue-400">
+                      <div className="flex items-center gap-2 text-cyan-400">
                         <Monitor className="w-4 h-4" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Visual Deployment</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest">App Screenshots</span>
                       </div>
                       <div className="grid grid-cols-1 gap-4">
                         {selectedApp.screenshots.map((src: string, idx: number) => (
@@ -702,8 +711,9 @@ export default function Catalog() {
                             key={idx} 
                             src={src} 
                             alt={`${selectedApp.name} view ${idx + 1}`} 
-                            className="w-full rounded-2xl border border-white/10 hover:border-blue-500/50 transition-colors"
+                            className="w-full rounded-3xl border border-white/10 hover:border-cyan-500/50 transition-colors shadow-2xl cursor-zoom-in"
                             referrerPolicy="no-referrer"
+                            onClick={() => setViewingScreenshots({ images: selectedApp.screenshots, index: idx, appName: selectedApp.name })}
                           />
                         ))}
                       </div>
@@ -733,6 +743,18 @@ export default function Catalog() {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Screenshot Viewer Modal */}
+      <AnimatePresence>
+        {viewingScreenshots && (
+          <ScreenshotModal
+            screenshots={viewingScreenshots.images}
+            initialIndex={viewingScreenshots.index}
+            appName={viewingScreenshots.appName}
+            onClose={() => setViewingScreenshots(null)}
+          />
         )}
       </AnimatePresence>
     </div>

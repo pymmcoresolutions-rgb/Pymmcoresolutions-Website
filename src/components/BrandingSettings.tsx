@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Image as ImageIcon, Layers, Palette, Monitor } from 'lucide-react';
 import LogoManager from './admin/LogoManager';
 import BackgroundManager from './admin/BackgroundManager';
-import OnboardingManager from './admin/OnboardingManager';
+import KeyFeaturesManager from './admin/KeyFeaturesManager';
 
 export default function BrandingSettings() {
   const [activeTab, setActiveTab] = useState<'logo' | 'background' | 'onboarding'>('logo');
@@ -42,7 +42,7 @@ export default function BrandingSettings() {
           }`}
         >
           <Monitor className="w-4 h-4" />
-          Onboarding
+          Key Features
         </button>
       </div>
 
@@ -55,7 +55,7 @@ export default function BrandingSettings() {
       >
         {activeTab === 'logo' && <LogoManager />}
         {activeTab === 'background' && <BackgroundManager />}
-        {activeTab === 'onboarding' && <OnboardingManager />}
+        {activeTab === 'onboarding' && <KeyFeaturesManager />}
       </motion.div>
     </div>
   );

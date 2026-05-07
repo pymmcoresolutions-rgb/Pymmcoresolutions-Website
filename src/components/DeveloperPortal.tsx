@@ -567,6 +567,59 @@ export default function DeveloperPortal() {
               />
             </div>
 
+            {/* Features */}
+            <div className="space-y-4">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-white/30 px-2">Key Features (Enter to add)</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
+                {form.features.map((feature, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl group/feat">
+                    <div className="flex items-center gap-3">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                      <span className="text-xs text-white/70">{feature}</span>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={() => setForm(prev => ({ ...prev, features: prev.features.filter((_, i) => i !== idx) }))}
+                      className="text-white/20 hover:text-red-500 transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input 
+                  id="feature-input"
+                  className="flex-1 px-5 py-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-blue-500 transition-all font-medium"
+                  placeholder="e.g. Real-time data synchronization"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const val = (e.target as HTMLInputElement).value.trim();
+                      if (val && !form.features.includes(val)) {
+                        setForm(prev => ({ ...prev, features: [...prev.features, val] }));
+                        (e.target as HTMLInputElement).value = '';
+                      }
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const input = document.getElementById('feature-input') as HTMLInputElement;
+                    const val = input.value.trim();
+                    if (val && !form.features.includes(val)) {
+                      setForm(prev => ({ ...prev, features: [...prev.features, val] }));
+                      input.value = '';
+                    }
+                  }}
+                  className="px-6 bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/20 rounded-2xl transition-all"
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
             {error && (
               <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs flex items-center gap-3">
                 <AlertCircle className="w-4 h-4" /> {error}

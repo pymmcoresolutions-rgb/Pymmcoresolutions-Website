@@ -1,5 +1,6 @@
 {
-  "name": "pymmcoresolutions",
+  "name": "pymmcore website",
   "description": "A curated marketplace for premium mobile, web, and desktop applications developed by PymmCore Solutions and third-party developers.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": []
 }

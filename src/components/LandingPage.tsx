@@ -1,332 +1,360 @@
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Smartphone, Shield, Zap, Sparkles, 
-  Download, Apple, Play, Star, 
-  CheckCircle2, Globe, Cpu, ArrowRight, ShoppingCart,
-  User, Menu, Power, Activity, AlertCircle, Clock
+  Shield, Zap, Sparkles, 
+  Globe, ArrowRight, ShoppingCart,
+  User, Star, X, Info, CheckCircle2, ChevronRight, Activity, Cpu, ShieldCheck,
+  Mail, MessageSquare, Info as InfoIcon
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '../lib/auth';
+import { collection, query, orderBy, onSnapshot, limit } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import Logo from './Logo';
 import Reviews from './Reviews';
-import WaitlistPortal from './WaitlistPortal';
-import GlobalBackground from './GlobalBackground';
-import OnboardingShowcase from './OnboardingShowcase';
 import SystemHealthIndicator from './SystemHealthIndicator';
+import ThreeMarketplace from './ThreeMarketplace';
+import OnboardingShowcase from './OnboardingShowcase';
+import WaitlistPortal from './WaitlistPortal';
 
 export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
-  const { login } = useAuth();
-  const [email, setEmail] = useState('');
+  const { login, isAdmin } = useAuth();
+  const [apps, setApps] = useState<any[]>([]);
+  const [selectedApp, setSelectedApp] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const features = [
-    {
-      icon: ShoppingCart,
-      title: "Curated Selection",
-      description: "Every application is vetted for performance, security, and user experience.",
-      color: "text-teal-400",
-      bg: "bg-teal-400/10"
-    },
-    {
-      icon: Globe,
-      title: "Multi-Platform",
-      description: "Discover premium solutions for Web, iOS, Android, and Desktop environments.",
-      color: "text-amber-400",
-      bg: "bg-amber-400/10"
-    },
-    {
-      icon: Sparkles,
-      title: "AI-Driven Discovery",
-      description: "Our AI Advisor helps you find the perfect tool for your specific business needs.",
-      color: "text-teal-500",
-      bg: "bg-teal-500/10"
-    },
-    {
-      icon: Shield,
-      title: "Secure Transactions",
-      description: "Enterprise-grade licensing and secure download protocols for all software.",
-      color: "text-amber-500",
-      bg: "bg-amber-500/10"
-    }
-  ];
+  useEffect(() => {
+    const q = query(
+      collection(db, 'apps'), 
+      orderBy('createdAt', 'desc'),
+      limit(20)
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setApps(docs);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-blue-500/30 overflow-x-hidden">
-      <GlobalBackground />
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-black/40 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Logo size="sm" />
-            <SystemHealthIndicator />
+    <div className="min-h-screen bg-[#030303] text-white selection:bg-cyan-500/30 relative">
+      {/* 3D CANVAS LAYER */}
+      <div className="fixed inset-0 z-0">
+        <Suspense fallback={
+          <div className="w-full h-full flex items-center justify-center bg-[#050505]">
+            <div className="text-cyan-500 font-mono text-xs animate-pulse tracking-[0.3em]">LOADING SECURE HUB...</div>
           </div>
-          <button 
-            onClick={onLaunch}
-            className="hidden md:block text-sm font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors"
-          >
-            Protocol Access
-          </button>
-        </div>
-      </nav>
+        }>
+          <ThreeMarketplace 
+            apps={apps} 
+            onSelectApp={setSelectedApp} 
+            selectedAppId={selectedApp?.id || null} 
+          />
+        </Suspense>
+      </div>
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 px-6">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-[10px] font-bold uppercase tracking-widest mb-8">
-              <Sparkles className="w-3 h-3" /> Version 5.0 Now Live
-            </div>
-            <h1 className="text-6xl lg:text-8xl font-bold tracking-tighter leading-[0.9] mb-8">
-              The Premium <br />
-              <span className="text-amber-500">App Storefront.</span>
-            </h1>
-            <p className="text-xl text-white/40 mb-12 max-w-lg leading-relaxed">
-              A curated marketplace for high-performance mobile, web, and desktop applications. 
-              Discover ready-to-use solutions from PymmCore and top developers.
-            </p>
-            
-            <div className="flex flex-wrap gap-4">
-              <button 
-                onClick={onLaunch}
-                className="flex items-center gap-3 px-10 py-5 bg-teal-700 text-white font-bold rounded-2xl hover:bg-teal-600 transition-all group shadow-lg shadow-teal-900/20"
-              >
-                Explore Marketplace <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-              </button>
-            </div>
-
-            {/* Quick Community Proof */}
-            <div className="mt-12 pt-12 border-t border-white/5">
-              <div className="text-[10px] font-bold text-teal-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                <Star className="w-3 h-3 fill-teal-400" /> Community Validation
-              </div>
-              <Reviews minimal />
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, rotate: 5 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative"
-          >
-            <div className="relative z-10 w-full max-w-[320px] mx-auto aspect-[9/19] bg-[#0a0a0a] rounded-[3rem] border-[8px] border-white/10 shadow-2xl overflow-hidden flex flex-col">
-              {/* Notch */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-white/10 rounded-b-2xl z-20" />
-              
-              {/* UI Content */}
-              <div className="flex-1 p-6 pt-10 flex flex-col relative">
-                {/* Header */}
-                <div className="flex justify-between items-start mb-12">
-                  <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                      <User className="w-5 h-5 text-white/60" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold tracking-tight">MAAY HUB</div>
-                      <div className="text-[8px] font-bold text-blue-400 uppercase tracking-widest">Helios Phase</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xs font-bold">12:32 <span className="text-white/40 ml-1">TUE</span></div>
-                    <div className="flex items-center gap-1 justify-end mt-1">
-                      <div className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
-                      <span className="text-[8px] font-bold text-teal-500 uppercase tracking-widest">Mesh: Nominal</span>
-                    </div>
-                    <button className="mt-2 px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-full text-[8px] font-bold text-red-500 uppercase tracking-widest hover:bg-red-500/20 transition-colors">
-                      SOS Trigger
-                    </button>
+      {/* MATRIX HUD OVERLAY */}
+      <div className="relative z-10 pointer-events-none min-h-screen flex flex-col font-sans">
+        {/* Navigation */}
+        <nav className="fixed top-0 left-0 right-0 z-50 pointer-events-auto">
+          <div className="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between border-b border-cyan-500/10 backdrop-blur-md bg-black/20">
+            <div className="flex items-center gap-8">
+              <Logo size="sm" />
+              {isAdmin && (
+                <div className="hidden lg:flex items-center gap-6 px-4 py-2 bg-white/5 border border-white/10 rounded-full">
+                  <SystemHealthIndicator />
+                  <div className="w-[1px] h-4 bg-white/10" />
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
+                    <Activity className="w-3 h-3" /> System Status: Online
                   </div>
                 </div>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-6">
+              <button 
+                onClick={onLaunch}
+                className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 hover:text-cyan-400 transition-colors"
+              >
+                View Platform
+              </button>
+              <button 
+                onClick={onLaunch}
+                className="px-6 py-3 bg-cyan-600/10 border border-cyan-500/50 text-cyan-400 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-cyan-600 hover:text-white transition-all rounded-lg"
+              >
+                Get Started
+              </button>
+            </div>
+          </div>
+        </nav>
 
-                {/* Center Section */}
-                <div className="flex-1 flex flex-col items-center justify-center text-center -mt-10">
-                  <div className="relative mb-6">
-                    <div className="w-32 h-32 rounded-full border border-white/5 flex items-center justify-center relative">
-                      <div className="absolute inset-0 rounded-full border-t-2 border-teal-500 animate-[spin_3s_linear_infinite]" />
-                      <div className="w-24 h-24 rounded-full bg-gradient-to-br from-white/5 to-transparent border border-white/10 flex items-center justify-center">
-                        <span className="text-5xl font-light tracking-tighter">M</span>
+        {/* HERO HUD (Only visible when no app is selected) */}
+        <AnimatePresence>
+          {!selectedApp && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="w-full h-full flex flex-col"
+            >
+              {/* Hero Section */}
+              <motion.main 
+                className="min-h-screen flex flex-col justify-center px-6 lg:px-24 w-full max-w-full relative pointer-events-none pt-32"
+              >
+                <div className="space-y-2 lg:space-y-4 max-w-7xl mx-auto w-full">
+                  <motion.div
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="inline-flex items-center gap-3 px-4 py-1.5 bg-cyan-500/5 border border-cyan-500/20 rounded-full w-fit pointer-events-auto"
+                  >
+                    <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_10px_rgba(6,182,212,1)]" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-400 italic">SECURE_CONNECTION_ACTIVE</span>
+                  </motion.div>
+                  
+                  <h1 className="text-[clamp(2rem,8vw,5rem)] font-black tracking-tighter leading-[0.9] uppercase flex flex-col pointer-events-none mb-4">
+                    <motion.span 
+                      initial={{ y: 50, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ type: 'spring', damping: 25, stiffness: 120, delay: 0.3 }}
+                      className="relative"
+                    >
+                      Pymm
+                    </motion.span>
+                    <motion.span 
+                      initial={{ y: 50, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ type: 'spring', damping: 25, stiffness: 120, delay: 0.4 }}
+                      className="text-cyan-500 drop-shadow-[0_0_80px_rgba(6,182,212,0.5)] relative z-10"
+                    >
+                      Core.
+                    </motion.span>
+                  </h1>
+
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.6 }}
+                    className="flex flex-col lg:flex-row items-start lg:items-center gap-8 lg:gap-16 mt-8"
+                  >
+                    <div className="max-w-md pointer-events-auto">
+                      <p className="text-lg lg:text-3xl text-white/40 leading-tight font-light mb-8">
+                         <span className="text-white">Modern Software Solutions</span> for premium software delivery. 
+                        Deploy your project within the application dashboard.
+                      </p>
+                      
+                      <button 
+                        className="w-full sm:w-auto flex items-center justify-center gap-6 px-14 py-8 bg-white text-black font-black uppercase tracking-[0.3em] hover:bg-cyan-400 transition-all group scale-100 active:scale-95 text-xs"
+                        onClick={onLaunch}
+                      >
+                        Explore Applications <ArrowRight className="w-6 h-6 group-hover:translate-x-4 transition-transform duration-500" />
+                      </button>
+                    </div>
+
+                    <div className="flex flex-row items-center gap-12 border-l border-white/10 pl-12 h-20">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-cyan-500/50 italic mb-2">Active Applications</span>
+                        <span className="text-4xl font-mono tracking-tighter">{apps.length.toString().padStart(3, '0')}</span>
+                      </div>
+                      <div className="w-[1px] h-full bg-white/10" />
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-white/20 italic mb-2">Network Status</span>
+                        <span className="text-xs font-black text-cyan-400 uppercase tracking-widest flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,1)]" /> Optimized
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+              </motion.main>
+
+              {/* Onboarding / "Slides" Section */}
+              <div className="pointer-events-auto relative z-10 bg-[#030303]/80 backdrop-blur-3xl border-y border-white/5">
+                <div className="max-w-7xl mx-auto py-24 text-center">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-black uppercase tracking-[0.3em] mb-8">
+                    <Sparkles className="w-3 h-3" /> Key Features
+                  </div>
+                  <h2 className="text-4xl lg:text-6xl font-black uppercase tracking-tighter mb-12">
+                    Built for <span className="text-cyan-500 italic">Excellence.</span>
+                  </h2>
+                </div>
+                <OnboardingShowcase />
+              </div>
+
+              {/* Waitlist Portal Section */}
+              <div className="pointer-events-auto relative z-10 py-24 bg-gradient-to-b from-transparent to-[#030303]">
+                <WaitlistPortal />
+              </div>
+
+              {/* HUD FOOTER */}
+              <footer className="pointer-events-auto mt-auto p-12 lg:px-24 flex flex-col gap-12 border-t border-white/5 backdrop-blur-sm bg-black/40">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                  <div className="space-y-4">
+                    <div className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-500 italic">Platform</div>
+                    <div className="flex flex-col gap-2">
+                      <button onClick={() => window.location.hash = '#home'} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">Home</button>
+                      <button onClick={onLaunch} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">Catalog</button>
+                      <button onClick={() => window.location.hash = '#about'} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">About</button>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-500 italic">Legal</div>
+                    <div className="flex flex-col gap-2">
+                      <button onClick={() => window.location.hash = '#terms'} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">Terms</button>
+                      <button onClick={() => window.location.hash = '#privacy'} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">Privacy</button>
+                      <button onClick={() => window.location.hash = '#security'} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">Security</button>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-500 italic">Resources</div>
+                    <div className="flex flex-col gap-2">
+                      <button onClick={() => window.location.hash = '#docs'} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">Docs</button>
+                      <button onClick={() => window.location.hash = '#status'} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">Status</button>
+                      <button onClick={() => window.location.hash = '#contact'} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">Support</button>
+                    </div>
+                  </div>
+                  <div className="space-y-6">
+                    <Logo size="sm" />
+                    <div className="flex gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-cyan-500 transition-all cursor-pointer group">
+                        <Mail className="w-5 h-5 text-white/40 group-hover:text-black" />
+                      </div>
+                      <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-cyan-500 transition-all cursor-pointer group">
+                        <MessageSquare className="w-5 h-5 text-white/40 group-hover:text-black" />
                       </div>
                     </div>
                   </div>
-                  <h2 className="text-xl font-bold tracking-tight mb-1">INITIALIZE MAAY</h2>
-                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Awaiting Directives</p>
                 </div>
 
-                {/* Lower Section - Panel */}
-                <div className="mt-auto">
-                  <div className="flex justify-between items-end mb-4">
-                    <div>
-                      <h3 className="text-[10px] font-bold uppercase tracking-widest text-white/60">Facility Infrastructure</h3>
-                    </div>
-                    <div className="text-right">
-                      <h3 className="text-[10px] font-bold uppercase tracking-widest text-teal-500">Command Hub</h3>
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 pt-12 border-t border-white/5">
+                  <div className="space-y-2">
+                    <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Global Presence</div>
+                    <div className="flex gap-4 text-xs font-mono text-cyan-500/40">
+                      <span>SEC: 40.7128</span>
+                      <span>LOC: -74.0060</span>
+                      <span>LVL: 204.5m</span>
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    {/* Control 1 */}
-                    <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between group hover:bg-white/[0.08] transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center">
-                          <Zap className="w-5 h-5 text-yellow-500" />
-                        </div>
-                        <div>
-                          <div className="text-[10px] font-bold">Primary Uplink Lights</div>
-                          <div className="text-[8px] text-white/40 uppercase tracking-widest">Office</div>
-                        </div>
-                      </div>
-                      <div className="w-12 h-6 rounded-full bg-white/5 border border-white/10 p-1 flex items-center justify-start">
-                        <div className="w-4 h-4 rounded-full bg-white/20" />
-                      </div>
-                    </div>
+                  <div className="max-w-sm lg:text-right">
+                    <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest leading-loose">
+                      System restricted to authorized personnel only. Version 5.0.0 (Latest Release). 
+                      All data interactions are securely logged. &copy; 2026 PYMMCORE.
+                    </p>
+                  </div>
+                </div>
+              </footer>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
-                    {/* Control 2 */}
-                    <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between group hover:bg-white/[0.08] transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center">
-                          <Shield className="w-5 h-5 text-teal-500" />
-                        </div>
-                        <div>
-                          <div className="text-[10px] font-bold">Sanctuary Portal</div>
-                          <div className="text-[8px] text-white/40 uppercase tracking-widest">Sanctuary</div>
-                        </div>
-                      </div>
-                      <div className="w-12 h-6 rounded-full bg-teal-500 p-1 flex items-center justify-end">
-                        <div className="w-4 h-4 rounded-full bg-white" />
-                      </div>
-                    </div>
+      {/* DETAIL MODAL OVERLAY (Glassmorphic) */}
+      <AnimatePresence>
+        {selectedApp && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-end p-6 lg:p-12"
+          >
+            {/* Backdrop click to close */}
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedApp(null)} />
+            
+            <motion.div 
+              initial={{ x: '100%', opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: '100%', opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="relative w-full max-w-2xl bg-black/60 border-l border-white/10 backdrop-blur-3xl h-full shadow-2xl flex flex-col p-8 lg:p-16 overflow-y-auto overflow-x-hidden scrollbar-hide"
+            >
+              <button 
+                onClick={() => setSelectedApp(null)}
+                className="absolute top-12 right-12 p-4 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white/40 hover:text-white"
+              >
+                <X className="w-6 h-6" />
+              </button>
 
-                    {/* Control 3 - Partially Visible */}
-                    <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between opacity-40">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                          <Activity className="w-5 h-5 text-purple-500" />
-                        </div>
-                        <div>
-                          <div className="text-[10px] font-bold">Climate Node Alpha</div>
-                        </div>
-                      </div>
+              <div className="space-y-12">
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-20 h-20 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
+                      <Cpu className="w-10 h-10 text-cyan-400" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-500">{selectedApp.developer}</div>
+                      <h2 className="text-5xl font-black tracking-tighter uppercase">{selectedApp.name}</h2>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3">
+                    <div className="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-bold uppercase tracking-widest rounded-full">
+                      ID: {selectedApp.id.slice(0, 8)}
+                    </div>
+                    <div className="px-3 py-1 bg-white/5 border border-white/10 text-white/40 text-[10px] font-bold uppercase tracking-widest rounded-full">
+                      Version: {selectedApp.version || '1.0.0'}
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Glass Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none" />
-            </div>
-            
-            {/* Decorative Elements */}
-            <div className="absolute -top-20 -right-20 w-64 h-64 bg-teal-600/20 blur-[100px] rounded-full" />
-            <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-amber-600/20 blur-[100px] rounded-full" />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Onboarding Showcase */}
-      <OnboardingShowcase />
-
-      {/* Value Prop Section */}
-      <section className="py-24 border-y border-white/5 bg-white/[0.02]">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <h2 className="text-4xl lg:text-6xl font-bold tracking-tighter mb-8">
-            Why PymmCore Storefront?
-          </h2>
-          <p className="text-xl text-white/40 max-w-2xl mx-auto leading-relaxed">
-            We curate the most innovative applications across all platforms. 
-            From official PymmCore solutions to vetted third-party tools, 
-            everything is ready for immediate deployment and use.
-          </p>
-        </div>
-      </section>
-
-      {/* Features Grid */}
-      <section className="py-32 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-blue-500/30 transition-all group"
-              >
-                <div className={`w-12 h-12 rounded-2xl ${feature.bg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                  <feature.icon className={`w-6 h-6 ${feature.color}`} />
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 text-cyan-500/50">
+                    <Info className="w-4 h-4" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em]">Platform Information</span>
+                  </div>
+                  <p className="text-xl text-white/60 leading-relaxed font-light italic">
+                    "{selectedApp.description}"
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold mb-4">{feature.title}</h3>
-                <p className="text-sm text-white/40 leading-relaxed">
-                  {feature.description}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Waitlist Section */}
-      <section className="py-24 px-6 border-t border-white/5 relative">
-        <div className="absolute inset-0 bg-teal-500/5 blur-[120px] rounded-full -z-10" />
-        <WaitlistPortal />
-      </section>
+                {selectedApp.features && selectedApp.features.length > 0 && (
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3 text-cyan-500/50">
+                      <Sparkles className="w-4 h-4" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em]">Key Benefits</span>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4">
+                      {selectedApp.features.map((f: string, i: number) => (
+                        <div key={i} className="group flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-cyan-500/5 hover:border-cyan-500/20 transition-all">
+                          <CheckCircle2 className="w-5 h-5 text-cyan-500 shrink-0" />
+                          <span className="text-sm font-medium text-white/70 group-hover:text-white transition-colors uppercase tracking-wide">{f}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-      {/* Final CTA */}
-      <section className="py-32 px-6">
-        <div className="max-w-5xl mx-auto p-12 lg:p-20 rounded-[3rem] bg-gradient-to-br from-teal-700 to-teal-950 relative overflow-hidden text-center">
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
-          <div className="relative z-10">
-            <h2 className="text-5xl lg:text-7xl font-bold tracking-tighter mb-8">
-              Ready to scale?
-            </h2>
-            <p className="text-xl text-white/80 mb-12 max-w-xl mx-auto">
-              Join thousands of engineers managing global infrastructure with PymmCore Mobile.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button 
-                onClick={onLaunch}
-                className="px-10 py-5 bg-white text-black font-bold rounded-2xl hover:scale-105 transition-all flex items-center justify-center gap-2"
-              >
-                Get Started Now <ArrowRight className="w-5 h-5" />
-              </button>
-              <a 
-                href="#docs"
-                className="px-10 py-5 bg-black/20 backdrop-blur-md text-white font-bold rounded-2xl border border-white/20 hover:bg-black/30 transition-all flex items-center justify-center"
-              >
-                View Documentation
-              </a>
-            </div>
-          </div>
-          
-          {/* Decorative circles */}
-          <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-black/20 rounded-full blur-3xl" />
-        </div>
-      </section>
+                {/* AI Risk Score Mockup */}
+                <div className="p-8 rounded-[2rem] bg-gradient-to-br from-cyan-500/10 to-transparent border border-cyan-500/20">
+                  <div className="flex justify-between items-center mb-6">
+                    <div className="flex items-center gap-2 text-cyan-400">
+                      <ShieldCheck className="w-5 h-5" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em]">Verified Security Scan</span>
+                    </div>
+                    <div className="text-2xl font-mono text-cyan-400">98%</div>
+                  </div>
+                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: '98%' }}
+                      className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(0,255,255,0.8)]"
+                    />
+                  </div>
+                </div>
 
-      {/* Footer */}
-      <footer className="py-20 border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center">
-            <Logo size="sm" />
-          </div>
-          <div className="flex flex-col items-center md:items-end gap-4">
-            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20">Legal & Security</div>
-            <div className="flex flex-wrap justify-center gap-6 text-[10px] font-bold uppercase tracking-widest text-white/40">
-              <a href="#privacy" className="hover:text-white transition-colors">Privacy Policy</a>
-              <a href="#terms" className="hover:text-white transition-colors">Terms of Use</a>
-              <a href="#security" className="hover:text-white transition-colors">Security Protocol</a>
-              <a href="#status" className="hover:text-white transition-colors">System Status</a>
-            </div>
-          </div>
-          <p className="text-[10px] text-white/20 uppercase tracking-[0.3em]">
-            © 2026 PymmCore Solutions
-          </p>
-        </div>
-      </footer>
+                <div className="pt-12 border-t border-white/10">
+                  <button 
+                    onClick={onLaunch}
+                    className="w-full py-6 bg-cyan-600 hover:bg-cyan-500 text-white font-black uppercase tracking-[0.3em] rounded-2xl transition-all shadow-2xl shadow-cyan-500/20 flex items-center justify-center gap-4 group"
+                  >
+                    Open Application <ChevronRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

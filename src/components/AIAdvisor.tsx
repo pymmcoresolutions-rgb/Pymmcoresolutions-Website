@@ -30,7 +30,7 @@ export default function AIAdvisor({ isFullPage = false }: { isFullPage?: boolean
     }`}>
       <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/5">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-600/20">
+          <div className="p-2 bg-cyan-600 rounded-lg shadow-lg shadow-cyan-600/20">
             <Sparkles className="w-4 h-4" />
           </div>
           <div>
@@ -49,7 +49,7 @@ export default function AIAdvisor({ isFullPage = false }: { isFullPage?: boolean
         {messages.length === 0 && (
           <div className="h-full flex flex-col items-center justify-center text-center px-4">
             <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-6 border border-white/10">
-              <Bot className="w-8 h-8 text-blue-400" />
+              <Bot className="w-8 h-8 text-cyan-400" />
             </div>
             <h4 className="font-bold mb-2">Marketplace Intelligence</h4>
             <p className="text-sm text-white/40 max-w-[240px]">Ask me about our premium applications, platform compatibility, or finding the right solution for your business.</p>
@@ -62,11 +62,11 @@ export default function AIAdvisor({ isFullPage = false }: { isFullPage?: boolean
             key={idx} 
             className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
           >
-            <div className={`p-2 rounded-lg h-fit ${msg.role === 'user' ? 'bg-blue-600 shadow-lg shadow-blue-600/20' : 'bg-white/10 border border-white/10'}`}>
+            <div className={`p-2 rounded-lg h-fit ${msg.role === 'user' ? 'bg-cyan-600 shadow-lg shadow-cyan-600/20' : 'bg-white/10 border border-white/10'}`}>
               {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
             </div>
             <div className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed ${
-              msg.role === 'user' ? 'bg-blue-600/10 border border-blue-500/20 rounded-tr-none' : 'bg-white/5 border border-white/10 rounded-tl-none'
+              msg.role === 'user' ? 'bg-cyan-600/10 border border-cyan-500/20 rounded-tr-none' : 'bg-white/5 border border-white/10 rounded-tl-none'
             }`}>
               <div className="markdown-body prose prose-invert prose-sm max-w-none">
                 <ReactMarkdown>{msg.content}</ReactMarkdown>
@@ -80,7 +80,7 @@ export default function AIAdvisor({ isFullPage = false }: { isFullPage?: boolean
               <Bot className="w-4 h-4" />
             </div>
             <div className="bg-white/5 border border-white/10 p-4 rounded-2xl rounded-tl-none">
-              <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
+              <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
             </div>
           </div>
         )}
@@ -93,12 +93,12 @@ export default function AIAdvisor({ isFullPage = false }: { isFullPage?: boolean
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSend()}
             placeholder="Ask about our applications..."
-            className="w-full bg-black/40 border border-white/10 rounded-xl pl-4 pr-12 py-4 text-sm focus:border-blue-500 outline-none transition-all shadow-inner"
+            className="w-full bg-black/40 border border-white/10 rounded-xl pl-4 pr-12 py-4 text-sm focus:border-cyan-500 outline-none transition-all shadow-inner font-mono"
           />
           <button
             onClick={handleSend}
             disabled={loading || !input.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-blue-400 hover:text-blue-300 disabled:opacity-50 transition-colors"
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-cyan-400 hover:text-cyan-300 disabled:opacity-50 transition-colors"
           >
             <Send className="w-5 h-5" />
           </button>
@@ -112,7 +112,7 @@ export default function AIAdvisor({ isFullPage = false }: { isFullPage?: boolean
       {!isFullPage && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-8 right-8 p-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl shadow-2xl shadow-blue-600/40 z-50 transition-all hover:scale-110 active:scale-95"
+          className="fixed bottom-8 right-8 p-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-2xl shadow-2xl shadow-cyan-600/40 z-50 transition-all hover:scale-110 active:scale-95"
         >
           <Sparkles className="w-6 h-6" />
         </button>

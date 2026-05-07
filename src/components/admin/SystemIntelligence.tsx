@@ -117,9 +117,9 @@ export default function SystemIntelligence() {
       <div className="flex justify-between items-center bg-white/5 border border-white/10 p-6 rounded-[2.5rem]">
         <div>
           <h3 className="text-xl font-bold flex items-center gap-2">
-            <Shield className="w-5 h-5 text-blue-400" /> Platform Intelligence Node
+            <Shield className="w-5 h-5 text-blue-400" /> System Performance Dashboard
           </h3>
-          <p className="text-xs text-white/40 mt-1 uppercase tracking-widest font-medium">Real-time infrastructure observability v5.0.4</p>
+          <p className="text-xs text-white/40 mt-1 uppercase tracking-widest font-medium">Real-time system health monitoring v5.0.4</p>
         </div>
         <button 
           onClick={handleRefresh}
@@ -133,7 +133,7 @@ export default function SystemIntelligence() {
       {/* 1. Uptime & Health Checks */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <MetricCard 
-          title="API User Uplink" 
+          title="Active User Connections" 
           value="99.98%" 
           trend="up" 
           trendValue="0.02%" 
@@ -142,15 +142,15 @@ export default function SystemIntelligence() {
           key="metric-users"
         />
         <MetricCard 
-          title="Order Protocol" 
+          title="Order Processing" 
           value="Operational" 
           icon={CheckCircle2} 
           color="green" 
           key="metric-orders"
         />
         <MetricCard 
-          title="Payment Gateway" 
-          value="Nominal" 
+          title="Payment Processing" 
+          value="Stable" 
           icon={Zap} 
           color="teal" 
           key="metric-payments"
@@ -162,9 +162,9 @@ export default function SystemIntelligence() {
         <div className="lg:col-span-8 p-8 rounded-[2.5rem] bg-white/5 border border-white/10 space-y-8">
           <div className="flex justify-between items-center">
             <div>
-              <h4 className="text-sm font-bold uppercase tracking-widest text-white/60 mb-1">Traffic & Throughput</h4>
+              <h4 className="text-sm font-bold uppercase tracking-widest text-white/60 mb-1">Traffic & Server Load</h4>
               <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] flex items-center gap-2">
-                <Globe className="w-3 h-3" /> Global Request Density (24h)
+                <Globe className="w-3 h-3" /> Global Activity (24h)
               </p>
             </div>
             <div className="flex items-center gap-4 text-[10px] font-bold">
@@ -210,12 +210,12 @@ export default function SystemIntelligence() {
         {/* 2. Error Rate */}
         <div className="lg:col-span-4 p-8 rounded-[2.5rem] bg-white/5 border border-white/10 flex flex-col justify-between">
           <div className="space-y-6">
-            <h4 className="text-sm font-bold uppercase tracking-widest text-white/60">System Error Matrix</h4>
+            <h4 className="text-sm font-bold uppercase tracking-widest text-white/60">System Error Analysis</h4>
             
             <div className="space-y-8">
               <div className="space-y-3">
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-white/30">
-                  <span>Server-side (5xx)</span>
+                  <span>Server-side Errors</span>
                   <span className="text-green-500">0.02%</span>
                 </div>
                 <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -229,7 +229,7 @@ export default function SystemIntelligence() {
 
               <div className="space-y-3">
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-white/30">
-                  <span>Client-side (4xx)</span>
+                  <span>Client-side Errors</span>
                   <span className="text-yellow-500">1.45%</span>
                 </div>
                 <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -244,17 +244,17 @@ export default function SystemIntelligence() {
               <div className="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10">
                 <div className="flex items-center gap-3 mb-2">
                   <Signal className="w-4 h-4 text-blue-400" />
-                  <span className="text-[10px] font-black tracking-widest uppercase">Health Pulse</span>
+                  <span className="text-[10px] font-black tracking-widest uppercase">System Health Status</span>
                 </div>
                 <p className="text-[10px] text-white/30 leading-relaxed italic">
-                  Critical infrastructure components are responding within nominal parameters. No protocol violations detected.
+                  Critical system components are responding normally. No errors detected.
                 </p>
               </div>
             </div>
           </div>
 
           <div className="pt-6 mt-6 border-t border-white/5 flex items-center justify-between">
-            <div className="text-[10px] font-bold uppercase text-white/20">Uptime Instance</div>
+            <div className="text-[10px] font-bold uppercase text-white/20">System Uptime</div>
             <div className="font-mono text-xs font-bold text-white/60">14d 08h 22m 11s</div>
           </div>
         </div>
@@ -264,7 +264,7 @@ export default function SystemIntelligence() {
         {/* 3. Latency Metrics */}
         <div className="lg:col-span-4 p-8 rounded-[2.5rem] bg-white/5 border border-white/10 space-y-8">
           <div className="flex justify-between items-center">
-            <h4 className="text-sm font-bold uppercase tracking-widest text-white/60">Latency Analyzer</h4>
+            <h4 className="text-sm font-bold uppercase tracking-widest text-white/60">Response Times</h4>
             <Clock className="w-4 h-4 text-purple-400" />
           </div>
 
@@ -274,8 +274,8 @@ export default function SystemIntelligence() {
                 84
               </div>
               <div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-green-500 italic">P50 Latency</div>
-                <div className="text-xs text-white/40">Baseline Response (ms)</div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-green-500 italic">Average Latency</div>
+                <div className="text-xs text-white/40">Normal Response (ms)</div>
               </div>
             </div>
 
@@ -284,8 +284,8 @@ export default function SystemIntelligence() {
                 192
               </div>
               <div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-yellow-500 italic">P95 Latency</div>
-                <div className="text-xs text-white/40">Sluggish Distribution (ms)</div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-yellow-500 italic">Peak Latency</div>
+                <div className="text-xs text-white/40">Slower Responses (ms)</div>
               </div>
             </div>
 
@@ -309,12 +309,12 @@ export default function SystemIntelligence() {
                 <Database className="w-4 h-4 text-pink-400" />
               </div>
               <div>
-                <h4 className="text-sm font-bold uppercase tracking-widest text-white/60">Database Integrity</h4>
-                <p className="text-[10px] text-white/20">Multi-region Synchronicity Active</p>
+                <h4 className="text-sm font-bold uppercase tracking-widest text-white/60">Database Health</h4>
+                <p className="text-[10px] text-white/20">Global Data Syncing Active</p>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-[10px] font-black uppercase text-pink-400 tracking-[0.2em] mb-1">Live Sharding</div>
+              <div className="text-[10px] font-black uppercase text-pink-400 tracking-[0.2em] mb-1">Active Scaling</div>
               <div className="flex gap-1 justify-end">
                 {[1,2,3,4,5].map(i => (
                   <div key={i} className="w-3 h-1 rounded-full bg-pink-500/40 animate-pulse" style={{ animationDelay: `${i * 0.2}s` }} />
@@ -370,14 +370,14 @@ export default function SystemIntelligence() {
       <div className="p-8 rounded-[3rem] bg-white/5 border border-white/10">
         <div className="flex items-center gap-3 mb-10">
           <HardDrive className="w-5 h-5 text-amber-400" />
-          <h4 className="text-sm font-bold uppercase tracking-widest text-white/60">Infrastructure Resource Mapping</h4>
+          <h4 className="text-sm font-bold uppercase tracking-widest text-white/60">System Resource Usage</h4>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* CPU Usage */}
           <div className="space-y-6">
             <div className="flex justify-between items-center text-[10px] font-bold uppercase text-white/40">
-              <span className="flex items-center gap-2 font-black tracking-widest"><Cpu className="w-3 h-3" /> CPU Engine</span>
+              <span className="flex items-center gap-2 font-black tracking-widest"><Cpu className="w-3 h-3" /> System Processor</span>
               <span>32.8%</span>
             </div>
             <div className="relative h-2 w-full bg-white/5 rounded-full">
@@ -399,7 +399,7 @@ export default function SystemIntelligence() {
           {/* Memory Usage */}
           <div className="space-y-6">
             <div className="flex justify-between items-center text-[10px] font-bold uppercase text-white/40">
-              <span className="flex items-center gap-2 font-black tracking-widest"><RefreshCcw className="w-3 h-3" /> Mem Synchronizer</span>
+              <span className="flex items-center gap-2 font-black tracking-widest"><RefreshCcw className="w-3 h-3" /> Memory Allocation</span>
               <span>4.2 GB</span>
             </div>
             <div className="relative h-2 w-full bg-white/5 rounded-full">
@@ -419,7 +419,7 @@ export default function SystemIntelligence() {
           {/* Disk Usage */}
           <div className="space-y-6">
             <div className="flex justify-between items-center text-[10px] font-bold uppercase text-white/40">
-              <span className="flex items-center gap-2 font-black tracking-widest"><HardDrive className="w-3 h-3" /> Storage Node</span>
+              <span className="flex items-center gap-2 font-black tracking-widest"><HardDrive className="w-3 h-3" /> Disk Storage</span>
               <span>18 / 64 GB</span>
             </div>
             <div className="relative h-2 w-full bg-white/5 rounded-full">
@@ -430,7 +430,7 @@ export default function SystemIntelligence() {
               {[1,2,3,4].map(i => (
                 <div key={i} className={`p-3 rounded-xl border ${i <= 1 ? 'bg-amber-500/10 border-amber-500/20' : 'bg-white/5 border-white/10'}`}>
                   <div className={`w-1 h-1 rounded-full mb-1 ${i <= 1 ? 'bg-amber-500' : 'bg-white/20'}`} />
-                  <div className="text-[8px] font-bold uppercase text-white/40 tracking-[0.2em]">S_UNIT_{i}</div>
+                  <div className="text-[8px] font-bold uppercase text-white/40 tracking-[0.2em]">STORAGE_UNIT_{i}</div>
                 </div>
               ))}
             </div>
@@ -451,21 +451,21 @@ export default function SystemIntelligence() {
                 <Zap className="w-6 h-6 text-indigo-400" />
               </div>
               <div>
-                <h4 className="text-xl font-bold tracking-tight">System Command Toolkit</h4>
-                <p className="text-xs text-white/40 uppercase tracking-widest font-medium">Core operational orchestration v1.2</p>
+                <h4 className="text-xl font-bold tracking-tight">System Maintenance Tools</h4>
+                <p className="text-xs text-white/40 uppercase tracking-widest font-medium">Core maintenance operations v1.2</p>
               </div>
             </div>
             <div className="px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-bold text-indigo-400 uppercase tracking-widest">
-              Level 4 Access Required
+              Admin Access Required
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {[
-              { id: 'purge', label: 'Purge Global Cache', icon: RefreshCcw, desc: 'Invalidate all edge-cached assets.', color: 'blue' },
-              { id: 'reindex', label: 'Re-index Matrix', icon: Database, desc: 'Optimize database structural indices.', color: 'purple' },
-              { id: 'cycle', label: 'Cycle Server Nodes', icon: Server, desc: 'Graceful restart of all active clusters.', color: 'green' },
-              { id: 'lockdown', label: 'Emergency Lockdown', icon: Shield, desc: 'Truncate all non-admin app connections.', color: 'red' }
+              { id: 'purge', label: 'Clear Global Cache', icon: RefreshCcw, desc: 'Invalidate all edge-cached assets.', color: 'blue' },
+              { id: 'reindex', label: 'Optimize Database', icon: Database, desc: 'Optimize database structural indices.', color: 'purple' },
+              { id: 'cycle', label: 'Restart Servers', icon: Server, desc: 'Graceful restart of all active clusters.', color: 'green' },
+              { id: 'lockdown', label: 'Security Lockdown', icon: Shield, desc: 'Truncate all non-admin app connections.', color: 'red' }
             ].map((cmd) => (
               <button
                 key={cmd.id}
@@ -492,7 +492,7 @@ export default function SystemIntelligence() {
             ) : (
               <>
                 <AlertCircle className="w-4 h-4 text-white/20" />
-                <p className="text-[10px] text-white/20 uppercase tracking-widest">Caution: Commands executed here impact global infrastructure state. All actions are logged to the Matrix Audit Protocol.</p>
+                <p className="text-[10px] text-white/20 uppercase tracking-widest">Caution: Commands executed here impact global system state. All actions are logged to the Security Logs.</p>
               </>
             )}
           </div>

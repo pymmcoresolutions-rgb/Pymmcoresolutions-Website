@@ -97,9 +97,9 @@ export default function AdminDashboard() {
     { id: 'submissions', label: 'Submissions', icon: Rocket, roles: ['admin', 'editor'] },
     { id: 'cms', label: 'CMS', icon: FileText, roles: ['admin', 'editor'] },
     { id: 'content', label: 'Site Content', icon: Globe, roles: ['admin', 'editor'] },
-    { id: 'intelligence', label: 'Intelligence', icon: Shield, roles: ['admin'] },
+    { id: 'intelligence', label: 'Performance', icon: Shield, roles: ['admin'] },
     { id: 'branding', label: 'Branding', icon: Image, roles: ['admin'] },
-    { id: 'audit', label: 'Audit', icon: History, roles: ['admin'] },
+    { id: 'audit', label: 'Activity Logs', icon: History, roles: ['admin'] },
     { id: 'settings', label: 'Settings', icon: Settings, roles: ['admin'] },
   ];
 
@@ -113,10 +113,10 @@ export default function AdminDashboard() {
           <div className="p-4 mb-6 rounded-2xl bg-blue-600/10 border border-blue-500/20">
             <div className="flex items-center gap-3 mb-2">
               <Shield className="w-5 h-5 text-blue-400" />
-              <span className="font-bold text-sm uppercase tracking-widest">Toolkit</span>
+              <span className="font-bold text-sm uppercase tracking-widest">Admin Tools</span>
             </div>
             <p className="text-[10px] text-white/40 leading-tight">
-              Authorized access only. All actions are logged under Storefront Protocol 5.0.
+              Authorized access only. All actions are logged under Platform Records.
             </p>
           </div>
           
@@ -191,9 +191,9 @@ export default function AdminDashboard() {
                       <AlertCircle className="w-4 h-4 text-yellow-400" /> System Alerts
                     </h3>
                     <div className="space-y-4">
-                      <AlertItem type="success" message="Infrastructure Protocol v5.0.4 is active and healthy." />
-                      <AlertItem type="success" message="Marketplace sync completed successfully." />
-                      {stats.totalReviews > 50 && <AlertItem type="warning" message="High volume of reviews pending moderation." />}
+                      <AlertItem type="success" message="System environment is active and healthy." />
+                      <AlertItem type="success" message="Platform synchronization completed successfully." />
+                      {stats.totalReviews > 50 && <AlertItem type="warning" message="High volume of reviews pending review." />}
                     </div>
                   </div>
                 </div>

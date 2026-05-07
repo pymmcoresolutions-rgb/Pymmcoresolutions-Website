@@ -56,24 +56,28 @@ export async function generateIconSuggestion(name: string, description: string) 
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Suggest a Lucide React icon name that best represents this application.
+      contents: `Suggest 5 Lucide React icon names that best represent this application.
       Name: ${name}
       Description: ${description}`,
       config: {
-        systemInstruction: "You are a UI/UX designer. Choose one icon name from the Lucide React library (e.g., 'Zap', 'Shield', 'Cpu', 'Activity', 'Globe', 'Smartphone', 'Database', 'Cloud', 'Lock', 'Key', 'Layers', 'Box', 'Package', 'Terminal', 'Code', 'BarChart', 'PieChart', 'LineChart', 'Users', 'User', 'Mail', 'MessageSquare', 'Bell', 'Settings', 'Search', 'Filter', 'Trash', 'Edit', 'Plus', 'Minus', 'Check', 'X', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'ChevronRight', 'ChevronLeft', 'ChevronUp', 'ChevronDown', 'ExternalLink', 'Download', 'Upload', 'Eye', 'EyeOff', 'Heart', 'Star', 'Bookmark', 'Share', 'Copy', 'Clipboard', 'Calendar', 'Clock', 'MapPin', 'Phone', 'Camera', 'Video', 'Music', 'Mic', 'Speaker', 'Monitor', 'Tv', 'Laptop', 'Tablet', 'Smartphone', 'Watch', 'Wifi', 'Battery', 'Bluetooth', 'HardDrive', 'Cpu', 'Mouse', 'Keyboard', 'Printer', 'Save', 'File', 'Folder', 'Image', 'Gift', 'ShoppingBag', 'ShoppingCart', 'CreditCard', 'DollarSign', 'Euro', 'Bitcoin', 'Briefcase', 'GraduationCap', 'Book', 'Library', 'PenTool', 'Brush', 'Palette', 'Sun', 'Moon', 'Cloud', 'Umbrella', 'Wind', 'Zap', 'Flame', 'Droplet', 'Leaf', 'Tree', 'Flower', 'Heart', 'Smile', 'Frown', 'Meh', 'ThumbsUp', 'ThumbsDown', 'Award', 'Trophy', 'Medal', 'Flag', 'Anchor', 'LifeBuoy', 'Compass', 'Navigation', 'Map', 'Globe', 'Plane', 'Train', 'Car', 'Bike', 'Truck', 'Bus', 'Ship', 'Rocket', 'Space', 'Atom', 'Dna', 'Flask', 'Beaker', 'Microscope', 'Telescope', 'Stethoscope', 'Syringe', 'Pill', 'Activity', 'HeartPulse', 'Thermometer', 'Wind', 'CloudRain', 'CloudSnow', 'CloudLightning', 'CloudDrizzle', 'CloudFog', 'CloudSun', 'CloudMoon', 'Sun', 'Moon', 'Sunrise', 'Sunset', 'Cloud', 'CloudRain', 'CloudSnow', 'CloudLightning', 'CloudDrizzle', 'CloudFog', 'CloudSun', 'CloudMoon', 'Sun', 'Moon', 'Sunrise', 'Sunset'). Return ONLY the icon name as a string in JSON format.",
+        systemInstruction: "You are a UI/UX designer. Choose 5 unique and relevant icon names from the Lucide React library. Output them as a JSON array of strings under the key 'suggestions'.",
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            iconName: { type: Type.STRING }
+            suggestions: { 
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            }
           },
-          required: ["iconName"]
+          required: ["suggestions"]
         }
       }
     });
-    return JSON.parse(response.text).iconName;
+    const data = JSON.parse(response.text);
+    return Array.isArray(data.suggestions) ? data.suggestions : ["Box", "Package", "Layers", "Cpu", "Zap"];
   } catch (error) {
     console.error("Gemini Error:", error);
-    return "Box";
+    return ["Box", "Package", "Layers", "Cpu", "Zap"];
   }
 }

@@ -40,7 +40,7 @@ export default function CookieConsent() {
               <div>
                 <h3 className="text-sm font-bold text-white mb-1">Privacy & Cookies</h3>
                 <p className="text-xs text-white/40 leading-relaxed">
-                  We use cookies to enhance your experience, analyze site traffic, and ensure secure authentication. By continuing, you agree to our use of cookies.
+                  We use cookies to enhance your experience, analyze site traffic, and ensure secure login. By continuing, you agree to our use of cookies.
                 </p>
               </div>
               <button 
