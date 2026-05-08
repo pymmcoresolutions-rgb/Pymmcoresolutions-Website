@@ -21,6 +21,7 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   isEditor: boolean;
+  isDeveloper: boolean;
   isSuspended: boolean;
   isEmailVerified: boolean;
   loginLoading: boolean;
@@ -57,6 +58,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // Set persistence explicitly to avoid internal assertion errors in some environments
+    import('firebase/auth').then(({ setPersistence, browserLocalPersistence }) => {
+      setPersistence(auth, browserLocalPersistence).catch(err => {
+        console.error("Auth persistence error:", err);
+      });
+    });
+
     let unsubProfile: (() => void) | null = null;
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -122,24 +130,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async () => {
     setLoginLoading(true);
     try {
-      // Ensure auth is ready
-      if (!auth) {
-        throw new Error("Authentication system not initialized.");
+      console.log("Initiating Google Login...");
+      const provider = new GoogleAuthProvider();
+      
+      // Attempt login
+      const result = await signInWithPopup(auth, provider);
+      console.log("Login successful:", result.user.email);
+    } catch (error: any) {
+      console.error("Google Auth Error:", error);
+      
+      // If internal error, it might be due to iframe/popup restrictions
+      if (error.code === 'auth/internal-error') {
+        alert("Authentication encountered an internal error. This can happen in sandboxed environments. Please try opening the app in a new tab if this persists.");
       }
       
-      const provider = new GoogleAuthProvider();
-      // Add custom parameters to force account selection if needed
-      provider.setCustomParameters({
-        prompt: 'select_account'
-      });
+      if (error.code === 'auth/popup-blocked') {
+        alert("The login popup was blocked by your browser. Please allow popups for this site or open the application in a new tab to sign in.");
+      }
       
-      await signInWithPopup(auth, provider);
-    } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-        // Silently handle user cancellation
         return;
       }
-      console.error("Detailed Auth Error:", error);
       throw error;
     } finally {
       setLoginLoading(false);
@@ -204,7 +215,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const isAdmin = profile?.role === 'admin' || user?.email === "pymmcoresolutions@gmail.com";
-  const isEditor = isAdmin || profile?.role === 'editor';
+  const isEditor = isAdmin || profile?.role === 'editor' || profile?.role === 'developer';
+  const isDeveloper = isAdmin || profile?.role === 'developer';
   const isSuspended = profile?.status === 'suspended';
   const isEmailVerified = user?.emailVerified || false;
 
@@ -216,6 +228,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loginLoading,
       isAdmin, 
       isEditor, 
+      isDeveloper,
       isSuspended, 
       isEmailVerified,
       login, 

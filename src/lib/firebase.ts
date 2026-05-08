@@ -7,11 +7,6 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
 
-// Set persistence explicitly to avoid internal assertion errors in some environments
-setPersistence(auth, browserLocalPersistence).catch(err => {
-  console.error("Auth persistence error:", err);
-});
-
 // Connection test
 async function testConnection() {
   try {

@@ -71,7 +71,14 @@ export default function AuthInterface({ onComplete }: { onComplete?: () => void 
       if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
         return;
       }
-      setError('Google authentication failed. Please try again.');
+      
+      if (err.code === 'auth/popup-blocked') {
+        setError('Login popup was blocked. Please allow popups or open in a new tab.');
+      } else if (err.code === 'auth/internal-error') {
+        setError('Authentication internal error. Please try opening in a new tab.');
+      } else {
+        setError('Google authentication failed. Please try again.');
+      }
     }
   };
 

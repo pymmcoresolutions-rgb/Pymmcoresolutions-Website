@@ -97,7 +97,15 @@ service cloud.firestore {
         (request.auth.token.email == "pymmcoresolutions@gmail.com" ||
          request.auth.uid == "cBjT0eC3nnVIEE0BD4Xj9Kr1y8h1" ||
          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ["admin", "editor"]));
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ["admin", "editor", "developer"]));
+    }
+
+    function isDeveloper() {
+      return isAuthenticated() && 
+        (request.auth.token.email == "pymmcoresolutions@gmail.com" ||
+         request.auth.uid == "cBjT0eC3nnVIEE0BD4Xj9Kr1y8h1" ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ["admin", "developer"]));
     }
 
     function isViewer() {
@@ -144,7 +152,7 @@ service cloud.firestore {
 
     function isValidUser(data) {
       return data.keys().hasAll(['role', 'email']) &&
-             data.role in ['admin', 'editor', 'viewer'] &&
+             data.role in ['admin', 'editor', 'developer', 'viewer'] &&
              isValidEmail(data.email) &&
              (!('status' in data) || data.status in ['active', 'suspended']) &&
              (!('name' in data) || (data.name is string && data.name.size() <= 100)) &&
@@ -223,6 +231,16 @@ service cloud.firestore {
              data.createdAt is timestamp;
     }
 
+    function isValidDownload(data) {
+      return data.keys().hasAll(['appId', 'appName', 'timestamp']) &&
+             data.appId is string &&
+             data.appName is string &&
+             data.timestamp is timestamp &&
+             (!('userId' in data) || data.userId == request.auth.uid) &&
+             (!('sessionId' in data) || (data.sessionId is string && data.sessionId.size() <= 100)) &&
+             (!('platform' in data) || (data.platform is string && data.platform.size() <= 100));
+    }
+
     function isValidSettings(data) {
       return (!('contactEmail' in data) || isValidEmail(data.contactEmail)) &&
              (!('phoneNumber' in data) || (data.phoneNumber is string && data.phoneNumber.size() <= 100)) &&
@@ -265,8 +283,11 @@ service cloud.firestore {
                       'name', 'description', 'type', 'category', 'link', 'tags', 'developer', 
                       'price', 'version', 'appStoreLink', 'playStoreLink', 'demoLink', 
                       'expectedLaunchDate', 'features', 'icon', 'screenshots', 'approvalStatus',
-                      'paymentStatus', 'paymentReference', 'sourceCodeUrl', 'aiRiskScore', 'aiReport', 'isDraft', 'updatedAt', 'id', 'status'
+                      'paymentStatus', 'paymentReference', 'sourceCodeUrl', 'aiRiskScore', 'aiReport', 'isDraft', 'updatedAt', 'id', 'status', 'downloadCount'
                     ])) ||
+                    (isAuthenticated() && isNotSuspended() && 
+                     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['downloadCount']) &&
+                     request.resource.data.downloadCount == resource.data.downloadCount + 1) ||
                     (isAuthenticated() && isNotSuspended() && 
                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ratingCount', 'sumOfRatings']) &&
                      (
@@ -363,6 +384,11 @@ service cloud.firestore {
       allow read: if true;
       allow create, update: if isAdmin() && isValidKeyFeature(request.resource.data);
       allow delete: if isAdmin();
+    }
+
+    match /downloads/{downloadId} {
+      allow create: if isValidDownload(request.resource.data);
+      allow read: if isDeveloper() || isAdmin();
     }
 
     // Default deny

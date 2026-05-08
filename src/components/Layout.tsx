@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Notifications from './Notifications';
 import Logo from './Logo';
 import GlobalBackground from './GlobalBackground';
+import MAAYFeedback from './MAAYFeedback';
 
 export default function Layout({ children, currentPath, onNavigate }: { children: React.ReactNode, currentPath?: string, onNavigate?: (path: string) => void }) {
   const { user, profile, isAdmin, isEditor, login, logout, loginLoading } = useAuth();
@@ -28,6 +29,7 @@ export default function Layout({ children, currentPath, onNavigate }: { children
   return (
     <div className="min-h-screen bg-[#030303] text-white font-sans selection:bg-cyan-500/30">
       <GlobalBackground />
+      <MAAYFeedback />
       {/* Background Gradients */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-cyan-600/10 blur-[120px] rounded-full" />

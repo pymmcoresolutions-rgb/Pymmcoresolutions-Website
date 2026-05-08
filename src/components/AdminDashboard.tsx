@@ -7,7 +7,8 @@ import {
   LayoutDashboard, Users, FileText, History, Settings, 
   Plus, Shield, Activity, Globe, Smartphone, Monitor,
   AlertCircle, CheckCircle2, Clock, Search, Filter, Mail,
-  MoreVertical, UserMinus, UserPlus, ShieldCheck, Ban, Star, Image, Rocket
+  MoreVertical, UserMinus, UserPlus, ShieldCheck, Ban, Star, Image, Rocket,
+  TrendingUp
 } from 'lucide-react';
 import NodeManager from './admin/NodeManager';
 import UserManager from './admin/UserManager';
@@ -21,10 +22,11 @@ import SystemIntelligence from './admin/SystemIntelligence';
 import SubmissionManager from './admin/SubmissionManager';
 import LogoManager from './admin/LogoManager';
 import WaitlistManager from './admin/WaitlistManager';
+import AnalyticsDashboard from './admin/AnalyticsDashboard';
 import BrandingSettings from './BrandingSettings';
 
 export default function AdminDashboard() {
-  const { user, profile, isAdmin, isEditor, loading } = useAuth();
+  const { user, profile, isAdmin, isEditor, isDeveloper, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [recentLogs, setRecentLogs] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -88,7 +90,8 @@ export default function AdminDashboard() {
   }, [isAdmin, loading]);
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: LayoutDashboard, roles: ['admin', 'editor'] },
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard, roles: ['admin', 'editor', 'developer'] },
+    { id: 'insights', label: 'Insights', icon: TrendingUp, roles: ['admin', 'developer'] },
     { id: 'apps', label: 'Apps', icon: Activity, roles: ['admin', 'editor'] },
     { id: 'users', label: 'Users', icon: Users, roles: ['admin'] },
     { id: 'waitlist', label: 'Waitlist', icon: Mail, roles: ['admin'] },
@@ -99,7 +102,7 @@ export default function AdminDashboard() {
     { id: 'content', label: 'Site Content', icon: Globe, roles: ['admin', 'editor'] },
     { id: 'intelligence', label: 'Performance', icon: Shield, roles: ['admin'] },
     { id: 'branding', label: 'Branding', icon: Image, roles: ['admin'] },
-    { id: 'audit', label: 'Activity Logs', icon: History, roles: ['admin'] },
+    { id: 'audit', label: 'Activity Logs', icon: History, roles: ['admin', 'developer'] },
     { id: 'settings', label: 'Settings', icon: Settings, roles: ['admin'] },
   ];
 
@@ -200,6 +203,7 @@ export default function AdminDashboard() {
               </motion.div>
             )}
 
+            {activeTab === 'insights' && <AnalyticsDashboard key="insights" />}
             {activeTab === 'apps' && <NodeManager key="apps" />}
             {activeTab === 'users' && <UserManager key="users" />}
             {activeTab === 'waitlist' && <WaitlistManager key="waitlist" />}

@@ -112,7 +112,7 @@
       "description": "Identity and role management for users.",
       "type": "object",
       "properties": {
-        "role": { "type": "string", "enum": ["admin", "editor", "viewer"], "description": "User access level" },
+        "role": { "type": "string", "enum": ["admin", "editor", "developer", "viewer"], "description": "User access level" },
         "email": { "type": "string", "format": "email" },
         "status": { "type": "string", "enum": ["active", "suspended"] }
       },
@@ -186,6 +186,20 @@
         "createdAt": { "type": "string", "format": "date-time", "description": "System-generated creation date" }
       },
       "required": ["title", "subtitle", "order", "active", "createdAt"]
+    },
+    "DownloadRecord": {
+      "title": "Download Record",
+      "description": "Log of a software download event.",
+      "type": "object",
+      "properties": {
+        "appId": { "type": "string" },
+        "appName": { "type": "string" },
+        "userId": { "type": "string", "description": "UID of the user (if logged in)" },
+        "sessionId": { "type": "string", "description": "Persistent session identifier" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "platform": { "type": "string", "description": "OS/Platform of the downloader" }
+      },
+      "required": ["appId", "appName", "timestamp"]
     }
   },
   "firestore": {
@@ -201,6 +215,7 @@
     "/waitlist/{entryId}": { "schema": "WaitlistEntry", "description": "Marketing leads and waitlisted users." },
     "/wishlists/{wishId}": { "schema": "WishlistItem", "description": "User's collection of saved apps." },
     "/background_assets/{assetId}": { "schema": "BackgroundAsset", "description": "Environment branding elements." },
-    "/key_features/{featureId}": { "schema": "KeyFeature", "description": "Homepage highlight sequence." }
+    "/key_features/{featureId}": { "schema": "KeyFeature", "description": "Homepage highlight sequence." },
+    "/downloads/{downloadId}": { "schema": "DownloadRecord", "description": "Individual download logs." }
   }
 }

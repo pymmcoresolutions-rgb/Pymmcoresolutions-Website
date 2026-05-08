@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import * as LucideIcons from 'lucide-react';
 import DeveloperPortal from './DeveloperPortal';
 import ScreenshotModal from './ScreenshotModal';
+import { analyticsService } from '../services/analyticsService';
 import { 
   ExternalLink, Tag, Globe, Smartphone, Monitor, 
   Plus, Shield, Activity, ArrowUpRight, Lock,
@@ -486,6 +487,7 @@ export default function Catalog() {
                           href={app.appStoreLink} 
                           target="_blank" 
                           rel="noreferrer"
+                          onClick={() => analyticsService.trackDownload(app.id, app.name)}
                           className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all"
                         >
                           <Apple className="w-4 h-4" /> App Store
@@ -496,6 +498,7 @@ export default function Catalog() {
                           href={app.playStoreLink} 
                           target="_blank" 
                           rel="noreferrer"
+                          onClick={() => analyticsService.trackDownload(app.id, app.name)}
                           className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all"
                         >
                           <Play className="w-4 h-4" /> Play Store
@@ -508,6 +511,7 @@ export default function Catalog() {
                         href={app.type === 'Desktop' && app.demoLink ? app.demoLink : app.link} 
                         target="_blank" 
                         rel="noreferrer"
+                        onClick={() => analyticsService.trackDownload(app.id, app.name)}
                         className="flex-1 py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-cyan-600/20"
                       >
                         <Globe className="w-4 h-4" /> Launch App
@@ -517,6 +521,7 @@ export default function Catalog() {
                           href={app.link} 
                           target="_blank" 
                           rel="noreferrer"
+                          onClick={() => analyticsService.trackDownload(app.id, app.name)}
                           className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all"
                         >
                           <Download className="w-4 h-4" /> Download
@@ -527,6 +532,7 @@ export default function Catalog() {
                           href={app.demoLink} 
                           target="_blank" 
                           rel="noreferrer"
+                          onClick={() => analyticsService.trackDownload(app.id, app.name)}
                           className="px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center justify-center text-[10px] font-bold uppercase tracking-widest transition-all"
                         >
                           Demo
@@ -621,6 +627,7 @@ export default function Catalog() {
                           href={selectedApp.appStoreLink} 
                           target="_blank" 
                           rel="noreferrer"
+                          onClick={() => analyticsService.trackDownload(selectedApp.id, selectedApp.name)}
                           className="flex items-center gap-3 p-4 bg-white/5 hover:bg-white/10 rounded-2xl transition-all group"
                         >
                           <Apple className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
@@ -635,6 +642,7 @@ export default function Catalog() {
                           href={selectedApp.playStoreLink} 
                           target="_blank" 
                           rel="noreferrer"
+                          onClick={() => analyticsService.trackDownload(selectedApp.id, selectedApp.name)}
                           className="flex items-center gap-3 p-4 bg-white/5 hover:bg-white/10 rounded-2xl transition-all group"
                         >
                           <Play className="w-6 h-6 text-green-500 group-hover:scale-110 transition-transform" />
@@ -650,6 +658,7 @@ export default function Catalog() {
                       href={((Array.isArray(selectedApp.type) ? selectedApp.type.includes('Desktop') : selectedApp.type === 'Desktop') || (Array.isArray(selectedApp.type) ? selectedApp.type.includes('All') : selectedApp.type === 'All')) && selectedApp.demoLink ? selectedApp.demoLink : selectedApp.link} 
                       target="_blank" 
                       rel="noreferrer"
+                      onClick={() => analyticsService.trackDownload(selectedApp.id, selectedApp.name)}
                       className="w-full py-5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl shadow-cyan-600/20"
                     >
                       <ExternalLink className="w-5 h-5" />
@@ -661,6 +670,7 @@ export default function Catalog() {
                         href={selectedApp.demoLink} 
                         target="_blank" 
                         rel="noreferrer"
+                        onClick={() => analyticsService.trackDownload(selectedApp.id, selectedApp.name)}
                         className="w-full py-5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-3"
                       >
                         <Globe className="w-5 h-5" />
