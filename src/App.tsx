@@ -10,6 +10,7 @@ import Contact from './components/Contact';
 import Reviews from './components/Reviews';
 import Legal from './components/Legal';
 import ErrorBoundary from './components/ErrorBoundary';
+import Pricing from './components/Pricing';
 
 import AuthInterface from './components/AuthInterface';
 import Documentation from './components/Documentation';
@@ -35,7 +36,7 @@ function MainContent() {
     );
   }
 
-  const isPublicPath = ['#privacy', '#terms', '#security', '#status', '#docs'].includes(currentPath);
+  const isPublicPath = ['#privacy', '#terms', '#security', '#status', '#docs', '#pricing'].includes(currentPath);
 
   if (!isPublicPath && (currentPath === '#home' || (!isLaunched && !user))) {
     return <LandingPage onLaunch={() => {
@@ -51,7 +52,9 @@ function MainContent() {
   return (
     <Layout currentPath={currentPath} onNavigate={setCurrentPath}>
       {isPublicPath ? (
-        currentPath === '#docs' ? <Documentation isEditor={isEditor} /> : <Legal />
+        currentPath === '#docs' ? <Documentation isEditor={isEditor} /> : 
+        currentPath === '#pricing' ? <Pricing onStartListing={() => setCurrentPath('#')} /> :
+        <Legal />
       ) : (!user || needsVerification) ? (
         <div className="py-20">
           <AuthInterface onComplete={() => setIsLaunched(true)} />

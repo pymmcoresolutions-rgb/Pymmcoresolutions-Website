@@ -107,6 +107,17 @@
         "themeMode": { "type": "string", "enum": ["dark", "light", "system"], "description": "Global visual theme for the platform." }
       }
     },
+    "MarketplaceConfig": {
+      "title": "Marketplace Economy Config",
+      "description": "Configuration for global marketplace rates and fees.",
+      "type": "object",
+      "properties": {
+        "listingFee": { "type": "number", "description": "Flat fee in USD for listing an application." },
+        "exchangeRate": { "type": "number", "description": "USD to local currency (NGN) exchange rate for Paystack." },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["listingFee", "exchangeRate"]
+    },
     "User": {
       "title": "User Profile",
       "description": "Identity and role management for users.",
@@ -216,6 +227,7 @@
     "/wishlists/{wishId}": { "schema": "WishlistItem", "description": "User's collection of saved apps." },
     "/background_assets/{assetId}": { "schema": "BackgroundAsset", "description": "Environment branding elements." },
     "/key_features/{featureId}": { "schema": "KeyFeature", "description": "Homepage highlight sequence." },
-    "/downloads/{downloadId}": { "schema": "DownloadRecord", "description": "Individual download logs." }
+    "/downloads/{downloadId}": { "schema": "DownloadRecord", "description": "Individual download logs." },
+    "/config/marketplace": { "schema": "MarketplaceConfig", "description": "Global marketplace economy settings." }
   }
 }

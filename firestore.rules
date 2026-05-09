@@ -241,6 +241,13 @@ service cloud.firestore {
              (!('platform' in data) || (data.platform is string && data.platform.size() <= 100));
     }
 
+    function isValidMarketplaceConfig(data) {
+      return data.keys().hasAll(['listingFee', 'exchangeRate']) &&
+             data.listingFee is number &&
+             data.exchangeRate is number &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp);
+    }
+
     function isValidSettings(data) {
       return (!('contactEmail' in data) || isValidEmail(data.contactEmail)) &&
              (!('phoneNumber' in data) || (data.phoneNumber is string && data.phoneNumber.size() <= 100)) &&
@@ -389,6 +396,11 @@ service cloud.firestore {
     match /downloads/{downloadId} {
       allow create: if isValidDownload(request.resource.data);
       allow read: if isDeveloper() || isAdmin();
+    }
+
+    match /config/marketplace {
+      allow read: if true;
+      allow write: if isAdmin() && isValidMarketplaceConfig(request.resource.data);
     }
 
     // Default deny

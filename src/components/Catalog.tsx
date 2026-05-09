@@ -6,6 +6,7 @@ import { useAuth } from '../lib/auth';
 import { motion, AnimatePresence } from 'motion/react';
 import * as LucideIcons from 'lucide-react';
 import DeveloperPortal from './DeveloperPortal';
+import AppDetailModal from './AppDetailModal';
 import ScreenshotModal from './ScreenshotModal';
 import { analyticsService } from '../services/analyticsService';
 import { 
@@ -20,12 +21,16 @@ import {
 const DynamicIcon = ({ name, className }: { name: string; className?: string }) => {
   if (!name) return <Box className={className} />;
   
-  if (name.startsWith('data:image') || name.startsWith('http')) {
-    return <img src={name} alt="Icon" className={`${className} object-cover rounded-lg`} />;
+  if (typeof name === 'string' && (name.startsWith('data:image') || name.startsWith('http'))) {
+    return <img src={name} alt="Icon" className={`${className} object-cover rounded-lg`} referrerPolicy="no-referrer" />;
   }
 
-  const Icon = (LucideIcons as any)[name] || Box;
-  return <Icon className={className} />;
+  const Icon = (LucideIcons as any)[name];
+  if (typeof Icon === 'function' || (typeof Icon === 'object' && Icon !== null)) {
+    return <Icon className={className} />;
+  }
+  
+  return <Box className={className} />;
 };
 
 const StarRating = ({ 
@@ -422,7 +427,7 @@ export default function Catalog() {
                 <div className="mb-4" onClick={e => e.stopPropagation()}>
                   <StarRating 
                     appId={app.id}
-                    currentRating={app.ratingCount ? app.sumOfRatings / app.ratingCount : 0}
+                    currentRating={app.ratingCount ? (app.sumOfRatings || 0) / app.ratingCount : 0}
                     ratingCount={app.ratingCount || 0}
                     sumOfRatings={app.sumOfRatings || 0}
                     userRating={userRatings[app.id] || null}
@@ -559,202 +564,16 @@ export default function Catalog() {
         )}
       </div>
       {/* Detailed App View Modal */}
-      <AnimatePresence>
-        {selectedApp && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 overflow-y-auto bg-black/80 backdrop-blur-md"
-            onClick={() => setSelectedAppId(null)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-[#0a0a0a] border border-white/10 rounded-[3rem] w-full max-w-5xl overflow-hidden shadow-2xl relative"
-              onClick={e => e.stopPropagation()}
-            >
-              {/* Close Button */}
-              <button 
-                onClick={() => setSelectedAppId(null)}
-                className="absolute top-8 right-8 p-3 rounded-full bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all z-20"
-              >
-                <X className="w-6 h-6" />
-              </button>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2">
-                {/* Left Side: Visuals & Links */}
-                <div className="p-8 lg:p-12 space-y-8 bg-white/[0.02]">
-                  <div className="flex flex-wrap gap-4 items-start justify-between">
-                    <div className="w-24 h-24 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shadow-xl">
-                      <DynamicIcon name={selectedApp.icon} className="w-16 h-16 text-cyan-400" />
-                    </div>
-
-                    <div className="flex gap-3">
-                      <button
-                        onClick={() => handleToggleWishlist(selectedApp.id)}
-                        className={`p-4 rounded-2xl transition-all ${
-                          wishlist.has(selectedApp.id) 
-                            ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' 
-                            : 'bg-white/5 text-white/40 border border-white/10 hover:text-white'
-                        }`}
-                      >
-                        <Heart className={`w-6 h-6 ${wishlist.has(selectedApp.id) ? 'fill-current' : ''}`} />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap gap-3">
-                      {(Array.isArray(selectedApp.type) ? selectedApp.type : [selectedApp.type || '']).map(t => (
-                        <span key={t} className="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-bold uppercase tracking-widest">
-                          {t}
-                        </span>
-                      ))}
-                      <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/40 text-[10px] font-bold uppercase tracking-widest">
-                        v{selectedApp.version || '1.0.0'}
-                      </span>
-                    </div>
-                    <h2 className="text-5xl font-bold tracking-tighter">{selectedApp.name}</h2>
-                    <p className="text-xl text-cyan-400 font-bold">{selectedApp.price}</p>
-                  </div>
-
-                  <div className="pt-8 border-t border-white/5 space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
-                      {selectedApp.appStoreLink && (
-                        <a 
-                          href={selectedApp.appStoreLink} 
-                          target="_blank" 
-                          rel="noreferrer"
-                          onClick={() => analyticsService.trackDownload(selectedApp.id, selectedApp.name)}
-                          className="flex items-center gap-3 p-4 bg-white/5 hover:bg-white/10 rounded-2xl transition-all group"
-                        >
-                          <Apple className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
-                          <div className="text-left">
-                            <div className="text-[8px] font-bold text-white/20 uppercase tracking-widest">Download on</div>
-                            <div className="text-xs font-bold">App Store</div>
-                          </div>
-                        </a>
-                      )}
-                      {selectedApp.playStoreLink && (
-                        <a 
-                          href={selectedApp.playStoreLink} 
-                          target="_blank" 
-                          rel="noreferrer"
-                          onClick={() => analyticsService.trackDownload(selectedApp.id, selectedApp.name)}
-                          className="flex items-center gap-3 p-4 bg-white/5 hover:bg-white/10 rounded-2xl transition-all group"
-                        >
-                          <Play className="w-6 h-6 text-green-500 group-hover:scale-110 transition-transform" />
-                          <div className="text-left">
-                            <div className="text-[8px] font-bold text-white/20 uppercase tracking-widest">Get it on</div>
-                            <div className="text-xs font-bold">Google Play</div>
-                          </div>
-                        </a>
-                      )}
-                    </div>
-                    
-                    <a 
-                      href={((Array.isArray(selectedApp.type) ? selectedApp.type.includes('Desktop') : selectedApp.type === 'Desktop') || (Array.isArray(selectedApp.type) ? selectedApp.type.includes('All') : selectedApp.type === 'All')) && selectedApp.demoLink ? selectedApp.demoLink : selectedApp.link} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      onClick={() => analyticsService.trackDownload(selectedApp.id, selectedApp.name)}
-                      className="w-full py-5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl shadow-cyan-600/20"
-                    >
-                      <ExternalLink className="w-5 h-5" />
-                      {((Array.isArray(selectedApp.type) ? selectedApp.type.includes('Desktop') : selectedApp.type === 'Desktop') || (Array.isArray(selectedApp.type) ? selectedApp.type.includes('All') : selectedApp.type === 'All')) ? 'Download for Desktop' : 'Launch Application'}
-                    </a>
-
-                    {selectedApp.demoLink && (
-                      <a 
-                        href={selectedApp.demoLink} 
-                        target="_blank" 
-                        rel="noreferrer"
-                        onClick={() => analyticsService.trackDownload(selectedApp.id, selectedApp.name)}
-                        className="w-full py-5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-3"
-                      >
-                        <Globe className="w-5 h-5" />
-                        Explore Interactive Demo
-                      </a>
-                    )}
-                  </div>
-                </div>
-
-                 {/* Right Side: Details */}
-                <div className="p-8 lg:p-12 space-y-10 max-h-[80vh] overflow-y-auto scrollbar-hide">
-                  <section className="space-y-4">
-                    <div className="flex items-center gap-2 text-cyan-400">
-                      <Info className="w-4 h-4" />
-                      <span className="text-[10px] font-bold uppercase tracking-widest">Overview</span>
-                    </div>
-                    <p className="text-white/60 leading-relaxed text-lg font-light">
-                      {selectedApp.description}
-                    </p>
-                  </section>
-
-                  {selectedApp.features && selectedApp.features.length > 0 && (
-                    <section className="space-y-6">
-                      <div className="flex items-center gap-2 text-cyan-400">
-                        <Sparkles className="w-4 h-4" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Key Features</span>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {selectedApp.features.map((f: string, i: number) => (
-                          <div key={i} className="flex items-start gap-3 p-5 rounded-2xl bg-white/5 border border-white/10 group hover:border-cyan-500/30 transition-all">
-                            <CheckCircle2 className="w-4 h-4 text-cyan-500 mt-0.5 shrink-0" />
-                            <span className="text-sm text-white/50 group-hover:text-white/80 transition-colors uppercase tracking-tight font-mono">{f}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </section>
-                  )}
-
-                  {selectedApp.screenshots && selectedApp.screenshots.length > 0 && (
-                    <section className="space-y-6">
-                      <div className="flex items-center gap-2 text-cyan-400">
-                        <Monitor className="w-4 h-4" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">App Screenshots</span>
-                      </div>
-                      <div className="grid grid-cols-1 gap-4">
-                        {selectedApp.screenshots.map((src: string, idx: number) => (
-                          <img 
-                            key={idx} 
-                            src={src} 
-                            alt={`${selectedApp.name} view ${idx + 1}`} 
-                            className="w-full rounded-3xl border border-white/10 hover:border-cyan-500/50 transition-colors shadow-2xl cursor-zoom-in"
-                            referrerPolicy="no-referrer"
-                            onClick={() => setViewingScreenshots({ images: selectedApp.screenshots, index: idx, appName: selectedApp.name })}
-                          />
-                        ))}
-                      </div>
-                    </section>
-                  )}
-
-                  <section className="pt-8 border-t border-white/5 grid grid-cols-2 gap-8">
-                    <div>
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/20 mb-2">Developed By</div>
-                      <div className="text-sm font-bold text-white/80">{selectedApp.developer}</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/20 mb-2">Review Status</div>
-                      <div className="scale-75 origin-left">
-                        <StarRating 
-                          appId={selectedApp.id}
-                          currentRating={selectedApp.ratingCount ? selectedApp.sumOfRatings / selectedApp.ratingCount : 0}
-                          ratingCount={selectedApp.ratingCount || 0}
-                          sumOfRatings={selectedApp.sumOfRatings || 0}
-                          userRating={userRatings[selectedApp.id] || null}
-                          onRate={(rating) => handleRateApp(selectedApp.id, rating)}
-                        />
-                      </div>
-                    </div>
-                  </section>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <AppDetailModal
+        app={selectedApp}
+        isOpen={!!selectedAppId}
+        onClose={() => setSelectedAppId(null)}
+        onToggleWishlist={handleToggleWishlist}
+        isInWishlist={selectedAppId ? wishlist.has(selectedAppId) : false}
+        userRatings={userRatings}
+        onRate={handleRateApp}
+        onViewScreenshots={(images, index, appName) => setViewingScreenshots({ images, index, appName })}
+      />
 
       {/* Screenshot Viewer Modal */}
       <AnimatePresence>

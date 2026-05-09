@@ -175,6 +175,38 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
                 <OnboardingShowcase />
               </div>
 
+              {/* Reviews Preview Section */}
+              <div className="pointer-events-auto relative z-10 py-24 bg-black/40 border-b border-white/5 backdrop-blur-3xl">
+                <div className="max-w-7xl mx-auto px-6">
+                  <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-16">
+                    <div className="space-y-4 text-left">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-black uppercase tracking-[0.3em]">
+                        <Star className="w-3 h-3 fill-amber-400" /> User Testimonials
+                      </div>
+                      <h2 className="text-4xl lg:text-5xl font-black uppercase tracking-tighter">
+                        Vetted by the <span className="text-cyan-500 italic">Community.</span>
+                      </h2>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        onLaunch();
+                        setTimeout(() => window.location.hash = '#reviews', 0);
+                      }}
+                      className="group flex items-center gap-3 text-xs font-black uppercase tracking-[0.3em] text-white/40 hover:text-cyan-400 transition-all border-b border-transparent hover:border-cyan-400 pb-2"
+                    >
+                      View All Reviews <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </div>
+
+                  <div onClick={() => {
+                    onLaunch();
+                    setTimeout(() => window.location.hash = '#reviews', 0);
+                  }} className="cursor-pointer text-left">
+                    <Reviews minimal={true} />
+                  </div>
+                </div>
+              </div>
+
               {/* Waitlist Portal Section */}
               <div className="pointer-events-auto relative z-10 py-24 bg-gradient-to-b from-transparent to-[#030303]">
                 <WaitlistPortal />
@@ -188,6 +220,10 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
                     <div className="flex flex-col gap-2">
                       <button onClick={() => window.location.hash = '#home'} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">Home</button>
                       <button onClick={onLaunch} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">Catalog</button>
+                      <button onClick={() => {
+                        onLaunch();
+                        setTimeout(() => window.location.hash = '#reviews', 0);
+                      }} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">Reviews</button>
                       <button onClick={() => window.location.hash = '#about'} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">About</button>
                     </div>
                   </div>

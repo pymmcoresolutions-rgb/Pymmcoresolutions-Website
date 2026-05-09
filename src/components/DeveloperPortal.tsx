@@ -10,6 +10,7 @@ import {
 import { usePaystackPayment } from 'react-paystack';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
 import { useAuth } from '../lib/auth';
 import { auditApplication } from '../services/geminiService';
 import ImageUploader from './ui/ImageUploader';
@@ -56,6 +57,7 @@ export default function DeveloperPortal() {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   
   const [drafts, setDrafts] = useState<AppSubmissionForm[]>([]);
+  const [economy, setEconomy] = useState({ listingFee: 25, exchangeRate: 1600 });
   
   const [form, setForm] = useState<AppSubmissionForm>({
     name: '',
@@ -102,6 +104,20 @@ export default function DeveloperPortal() {
     return () => unsubscribe();
   }, [user, form.id]);
 
+  useEffect(() => {
+    return onSnapshot(doc(db, 'config', 'marketplace'), (snap) => {
+      if (snap.exists()) {
+        const data = snap.data() as any;
+        setEconomy({
+          listingFee: data.listingFee || 25,
+          exchangeRate: data.exchangeRate || 1600
+        });
+      }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'config/marketplace');
+    });
+  }, []);
+
   const startNewSubmission = () => {
     setForm({
       name: '',
@@ -131,10 +147,9 @@ export default function DeveloperPortal() {
   const config = {
     reference: (new Date()).getTime().toString(),
     email: user?.email || '',
-    amount: 25 * 100 * 1600, // $25 in Kobo (1600 NGN exchange rate approx or use flat USD if supported)
-    // AI Studio uses NGN for Paystack usually if in NG, otherwise depends on public key currency.
-    // Let's assume NGN for the demo or base it on $25 equivalent.
+    amount: economy.listingFee * economy.exchangeRate * 100, // Dynamic fee from config
     publicKey: (import.meta as any).env.VITE_PAYSTACK_PUBLIC_KEY || '',
+    currency: 'NGN' // Standard Paystack currency, change to USD if using a US library
   };
 
   const onSuccess = (reference: any) => {
@@ -142,7 +157,7 @@ export default function DeveloperPortal() {
   };
 
   const onClose = () => {
-    setError("Payment was cancelled. Completion required to deploy.");
+    setError("Payment session closed. Listing fee must be processed to finalize submission.");
   };
 
   const initializePayment = usePaystackPayment(config);
@@ -234,7 +249,7 @@ export default function DeveloperPortal() {
         approvalStatus: 'pending',
         paymentStatus: 'paid',
         paymentReference: paymentRef,
-        status: 'inactive',
+        status: 'staging',
         isDraft: false, // NO LONGER A DRAFT
         aiRiskScore: audit.riskScore,
         aiReport: audit.report
@@ -343,8 +358,8 @@ export default function DeveloperPortal() {
             <div className="p-6 rounded-3xl bg-blue-500/5 border border-blue-500/20 flex items-start gap-4">
               <Info className="w-6 h-6 text-blue-400 shrink-0" />
               <div className="space-y-1">
-                <p className="text-sm font-bold">Listing Fee Protocol</p>
-                <p className="text-xs text-white/40">A flat listing fee of $25 is required to process your submission. This covers the human technical review and global matrix indexing.</p>
+                <p className="text-sm font-bold">Listing Fee Protocol (Per Application)</p>
+                <p className="text-xs text-white/40">A one-time listing fee of ${economy.listingFee} is required per application to process your submission. This covers the human technical review and global matrix indexing.</p>
               </div>
             </div>
 
@@ -364,7 +379,9 @@ export default function DeveloperPortal() {
             animate={{ opacity: 1, x: 0 }}
             onSubmit={(e) => {
               e.preventDefault();
-              if (validateForm()) setStep('payment');
+              if (validateForm()) {
+                (initializePayment as any)(onSuccess, onClose);
+              }
             }}
             className="space-y-10"
           >
@@ -628,9 +645,9 @@ export default function DeveloperPortal() {
 
             <button 
               type="submit"
-              className="w-full py-5 bg-white text-black font-bold rounded-2xl hover:bg-gray-200 transition-all"
+              className="w-full py-5 bg-white text-black font-bold rounded-2xl hover:bg-gray-200 transition-all flex items-center justify-center gap-3"
             >
-              Validate & Proceed to Payment
+              <Shield className="w-5 h-5" /> Submit for Review (${economy.listingFee} / Per App)
             </button>
           </motion.form>
         )}
@@ -648,16 +665,16 @@ export default function DeveloperPortal() {
             
             <div className="space-y-2">
               <h3 className="text-2xl font-bold tracking-tight">Deploy to Matrix</h3>
-              <p className="text-white/40">Technical Audit & Listing Fee</p>
+              <p className="text-white/40">Technical Audit & Listing Fee (Per Application)</p>
             </div>
 
             <div className="text-6xl font-black tracking-tighter py-4">
-              <span className="text-2xl align-top mr-1 font-bold text-blue-500">$</span>25
+              <span className="text-2xl align-top mr-1 font-bold text-blue-500">$</span>{economy.listingFee}
             </div>
 
             <div className="space-y-4 pt-4">
               <button 
-                onClick={() => initializePayment({onSuccess, onClose})}
+                onClick={() => (initializePayment as any)(onSuccess, onClose)}
                 className="w-full py-5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl shadow-blue-600/20"
               >
                 <DollarSign className="w-5 h-5" /> Execute Payment with Paystack

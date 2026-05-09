@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Home, Rocket, Shield, Cpu, Globe, LayoutDashboard, LogOut, Menu, X, Sparkles, Bell, Award, Mail, Star, Loader2 } from 'lucide-react';
+import { Home, Rocket, Shield, Cpu, Globe, LayoutDashboard, LogOut, Menu, X, Sparkles, Bell, Award, Mail, Star, Loader2, DollarSign } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import { useState } from 'react';
 import Notifications from './Notifications';
@@ -16,6 +16,7 @@ export default function Layout({ children, currentPath, onNavigate }: { children
     { id: '#', label: 'Storefront', icon: Globe },
     { id: '#about', label: 'About', icon: Award },
     { id: '#reviews', label: 'Reviews', icon: Star },
+    { id: '#pricing', label: 'Pricing', icon: DollarSign },
     { id: '#contact', label: 'Contact', icon: Mail },
     { id: '#advisor', label: 'Advisor', icon: Sparkles },
   ];
@@ -214,6 +215,7 @@ export default function Layout({ children, currentPath, onNavigate }: { children
               <ul className="space-y-4">
                 <li><button onClick={() => handleNavigate('#home')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Home</button></li>
                 <li><button onClick={() => handleNavigate('#')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Storefront</button></li>
+                <li><button onClick={() => handleNavigate('#pricing')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Pricing</button></li>
                 <li><button onClick={() => handleNavigate('#advisor')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">AI Advisor</button></li>
                 <li><button onClick={() => handleNavigate('#reviews')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Reviews</button></li>
               </ul>
