@@ -16,6 +16,7 @@ import {
   Apple, Play, Download, Sparkles, Box, Star,
   Loader2, Heart, X, Info, Rocket
 } from 'lucide-react';
+import { AppCardSkeleton, Skeleton } from './ui/Skeleton';
 
 // Helper to render dynamic Lucide icons
 const DynamicIcon = ({ name, className }: { name: string; className?: string }) => {
@@ -98,6 +99,7 @@ const StarRating = ({
 export default function Catalog() {
   const { user, profile, isEditor, isAdmin, login, loginLoading } = useAuth();
   const [apps, setApps] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [userRatings, setUserRatings] = useState<Record<string, number>>({});
   const [wishlist, setWishlist] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState('All');
@@ -112,11 +114,14 @@ export default function Catalog() {
 
   useEffect(() => {
     const path = 'apps';
+    setLoading(true);
     const q = query(collection(db, path), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setApps(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setLoading(false);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, path);
+      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
@@ -366,7 +371,18 @@ export default function Catalog() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <AnimatePresence mode="popLayout">
-          {filteredApps.map((app, idx) => (
+          {loading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <motion.div
+                key={`skeleton-${i}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <AppCardSkeleton />
+              </motion.div>
+            ))
+          ) : filteredApps.map((app, idx) => (
             <motion.div
               key={app.id}
               layout
@@ -458,17 +474,21 @@ export default function Catalog() {
                     <div className="text-[10px] font-bold uppercase tracking-widest text-white/30">Screenshots</div>
                     <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                       {app.screenshots.map((src: string, idx: number) => (
-                        <img 
-                          key={idx} 
-                          src={src} 
-                          alt={`${app.name} screenshot ${idx + 1}`} 
-                          className="h-32 rounded-lg border border-white/10 object-cover shrink-0 hover:border-cyan-500/50 transition-colors cursor-zoom-in"
-                          referrerPolicy="no-referrer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setViewingScreenshots({ images: app.screenshots, index: idx, appName: app.name });
-                          }}
-                        />
+                        <div key={idx} className="relative h-32 w-48 shrink-0">
+                          <div className="absolute inset-0 z-0">
+                            <Skeleton className="w-full h-full rounded-lg" />
+                          </div>
+                          <img 
+                            src={src} 
+                            alt={`${app.name} screenshot ${idx + 1}`} 
+                            className="relative z-[1] h-full w-full rounded-lg border border-white/10 object-cover hover:border-cyan-500/50 transition-colors cursor-zoom-in"
+                            referrerPolicy="no-referrer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setViewingScreenshots({ images: app.screenshots, index: idx, appName: app.name });
+                            }}
+                          />
+                        </div>
                       ))}
                     </div>
                   </div>

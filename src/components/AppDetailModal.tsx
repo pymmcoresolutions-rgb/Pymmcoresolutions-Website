@@ -6,6 +6,7 @@ import {
   Star, Download, Shield, Clock, Tag
 } from 'lucide-react';
 import { analyticsService } from '../services/analyticsService';
+import { Skeleton } from './ui/Skeleton';
 
 // Helper to render dynamic Lucide icons
 const DynamicIcon = ({ name, className }: { name: string; className?: string }) => {
@@ -302,7 +303,7 @@ export default function AppDetailModal({
                         <motion.div
                           key={idx}
                           whileHover={{ scale: 1.02 }}
-                          className="relative group cursor-zoom-in"
+                          className="relative group cursor-zoom-in min-h-[200px]"
                           onClick={() => onViewScreenshots(app.screenshots, idx, app.name)}
                         >
                           <div className="absolute inset-0 bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition-all rounded-[2rem] z-10 flex items-center justify-center">
@@ -310,10 +311,13 @@ export default function AppDetailModal({
                                <Monitor className="w-4 h-4" /> Expand View
                              </div>
                           </div>
+                          <div className="absolute inset-0 z-0">
+                            <Skeleton className="w-full h-full rounded-[2.5rem]" />
+                          </div>
                           <img 
                             src={src} 
                             alt={`${app.name} interface protocol ${idx + 1}`} 
-                            className="w-full rounded-[2.5rem] border border-white/10 shadow-2xl grayscale-[20%] group-hover:grayscale-0 transition-all"
+                            className="w-full relative z-[1] rounded-[2.5rem] border border-white/10 shadow-2xl grayscale-[20%] group-hover:grayscale-0 transition-all"
                             referrerPolicy="no-referrer"
                           />
                         </motion.div>

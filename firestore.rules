@@ -337,7 +337,8 @@ service cloud.firestore {
     }
 
     match /logs/{logId} {
-      allow read: if isAdmin();
+      allow list: if isAdmin();
+      allow get: if isAdmin();
       allow create: if isAuthenticated(); 
     }
 
@@ -359,7 +360,8 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow get: if isOwner(userId) || isAdmin();
       allow create: if isAuthenticated() && isValidUser(request.resource.data) && 
                     (isOwner(userId) && request.resource.data.role == 'viewer' || isAdmin());
       allow update: if isAdmin() || (isOwner(userId) && request.resource.data.role == resource.data.role && (!('status' in request.resource.data) || request.resource.data.status == resource.data.status));
@@ -387,7 +389,9 @@ service cloud.firestore {
 
     match /waitlist/{entryId} {
       allow create: if isValidWaitlistEntry(request.resource.data);
-      allow read, delete: if isAdmin();
+      allow list: if isAdmin();
+      allow get: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     match /background_assets/{assetId} {
@@ -404,7 +408,8 @@ service cloud.firestore {
 
     match /downloads/{downloadId} {
       allow create: if isValidDownload(request.resource.data);
-      allow read: if isDeveloper() || isAdmin();
+      allow list: if isDeveloper() || isAdmin();
+      allow get: if isDeveloper() || isAdmin();
     }
 
     match /config/marketplace {

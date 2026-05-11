@@ -15,11 +15,19 @@ import SystemHealthIndicator from './SystemHealthIndicator';
 import ThreeMarketplace from './ThreeMarketplace';
 import OnboardingShowcase from './OnboardingShowcase';
 import WaitlistPortal from './WaitlistPortal';
+import { Skeleton } from './ui/Skeleton';
 
-export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
+export default function LandingPage({ 
+  onLaunch,
+  selectedApp,
+  setSelectedApp
+}: { 
+  onLaunch: () => void;
+  selectedApp: any | null;
+  setSelectedApp: (app: any | null) => void;
+}) {
   const { login, isAdmin } = useAuth();
   const [apps, setApps] = useState<any[]>([]);
-  const [selectedApp, setSelectedApp] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState<any>(null);
 
@@ -46,21 +54,8 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#030303] text-white selection:bg-cyan-500/30 relative">
-      {/* 3D CANVAS LAYER */}
-      <div className="fixed inset-0 z-0">
-        <Suspense fallback={
-          <div className="w-full h-full flex items-center justify-center bg-[#050505]">
-            <div className="text-cyan-500 font-mono text-xs animate-pulse tracking-[0.3em]">LOADING SECURE HUB...</div>
-          </div>
-        }>
-          <ThreeMarketplace 
-            apps={apps} 
-            onSelectApp={setSelectedApp} 
-            selectedAppId={selectedApp?.id || null} 
-          />
-        </Suspense>
-      </div>
+    <div className="min-h-screen text-white selection:bg-cyan-500/30 relative">
+      <div className="fixed inset-0 z-0 pointer-events-none" />
 
       {/* MATRIX HUD OVERLAY */}
       <div className="relative z-10 pointer-events-none min-h-screen flex flex-col font-sans">
@@ -157,7 +152,11 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
                     <div className="flex flex-row items-center gap-12 border-l border-white/10 pl-12 h-20">
                       <div className="flex flex-col">
                         <span className="text-[10px] font-black uppercase tracking-widest text-cyan-500/50 italic mb-2">Active Applications</span>
-                        <span className="text-4xl font-mono tracking-tighter">{apps.length.toString().padStart(3, '0')}</span>
+                        {loading ? (
+                          <Skeleton className="h-10 w-20 rounded-lg" />
+                        ) : (
+                          <span className="text-4xl font-mono tracking-tighter">{apps.length.toString().padStart(3, '0')}</span>
+                        )}
                       </div>
                       <div className="w-[1px] h-full bg-white/10" />
                       <div className="flex flex-col">
@@ -172,7 +171,7 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
               </motion.main>
 
               {/* Onboarding / "Slides" Section */}
-              <div className="pointer-events-auto relative z-10 bg-[#030303]/80 backdrop-blur-3xl border-y border-white/5">
+              <div className="pointer-events-auto relative z-10 backdrop-blur-3xl border-y border-white/5">
                 <div className="max-w-7xl mx-auto py-24 text-center">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-black uppercase tracking-[0.3em] mb-8">
                     <Sparkles className="w-3 h-3" /> Key Features
@@ -185,7 +184,7 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
               </div>
 
               {/* Reviews Preview Section */}
-              <div className="pointer-events-auto relative z-10 py-24 bg-black/40 border-b border-white/5 backdrop-blur-3xl">
+              <div className="pointer-events-auto relative z-10 py-24 bg-black/20 border-b border-white/5 backdrop-blur-3xl">
                 <div className="max-w-7xl mx-auto px-6">
                   <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-16">
                     <div className="space-y-4 text-left">
@@ -217,12 +216,12 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
               </div>
 
               {/* Waitlist Portal Section */}
-              <div className="pointer-events-auto relative z-10 py-24 bg-gradient-to-b from-transparent to-[#030303]">
+              <div className="pointer-events-auto relative z-10 py-24 bg-gradient-to-b from-transparent to-black/60">
                 <WaitlistPortal />
               </div>
 
               {/* HUD FOOTER */}
-              <footer className="pointer-events-auto mt-auto p-12 lg:px-24 flex flex-col gap-12 border-t border-white/5 backdrop-blur-sm bg-black/40">
+              <footer className="pointer-events-auto mt-auto p-12 lg:px-24 flex flex-col gap-12 border-t border-white/5 backdrop-blur-sm bg-black/60">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                   <div className="space-y-4">
                     <div className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-500 italic">Platform</div>

@@ -50,6 +50,8 @@ export default function AnalyticsDashboard() {
     // Listen to apps for download counts
     const appsUnsubscribe = onSnapshot(collection(db, 'apps'), (snapshot) => {
       setApps(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (err) => {
+      console.error("Error listening to apps:", err);
     });
 
     // Fetch last 1000 downloads for trends
@@ -60,6 +62,9 @@ export default function AnalyticsDashboard() {
     );
     const downloadsUnsubscribe = onSnapshot(downloadsQuery, (snapshot) => {
       setDownloads(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setLoading(false);
+    }, (err) => {
+      console.error("Error listening to downloads:", err);
       setLoading(false);
     });
 

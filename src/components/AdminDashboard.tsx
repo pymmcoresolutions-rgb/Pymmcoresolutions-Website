@@ -44,17 +44,37 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const appsSnap = await getDocs(collection(db, 'apps'));
-        const reviewsSnap = await getDocs(collection(db, 'reviews'));
+        // Public stats
+        const [appsSnap, reviewsSnap] = await Promise.all([
+          getDocs(collection(db, 'apps')).catch(err => {
+            console.warn("Could not fetch apps for stats:", err);
+            return { size: 0 } as any;
+          }),
+          getDocs(collection(db, 'reviews')).catch(err => {
+            console.warn("Could not fetch reviews for stats:", err);
+            return { size: 0 } as any;
+          })
+        ]);
         
         let usersSize = 0;
         let waitlistSize = 0;
         let logsSize = 0;
 
         if (isAdmin) {
-          const usersSnap = await getDocs(collection(db, 'users'));
-          const waitlistSnap = await getDocs(collection(db, 'waitlist'));
-          const logsSnap = await getDocs(query(collection(db, 'logs'), limit(100)));
+          const [usersSnap, waitlistSnap, logsSnap] = await Promise.all([
+            getDocs(collection(db, 'users')).catch(err => {
+              console.error("Permission denied for users collection stats:", err);
+              return { size: 0 } as any;
+            }),
+            getDocs(collection(db, 'waitlist')).catch(err => {
+              console.error("Permission denied for waitlist collection stats:", err);
+              return { size: 0 } as any;
+            }),
+            getDocs(query(collection(db, 'logs'), limit(100))).catch(err => {
+              console.error("Permission denied for logs collection stats:", err);
+              return { size: 0 } as any;
+            })
+          ]);
           usersSize = usersSnap.size;
           waitlistSize = waitlistSnap.size;
           logsSize = logsSnap.size;
@@ -69,7 +89,7 @@ export default function AdminDashboard() {
           systemHealth: 'Optimal'
         });
       } catch (error) {
-        console.error("Error fetching dashboard stats:", error);
+        console.error("Critical error in dashboard stats retrieval:", error);
       }
     };
 

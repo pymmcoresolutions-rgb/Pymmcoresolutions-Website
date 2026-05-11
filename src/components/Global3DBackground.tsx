@@ -1,20 +1,14 @@
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Stars, PerspectiveCamera, Float, MeshDistortMaterial, Environment, MeshWobbleMaterial } from '@react-three/drei';
+import { OrbitControls, Stars, PerspectiveCamera, Float, MeshDistortMaterial, Environment } from '@react-three/drei';
 import { Suspense, useMemo, useState, useEffect } from 'react';
-import * as THREE from 'three';
+import { collection, query, orderBy, onSnapshot, limit } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import AppNode3D from './AppNode3D';
-
-interface ThreeMarketplaceProps {
-  apps: any[];
-  onSelectApp: (app: any) => void;
-  selectedAppId: string | null;
-}
 
 function DataCore() {
   return (
     <Float speed={2} rotationIntensity={1} floatIntensity={1.5}>
       <group>
-        {/* Core Geometry */}
         <mesh>
           <dodecahedronGeometry args={[3, 0]} />
           <MeshDistortMaterial
@@ -28,8 +22,6 @@ function DataCore() {
             emissiveIntensity={0.5}
           />
         </mesh>
-        
-        {/* Orbital Rings */}
         <mesh rotation={[Math.PI / 4, 0, 0]}>
           <torusGeometry args={[5, 0.02, 16, 100]} />
           <meshBasicMaterial color="#22d3ee" transparent opacity={0.2} />
@@ -38,8 +30,6 @@ function DataCore() {
           <torusGeometry args={[5.5, 0.015, 16, 100]} />
           <meshBasicMaterial color="#06b6d4" transparent opacity={0.1} />
         </mesh>
-        
-        {/* Inner Light */}
         <pointLight intensity={2} color="#00ffff" distance={10} />
       </group>
     </Float>
@@ -68,52 +58,57 @@ function MatrixBackground() {
           itemSize={3}
         />
       </bufferGeometry>
-      <pointsMaterial 
-        size={0.1} 
-        color="#00ffff" 
-        transparent 
-        opacity={0.4} 
-        sizeAttenuation 
-      />
+      <pointsMaterial size={0.1} color="#00ffff" transparent opacity={0.4} sizeAttenuation />
     </points>
   );
 }
 
 function GridBackground() {
   return (
-    <gridHelper 
-      args={[100, 50, "#00ffff", "#111111"]} 
-      position={[0, -5, 0]} 
-      rotation={[0, 0, 0]} 
-    />
+    <gridHelper args={[100, 50, "#00ffff", "#111111"]} position={[0, -5, 0]} />
   );
 }
 
-export default function ThreeMarketplace({ apps, onSelectApp, selectedAppId }: ThreeMarketplaceProps) {
-  // Generate positions for apps in a central hub spiral
+export default function Global3DBackground({ 
+  onSelectApp, 
+  selectedAppId 
+}: { 
+  onSelectApp?: (app: any) => void;
+  selectedAppId?: string | null;
+}) {
+  const [apps, setApps] = useState<any[]>([]);
+
+  useEffect(() => {
+    const q = query(collection(db, 'apps'), orderBy('createdAt', 'desc'), limit(15));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setApps(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => unsubscribe();
+  }, []);
+
   const nodePositions = useMemo(() => {
     return apps.map((_, i) => {
-      const radius = 6 + Math.floor(i / 8) * 3;
+      const radius = 8 + Math.floor(i / 8) * 4;
       const angle = (i % 8) * (Math.PI * 2 / 8);
       return [
         Math.cos(angle) * radius,
-        (Math.random() - 0.5) * 6,
+        (Math.random() - 0.5) * 8,
         Math.sin(angle) * radius
       ] as [number, number, number];
     });
   }, [apps.length]);
 
+  const isInteractive = !!onSelectApp;
+
   return (
-    <div className="w-full h-full absolute inset-0 bg-[#050505]">
+    <div className={`fixed inset-0 z-[-1] ${isInteractive ? '' : 'pointer-events-none'}`}>
       <Canvas dpr={[1, 2]}>
         <PerspectiveCamera makeDefault position={[0, 0, 15]} fov={50} />
         <color attach="background" args={["#030303"]} />
-        <fog attach="fog" args={["#030303", 5, 30]} />
-        
+        <fog attach="fog" args={["#030303", 10, 40]} />
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} intensity={1} color="#00ffff" />
-        <pointLight position={[-10, -10, -10]} intensity={0.5} color="#00ff88" />
-
+        
         <MatrixBackground />
         <GridBackground />
         <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
@@ -126,7 +121,7 @@ export default function ThreeMarketplace({ apps, onSelectApp, selectedAppId }: T
                 key={app.id}
                 app={app}
                 position={nodePositions[i]}
-                onClick={onSelectApp}
+                onClick={onSelectApp || (() => {})}
                 isFocused={selectedAppId === app.id}
               />
             ))}
@@ -136,18 +131,12 @@ export default function ThreeMarketplace({ apps, onSelectApp, selectedAppId }: T
 
         <OrbitControls 
           enablePan={false} 
-          enableZoom={true} 
-          maxDistance={30} 
-          minDistance={10}
+          enableZoom={isInteractive} 
           autoRotate={!selectedAppId}
-          autoRotateSpeed={0.5}
-          makeDefault
+          autoRotateSpeed={0.3}
+          makeDefault 
         />
       </Canvas>
-
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-20">
-        <div className="w-[500px] h-[500px] border border-cyan-500/20 rounded-full animate-pulse" />
-      </div>
     </div>
   );
 }

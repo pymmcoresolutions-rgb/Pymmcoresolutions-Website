@@ -17,9 +17,12 @@ import Documentation from './components/Documentation';
 import CookieConsent from './components/CookieConsent';
 import ThemeManager from './components/ThemeManager';
 
+import Global3DBackground from './components/Global3DBackground';
+
 function MainContent() {
   const { user, profile, isAdmin, isEditor, loading, isEmailVerified } = useAuth();
   const [isLaunched, setIsLaunched] = useState(false);
+  const [selectedApp, setSelectedApp] = useState<any | null>(null);
   const [currentPath, setCurrentPath] = useState(window.location.hash || '#');
 
   useEffect(() => {
@@ -38,46 +41,57 @@ function MainContent() {
 
   const isPublicPath = ['#privacy', '#terms', '#security', '#status', '#docs', '#pricing'].includes(currentPath);
 
-  if (!isPublicPath && (currentPath === '#home' || (!isLaunched && !user))) {
-    return <LandingPage onLaunch={() => {
-      setIsLaunched(true);
-      setCurrentPath('#');
-      window.location.hash = '#';
-    }} />;
-  }
-
-  // Block access if not verified (only for password provider)
   const needsVerification = user && !isEmailVerified && user.providerData[0]?.providerId === 'password';
 
+  const showLanding = !isPublicPath && (currentPath === '#home' || (!isLaunched && !user));
+
   return (
-    <Layout currentPath={currentPath} onNavigate={setCurrentPath}>
-      {isPublicPath ? (
-        currentPath === '#docs' ? <Documentation isEditor={isEditor} /> : 
-        currentPath === '#pricing' ? <Pricing onStartListing={() => setCurrentPath('#')} /> :
-        <Legal />
-      ) : (!user || needsVerification) ? (
-        <div className="py-20">
-          <AuthInterface onComplete={() => setIsLaunched(true)} />
-        </div>
-      ) : currentPath === '#admin' && isEditor ? (
-        <AdminDashboard />
-      ) : currentPath === '#advisor' ? (
-        <div className="max-w-7xl mx-auto px-4 py-12">
-          <AIAdvisor isFullPage />
-        </div>
-      ) : currentPath === '#about' ? (
-        <About />
-      ) : currentPath === '#contact' ? (
-        <Contact />
-      ) : currentPath === '#reviews' ? (
-        <Reviews />
+    <>
+      <Global3DBackground 
+        onSelectApp={showLanding ? setSelectedApp : undefined}
+        selectedAppId={selectedApp?.id || null}
+      />
+      {showLanding ? (
+        <LandingPage 
+          onLaunch={() => {
+            setIsLaunched(true);
+            setCurrentPath('#');
+            window.location.hash = '#';
+          }} 
+          selectedApp={selectedApp}
+          setSelectedApp={setSelectedApp}
+        />
       ) : (
-        <div className="space-y-24 pb-24">
-          <Catalog />
-          <Reviews />
-        </div>
+        <Layout currentPath={currentPath} onNavigate={setCurrentPath}>
+          {isPublicPath ? (
+            currentPath === '#docs' ? <Documentation isEditor={isEditor} /> : 
+            currentPath === '#pricing' ? <Pricing onStartListing={() => setCurrentPath('#')} /> :
+            <Legal />
+          ) : (!user || needsVerification) ? (
+            <div className="py-20">
+              <AuthInterface onComplete={() => setIsLaunched(true)} />
+            </div>
+          ) : currentPath === '#admin' && isEditor ? (
+            <AdminDashboard />
+          ) : currentPath === '#advisor' ? (
+            <div className="max-w-7xl mx-auto px-4 py-12">
+              <AIAdvisor isFullPage />
+            </div>
+          ) : currentPath === '#about' ? (
+            <About />
+          ) : currentPath === '#contact' ? (
+            <Contact />
+          ) : currentPath === '#reviews' ? (
+            <Reviews />
+          ) : (
+            <div className="space-y-24 pb-24">
+              <Catalog />
+              <Reviews />
+            </div>
+          )}
+        </Layout>
       )}
-    </Layout>
+    </>
   );
 }
 

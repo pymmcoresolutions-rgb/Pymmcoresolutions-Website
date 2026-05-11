@@ -16,6 +16,7 @@ import {
 import { useAuth } from '../../lib/auth';
 import ImageUploader from '../ui/ImageUploader';
 import { suggestAppIcon } from '../../services/geminiService';
+import { ListItemSkeleton } from '../ui/Skeleton';
 import * as LucideIcons from 'lucide-react';
 
 const DynamicIcon = ({ name, className }: { name: string; className?: string }) => {
@@ -175,11 +176,11 @@ export default function SubmissionManager() {
     setEditForm(sub);
   };
 
-  if (loading) return (
-    <div className="flex items-center justify-center h-64">
-      <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-    </div>
-  );
+  // if (loading) return (
+  //   <div className="flex items-center justify-center h-64">
+  //     <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+  //   </div>
+  // );
 
   return (
     <div className="space-y-8">
@@ -233,7 +234,9 @@ export default function SubmissionManager() {
 
       <div className="grid grid-cols-1 gap-4">
         <AnimatePresence>
-          {submissions.map((sub) => (
+          {loading ? (
+            Array.from({ length: 5 }).map((_, i) => <ListItemSkeleton key={i} />)
+          ) : submissions.map((sub) => (
             <motion.div
               key={sub.id}
               layout
@@ -609,7 +612,7 @@ export default function SubmissionManager() {
           ))}
         </AnimatePresence>
 
-        {submissions.length === 0 && (
+        {!loading && submissions.length === 0 && (
           <div className="p-20 text-center rounded-[3rem] border border-dashed border-white/10 bg-white/5">
             <Layout className="w-12 h-12 text-white/10 mx-auto mb-4" />
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/20">No matching submissions found</p>

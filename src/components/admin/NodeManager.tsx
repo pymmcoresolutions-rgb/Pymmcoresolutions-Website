@@ -13,6 +13,7 @@ import {
   Layers, History, Shield, Upload, Image as ImageIcon, Info, X, CheckCircle2, AlertCircle
 } from 'lucide-react';
 import ConfirmDialog from './ConfirmDialog';
+import { ListItemSkeleton } from '../ui/Skeleton';
 
 // Helper to render dynamic Lucide icons
 const DynamicIcon = ({ name, className }: { name: string; className?: string }) => {
@@ -32,6 +33,7 @@ export default function NodeManager() {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [optimizing, setOptimizing] = useState(false);
   const [generatingIcon, setGeneratingIcon] = useState(false);
   const [iconSuggestions, setIconSuggestions] = useState<string[]>([]);
@@ -59,12 +61,15 @@ export default function NodeManager() {
   const [errorLocal, setErrorLocal] = useState<string | null>(null);
 
   useEffect(() => {
+    setInitialLoading(true);
     const q = query(collection(db, 'apps'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setApps(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setInitialLoading(false);
     }, (err) => {
       console.error("Failed to fetch apps:", err);
       setErrorLocal(err.message);
+      setInitialLoading(false);
     });
     return () => unsubscribe();
   }, []);
@@ -613,8 +618,11 @@ export default function NodeManager() {
       )}
 
       <div className="space-y-4">
-        {apps.map(app => (
-          <div key={app.id} className="p-6 rounded-2xl bg-white/5 border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 group">
+        {initialLoading ? (
+          Array.from({ length: 5 }).map((_, i) => <ListItemSkeleton key={i} />)
+        ) : (
+          apps.map(app => (
+            <div key={app.id} className="p-6 rounded-2xl bg-white/5 border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 group">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-white/5 rounded-xl group-hover:bg-blue-600/20 transition-colors flex items-center justify-center overflow-hidden">
                 <DynamicIcon name={app.icon} className="w-6 h-6 text-blue-400" />
@@ -676,7 +684,7 @@ export default function NodeManager() {
               </a>
             </div>
           </div>
-        ))}
+        )))}
       </div>
 
       <ConfirmDialog
