@@ -8,7 +8,7 @@ import {
   Plus, Shield, Activity, Globe, Smartphone, Monitor,
   AlertCircle, CheckCircle2, Clock, Search, Filter, Mail,
   MoreVertical, UserMinus, UserPlus, ShieldCheck, Ban, Star, Image, Rocket,
-  TrendingUp, DollarSign
+  TrendingUp, DollarSign, Share2
 } from 'lucide-react';
 import NodeManager from './admin/NodeManager';
 import UserManager from './admin/UserManager';
@@ -24,6 +24,7 @@ import LogoManager from './admin/LogoManager';
 import WaitlistManager from './admin/WaitlistManager';
 import AnalyticsDashboard from './admin/AnalyticsDashboard';
 import EconomyManager from './admin/EconomyManager';
+import SocialShipper from './admin/SocialShipper';
 import BrandingSettings from './BrandingSettings';
 
 export default function AdminDashboard() {
@@ -102,6 +103,7 @@ export default function AdminDashboard() {
     { id: 'cms', label: 'CMS', icon: FileText, roles: ['admin', 'editor'] },
     { id: 'content', label: 'Site Content', icon: Globe, roles: ['admin', 'editor'] },
     { id: 'economy', label: 'Economy', icon: DollarSign, roles: ['admin'] },
+    { id: 'social', label: 'Social Shipper', icon: Share2, roles: ['admin'] },
     { id: 'intelligence', label: 'Performance', icon: Shield, roles: ['admin'] },
     { id: 'branding', label: 'Branding', icon: Image, roles: ['admin'] },
     { id: 'audit', label: 'Activity Logs', icon: History, roles: ['admin', 'developer'] },
@@ -218,6 +220,7 @@ export default function AdminDashboard() {
             {activeTab === 'audit' && <AuditViewer key="audit" />}
             {activeTab === 'branding' && <BrandingSettings key="branding" />}
             {activeTab === 'economy' && <EconomyManager key="economy" />}
+            {activeTab === 'social' && <SocialShipper key="social" />}
             {activeTab === 'settings' && <SettingsManager key="settings" />}
           </AnimatePresence>
         </main>

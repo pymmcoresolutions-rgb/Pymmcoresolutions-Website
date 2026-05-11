@@ -8,6 +8,9 @@ import { rateLimit } from 'express-rate-limit';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Storage for social tokens (in-memory for demo, should be DB in production)
+const socialTokens: Record<string, { accessToken: string; refreshToken?: string }> = {};
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -38,6 +41,52 @@ async function startServer() {
   // API routes
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
+  // Social Auth Callbacks (Refer to oauth-integration skill for popup patterns)
+  app.get("/api/auth/:platform/callback", (req, res) => {
+    const { platform } = req.params;
+    const { code } = req.query;
+
+    if (!code) {
+      return res.send(`
+        <script>
+          window.opener.postMessage({ type: 'AUTH_ERROR', platform: '${platform}', error: 'Access denied' }, '*');
+          window.close();
+        </script>
+      `);
+    }
+
+    // In a real flow, exchange code for token here
+    socialTokens[platform] = { accessToken: `mock_token_${Date.now()}` };
+
+    res.send(`
+      <script>
+        window.opener.postMessage({ type: 'AUTH_SUCCESS', platform: '${platform}' }, '*');
+        window.close();
+      </script>
+    `);
+  });
+
+  // Social Publishing Endpoint
+  app.post("/api/publish", async (req, res) => {
+    const { appId, caption, videoUrl, platforms } = req.body;
+    
+    console.log(`Publishing campaign for ${appId} to ${platforms.join(', ')}`);
+
+    // Simulate API calls to TikTok, Instagram, LinkedIn
+    try {
+      // Mock delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      res.json({ 
+        success: true, 
+        message: "App approved. Marketing campaign dispatched to all social channels.",
+        postIds: platforms.reduce((acc, p) => ({ ...acc, [p]: `social_${Math.random().toString(36).substr(2, 9)}` }), {})
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
   });
 
   // Contact form endpoint

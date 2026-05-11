@@ -118,6 +118,28 @@
       },
       "required": ["listingFee", "exchangeRate"]
     },
+    "SocialPost": {
+      "title": "Social Marketing Post",
+      "description": "A marketing campaign dispatched to social channels.",
+      "type": "object",
+      "properties": {
+        "appId": { "type": "string" },
+        "caption": { "type": "string" },
+        "videoUrl": { "type": "string" },
+        "platforms": { "type": "array", "items": { "type": "string" } },
+        "status": { "type": "string", "enum": ["pending", "dispatched", "failed"] },
+        "analytics": {
+          "type": "object",
+          "properties": {
+            "views": { "type": "number" },
+            "likes": { "type": "number" },
+            "shares": { "type": "number" }
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["appId", "caption"]
+    },
     "User": {
       "title": "User Profile",
       "description": "Identity and role management for users.",
@@ -228,6 +250,7 @@
     "/background_assets/{assetId}": { "schema": "BackgroundAsset", "description": "Environment branding elements." },
     "/key_features/{featureId}": { "schema": "KeyFeature", "description": "Homepage highlight sequence." },
     "/downloads/{downloadId}": { "schema": "DownloadRecord", "description": "Individual download logs." },
-    "/config/marketplace": { "schema": "MarketplaceConfig", "description": "Global marketplace economy settings." }
+    "/config/marketplace": { "schema": "MarketplaceConfig", "description": "Global marketplace economy settings." },
+    "/social_posts/{postId}": { "schema": "SocialPost", "description": "Marketing campaign records and analytics." }
   }
 }

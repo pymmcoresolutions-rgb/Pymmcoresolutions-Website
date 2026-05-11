@@ -3,11 +3,11 @@ import {
   Shield, Zap, Sparkles, 
   Globe, ArrowRight, ShoppingCart,
   User, Star, X, Info, CheckCircle2, ChevronRight, Activity, Cpu, ShieldCheck,
-  Mail, MessageSquare, Info as InfoIcon
+  Mail, MessageSquare, Info as InfoIcon, Twitter, Linkedin, Facebook
 } from 'lucide-react';
 import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '../lib/auth';
-import { collection, query, orderBy, onSnapshot, limit } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, limit, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import Logo from './Logo';
 import Reviews from './Reviews';
@@ -21,7 +21,16 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
   const [apps, setApps] = useState<any[]>([]);
   const [selectedApp, setSelectedApp] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState<any>(null);
 
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, 'settings', 'global'), (snapshot) => {
+      if (snapshot.exists()) {
+        setSettings(snapshot.data());
+      }
+    });
+    return () => unsubscribe();
+  }, []);
   useEffect(() => {
     const q = query(
       collection(db, 'apps'), 
@@ -246,11 +255,23 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
                   <div className="space-y-6">
                     <Logo size="sm" />
                     <div className="flex gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-cyan-500 transition-all cursor-pointer group">
+                      {settings?.twitter && (
+                        <a href={settings.twitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-cyan-500 transition-all cursor-pointer group">
+                          <Twitter className="w-5 h-5 text-white/40 group-hover:text-black" />
+                        </a>
+                      )}
+                      {settings?.linkedin && (
+                        <a href={settings.linkedin} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-cyan-500 transition-all cursor-pointer group">
+                          <Linkedin className="w-5 h-5 text-white/40 group-hover:text-black" />
+                        </a>
+                      )}
+                      {settings?.facebook && (
+                        <a href={settings.facebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-cyan-500 transition-all cursor-pointer group">
+                          <Facebook className="w-5 h-5 text-white/40 group-hover:text-black" />
+                        </a>
+                      )}
+                      <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-cyan-500 transition-all cursor-pointer group" onClick={() => window.location.hash = '#contact'}>
                         <Mail className="w-5 h-5 text-white/40 group-hover:text-black" />
-                      </div>
-                      <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-cyan-500 transition-all cursor-pointer group">
-                        <MessageSquare className="w-5 h-5 text-white/40 group-hover:text-black" />
                       </div>
                     </div>
                   </div>

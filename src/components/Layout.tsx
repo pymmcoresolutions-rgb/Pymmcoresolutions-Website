@@ -1,7 +1,9 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Home, Rocket, Shield, Cpu, Globe, LayoutDashboard, LogOut, Menu, X, Sparkles, Bell, Award, Mail, Star, Loader2, DollarSign } from 'lucide-react';
+import { Home, Rocket, Shield, Cpu, Globe, LayoutDashboard, LogOut, Menu, X, Sparkles, Bell, Award, Mail, Star, Loader2, DollarSign, Twitter, Facebook, Linkedin } from 'lucide-react';
 import { useAuth } from '../lib/auth';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import Notifications from './Notifications';
 import Logo from './Logo';
 import GlobalBackground from './GlobalBackground';
@@ -10,6 +12,16 @@ import MAAYFeedback from './MAAYFeedback';
 export default function Layout({ children, currentPath, onNavigate }: { children: React.ReactNode, currentPath?: string, onNavigate?: (path: string) => void }) {
   const { user, profile, isAdmin, isEditor, login, logout, loginLoading } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [settings, setSettings] = useState<any>(null);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, 'settings', 'global'), (snapshot) => {
+      if (snapshot.exists()) {
+        setSettings(snapshot.data());
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   const navItems = [
     { id: '#home', label: 'Home', icon: Home },
@@ -237,9 +249,24 @@ export default function Layout({ children, currentPath, onNavigate }: { children
               © 2026 PymmCore Solutions • Infrastructure Protocol v5.0.4
             </p>
             <div className="flex gap-6">
-              <Globe className="w-4 h-4 text-white/20 hover:text-white cursor-pointer transition-colors" />
-              <Shield className="w-4 h-4 text-white/20 hover:text-white cursor-pointer transition-colors" />
-              <Cpu className="w-4 h-4 text-white/20 hover:text-white cursor-pointer transition-colors" />
+              {settings?.twitter && (
+                <a href={settings.twitter} target="_blank" rel="noopener noreferrer">
+                  <Twitter className="w-4 h-4 text-white/20 hover:text-white cursor-pointer transition-colors" />
+                </a>
+              )}
+              {settings?.linkedin && (
+                <a href={settings.linkedin} target="_blank" rel="noopener noreferrer">
+                  <Linkedin className="w-4 h-4 text-white/20 hover:text-white cursor-pointer transition-colors" />
+                </a>
+              )}
+              {settings?.facebook && (
+                <a href={settings.facebook} target="_blank" rel="noopener noreferrer">
+                  <Facebook className="w-4 h-4 text-white/20 hover:text-white cursor-pointer transition-colors" />
+                </a>
+              )}
+              <Globe className="w-4 h-4 text-white/20 hover:text-white cursor-pointer transition-colors" onClick={() => window.location.hash = '#catalog'} />
+              <Shield className="w-4 h-4 text-white/20 hover:text-white cursor-pointer transition-colors" onClick={() => window.location.hash = '#security'} />
+              <Cpu className="w-4 h-4 text-white/20 hover:text-white cursor-pointer transition-colors" onClick={() => window.location.hash = '#home'} />
             </div>
           </div>
         </div>

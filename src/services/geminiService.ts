@@ -108,3 +108,87 @@ export async function suggestAppIcon(name: string, description: string): Promise
     return { iconName: 'Box', reason: 'Default fallback Protocol.' };
   }
 }
+
+export async function generateSocialMarketingInfo(appData: {
+  name: string;
+  description: string;
+  features: string[];
+  link: string;
+}): Promise<{ caption: string; videoPrompt: string }> {
+  const prompt = `
+    Create high-engagement social media marketing materials for the following application hosted on PymmCore Matrix.
+    
+    APP DATA:
+    Name: ${appData.name}
+    Description: ${appData.description}
+    Features: ${appData.features.join(', ')}
+    Link: ${appData.link}
+
+    MARKETING REQUIREMENTS:
+    1. CAPTION: Create a compelling, professional, and slightly futuristic caption that highlights the core features listed in the app data. Ensure there is a clear and strong call to action (CTA) inviting users to experience the application on the PymmCore Matrix marketplace using the provided link. Include relevant hashtags like #PymmCore #Matrix #TechInnovation #SoftwareApproved.
+    2. VIDEO PROMPT: Create a detailed visual prompt for a high-quality video generation tool. The video should showcase the app's core themes (e.g., productivity, finance) with a tech-forward, slick aesthetic. Mention cinematic lighting and 3D UI elements.
+
+    Output as JSON.
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            caption: { type: Type.STRING },
+            videoPrompt: { type: Type.STRING }
+          },
+          required: ["caption", "videoPrompt"]
+        }
+      }
+    });
+
+    return JSON.parse(response.text);
+  } catch (error) {
+    console.error("Marketing generation failed:", error);
+    return {
+      caption: `Unleash the power of ${appData.name} on the Matrix! 🚀 Featuring ${appData.features.slice(0, 2).join(', ')} and more. Experience the next generation of software here: ${appData.link} #PymmCore #Innovation #Approved`,
+      videoPrompt: `A slick 3D technical animation of a digital interface for ${appData.name}, showing its core ecosystem and data flows in a cinematic tech lab environment.`
+    };
+  }
+}
+
+export async function generateMarketingVideo(prompt: string): Promise<string> {
+  try {
+    const operation = await ai.models.generateVideos({
+      model: 'veo-3.1-lite-generate-preview',
+      prompt: `${prompt}. High quality, professional marketing video.`,
+      config: {
+        numberOfVideos: 1,
+        resolution: '1080p',
+        aspectRatio: '16:9'
+      }
+    });
+
+    // Simple polling for preview environment
+    let attempts = 0;
+    while (attempts < 5) {
+      const response = await (ai.operations as any).get(operation.name);
+      if (response.done) {
+        const result = response.response as any;
+        const part = result.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData);
+        if (part?.inlineData?.data) {
+          return `data:video/mp4;base64,${part.inlineData.data}`;
+        }
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      attempts++;
+    }
+    
+    return "";
+  } catch (error) {
+    console.error("Video generation failed:", error);
+    return "";
+  }
+}
