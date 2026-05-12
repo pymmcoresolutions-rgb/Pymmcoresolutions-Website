@@ -19,6 +19,7 @@ import ReviewsManager from './admin/ReviewsManager';
 import SettingsManager from './admin/SettingsManager';
 import SiteContentManager from './admin/SiteContentManager';
 import SystemIntelligence from './admin/SystemIntelligence';
+import SecurityAudits from './admin/SecurityAudits';
 import SubmissionManager from './admin/SubmissionManager';
 import LogoManager from './admin/LogoManager';
 import WaitlistManager from './admin/WaitlistManager';
@@ -120,6 +121,7 @@ export default function AdminDashboard() {
     { id: 'reviews', label: 'Reviews', icon: Star, roles: ['admin', 'editor'] },
     { id: 'inquiries', label: 'Inquiries', icon: Mail, roles: ['admin'] },
     { id: 'submissions', label: 'Submissions', icon: Rocket, roles: ['admin', 'editor'] },
+    { id: 'security', label: 'Security Audits', icon: ShieldCheck, roles: ['admin'] },
     { id: 'cms', label: 'CMS', icon: FileText, roles: ['admin', 'editor'] },
     { id: 'content', label: 'Site Content', icon: Globe, roles: ['admin', 'editor'] },
     { id: 'economy', label: 'Economy', icon: DollarSign, roles: ['admin'] },
@@ -161,7 +163,7 @@ export default function AdminDashboard() {
                 <tab.icon className="w-4 h-4" />
                 {tab.label}
               </div>
-              {tab.id === 'intelligence' && (
+              {(tab.id === 'intelligence' || tab.id === 'security') && (
                 <div className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
@@ -234,6 +236,7 @@ export default function AdminDashboard() {
             {activeTab === 'reviews' && <ReviewsManager key="reviews" />}
             {activeTab === 'inquiries' && <InquiryManager key="inquiries" />}
             {activeTab === 'submissions' && <SubmissionManager key="submissions" />}
+            {activeTab === 'security' && <SecurityAudits key="security" />}
             {activeTab === 'cms' && <ContentManager key="cms" />}
             {activeTab === 'content' && <SiteContentManager key="content" />}
             {activeTab === 'intelligence' && <SystemIntelligence key="intelligence" />}
