@@ -67,10 +67,11 @@ export default function AuthInterface({ onComplete }: { onComplete?: () => void 
       await login();
       onComplete?.();
     } catch (err: any) {
-      console.error("Google Auth Error:", err);
       if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
         return;
       }
+      
+      console.error("Google Auth Error:", err);
       
       if (err.code === 'auth/popup-blocked') {
         setError('Login popup was blocked. Please allow popups or open in a new tab.');

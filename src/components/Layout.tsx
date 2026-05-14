@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Home, Rocket, Shield, Cpu, Globe, LayoutDashboard, LogOut, Menu, X, Sparkles, Bell, Award, Mail, Star, Loader2, DollarSign, Twitter, Facebook, Linkedin } from 'lucide-react';
+import { Home, Rocket, Shield, Cpu, Globe, LayoutDashboard, LogOut, Menu, X, Sparkles, Bell, Award, Mail, Star, Loader2, DollarSign, Twitter, Facebook, Music2, Instagram, Linkedin } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import { useState, useEffect } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
@@ -171,6 +171,7 @@ export default function Layout({ children, currentPath, onNavigate }: { children
                 <button onClick={() => handleNavigate('#terms')} className="p-4 rounded-xl bg-white/5 text-white/40 text-[10px] font-bold uppercase tracking-widest">Terms</button>
                 <button onClick={() => handleNavigate('#security')} className="p-4 rounded-xl bg-white/5 text-white/40 text-[10px] font-bold uppercase tracking-widest">Security</button>
                 <button onClick={() => handleNavigate('#status')} className="p-4 rounded-xl bg-white/5 text-white/40 text-[10px] font-bold uppercase tracking-widest">Status</button>
+                <button onClick={() => handleNavigate('#guidelines')} className="p-4 rounded-xl bg-white/5 text-white/40 text-[10px] font-bold uppercase tracking-widest">Guidelines</button>
               </div>
 
               {user ? (
@@ -240,6 +241,7 @@ export default function Layout({ children, currentPath, onNavigate }: { children
                 <li><button onClick={() => handleNavigate('#terms')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Terms of Use</button></li>
                 <li><button onClick={() => handleNavigate('#security')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Security Protocol</button></li>
                 <li><button onClick={() => handleNavigate('#status')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">System Status</button></li>
+                <li><button onClick={() => handleNavigate('#guidelines')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Quality Guidelines</button></li>
               </ul>
             </div>
           </div>
@@ -249,14 +251,24 @@ export default function Layout({ children, currentPath, onNavigate }: { children
               © 2026 PymmCore Solutions • Infrastructure Protocol v5.0.4
             </p>
             <div className="flex gap-6">
-              {settings?.twitter && (
-                <a href={settings.twitter} target="_blank" rel="noopener noreferrer">
-                  <Twitter className="w-4 h-4 text-white/20 hover:text-white cursor-pointer transition-colors" />
+              {settings?.tiktok && (
+                <a href={settings.tiktok} target="_blank" rel="noopener noreferrer">
+                  <Music2 className="w-4 h-4 text-white/20 hover:text-white cursor-pointer transition-colors" />
+                </a>
+              )}
+              {settings?.instagram && (
+                <a href={settings.instagram} target="_blank" rel="noopener noreferrer">
+                  <Instagram className="w-4 h-4 text-white/20 hover:text-white cursor-pointer transition-colors" />
                 </a>
               )}
               {settings?.linkedin && (
                 <a href={settings.linkedin} target="_blank" rel="noopener noreferrer">
                   <Linkedin className="w-4 h-4 text-white/20 hover:text-white cursor-pointer transition-colors" />
+                </a>
+              )}
+              {settings?.twitter && (
+                <a href={settings.twitter} target="_blank" rel="noopener noreferrer">
+                  <Twitter className="w-4 h-4 text-white/20 hover:text-white cursor-pointer transition-colors" />
                 </a>
               )}
               {settings?.facebook && (

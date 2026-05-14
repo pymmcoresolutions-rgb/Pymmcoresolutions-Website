@@ -39,7 +39,7 @@ function MainContent() {
     );
   }
 
-  const isPublicPath = ['#privacy', '#terms', '#security', '#status', '#docs', '#pricing'].includes(currentPath);
+  const isPublicPath = ['#privacy', '#terms', '#security', '#status', '#docs', '#pricing', '#guidelines'].includes(currentPath);
 
   const needsVerification = user && !isEmailVerified && user.providerData[0]?.providerId === 'password';
 

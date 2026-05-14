@@ -3,14 +3,27 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Shield, Lock, FileText, Activity, CheckCircle2, 
   AlertCircle, Clock, Globe, Scale, Eye, 
-  Server, Database, Key, Fingerprint
+  Server, Database, Key, Fingerprint, Star
 } from 'lucide-react';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import ReactMarkdown from 'react-markdown';
 import Logo from './Logo';
 
-type LegalSection = 'privacy' | 'terms' | 'security' | 'status';
+type LegalSection = 'privacy' | 'terms' | 'security' | 'status' | 'guidelines';
 
 export default function Legal({ initialSection = 'privacy' }: { initialSection?: LegalSection }) {
   const [activeSection, setActiveSection] = useState<LegalSection>(initialSection);
+  const [content, setContent] = useState<any>(null);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, 'settings', 'global'), (snapshot) => {
+      if (snapshot.exists()) {
+        setContent(snapshot.data());
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const updateSection = () => {
@@ -19,6 +32,7 @@ export default function Legal({ initialSection = 'privacy' }: { initialSection?:
       else if (hash === '#terms') setActiveSection('terms');
       else if (hash === '#security') setActiveSection('security');
       else if (hash === '#status') setActiveSection('status');
+      else if (hash === '#guidelines') setActiveSection('guidelines');
     };
 
     updateSection();
@@ -30,6 +44,7 @@ export default function Legal({ initialSection = 'privacy' }: { initialSection?:
     { id: 'privacy', label: 'Privacy Policy', icon: Eye },
     { id: 'terms', label: 'Terms of Use', icon: FileText },
     { id: 'security', label: 'Security Protocol', icon: Shield },
+    { id: 'guidelines', label: 'Quality Guidelines', icon: Star },
     { id: 'status', label: 'System Status', icon: Activity },
   ];
 
@@ -72,10 +87,11 @@ export default function Legal({ initialSection = 'privacy' }: { initialSection?:
               transition={{ duration: 0.3 }}
               className="p-8 lg:p-12 rounded-[3rem] bg-white/5 border border-white/10"
             >
-              {activeSection === 'privacy' && <PrivacyPolicy />}
-              {activeSection === 'terms' && <TermsOfUse />}
-              {activeSection === 'security' && <SecurityProtocol />}
-              {activeSection === 'status' && <SystemStatus />}
+              {activeSection === 'privacy' && <PrivacyPolicy data={content?.privacyPolicy} />}
+              {activeSection === 'terms' && <TermsOfUse data={content?.termsOfUse} />}
+              {activeSection === 'security' && <SecurityProtocol data={content?.securityProtocol} />}
+              {activeSection === 'status' && <SystemStatus data={content?.systemStatusMessage} />}
+              {activeSection === 'guidelines' && <QualityGuidelines data={content?.qualityGuidelines} />}
             </motion.div>
           </AnimatePresence>
         </main>
@@ -84,7 +100,92 @@ export default function Legal({ initialSection = 'privacy' }: { initialSection?:
   );
 }
 
-function PrivacyPolicy() {
+function QualityGuidelines({ data }: { data?: string }) {
+  return (
+    <div className="prose prose-invert max-w-none">
+      <div className="flex items-center gap-4 mb-8">
+        <div className="p-4 bg-cyan-500/10 rounded-2xl">
+          <Star className="w-8 h-8 text-cyan-400" />
+        </div>
+        <div>
+          <h1 className="text-4xl font-bold mb-1">Quality Guidelines</h1>
+          <p className="text-white/40 text-sm uppercase tracking-widest font-bold">PymmCore Excellence Standard v2.1</p>
+        </div>
+      </div>
+
+      {data ? (
+        <div className="mt-8">
+          <ReactMarkdown>{data}</ReactMarkdown>
+        </div>
+      ) : (
+        <section className="space-y-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="p-8 rounded-3xl bg-white/5 border border-white/10">
+            <h3 className="text-xl font-bold text-cyan-400 mb-4 uppercase tracking-tighter">1. Performance & Fluidity</h3>
+            <p className="text-sm text-white/60 leading-relaxed">
+              Every application listed on PymmCore must meet rigorous speed benchmarks. Interaction latency must be sub-50ms, and critical rendering paths must be optimized for immediate feedback.
+            </p>
+          </div>
+          <div className="p-8 rounded-3xl bg-white/5 border border-white/10">
+            <h3 className="text-xl font-bold text-cyan-400 mb-4 uppercase tracking-tighter">2. Intentional UX/UI</h3>
+            <p className="text-sm text-white/60 leading-relaxed">
+              We reject generic design patterns. Applications must exhibit distinctive aesthetic choices, clear information hierarchy, and intuitive navigation flows that respect user cognitive load.
+            </p>
+          </div>
+          <div className="p-8 rounded-3xl bg-white/5 border border-white/10">
+            <h3 className="text-xl font-bold text-cyan-400 mb-4 uppercase tracking-tighter">3. Security Zero-Trust</h3>
+            <p className="text-sm text-white/60 leading-relaxed">
+              Security is not an afterthought. All applications must implement strict authentication guards, sanitized data inputs, and encrypted transmission protocols as per our Infrastructure v5 standards.
+            </p>
+          </div>
+          <div className="p-8 rounded-3xl bg-white/5 border border-white/10">
+            <h3 className="text-xl font-bold text-cyan-400 mb-4 uppercase tracking-tighter">4. Reliability Matrix</h3>
+            <p className="text-sm text-white/60 leading-relaxed">
+              Apps must handle edge cases gracefully. Error states must be informative, and system failures must be isolated through robust architecture to prevent cascade effects.
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-white border-b border-white/10 pb-4">Comprehensive Evaluation Criteria</h2>
+          
+          <div className="space-y-4">
+            <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl">
+              <CheckCircle2 className="w-5 h-5 text-cyan-500 shrink-0" />
+              <div>
+                <span className="font-bold block">Accessibility Compliance</span>
+                <span className="text-xs text-white/40">WCAG 2.1 Level AA color contrast and screen reader support is mandatory.</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl">
+              <CheckCircle2 className="w-5 h-5 text-cyan-500 shrink-0" />
+              <div>
+                <span className="font-bold block">Code Integrity</span>
+                <span className="text-xs text-white/40">Vetted through automated linting and manual architect review for performance leaks.</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl">
+              <CheckCircle2 className="w-5 h-5 text-cyan-500 shrink-0" />
+              <div>
+                <span className="font-bold block">Ethical Standards</span>
+                <span className="text-xs text-white/40">Strict prohibition of dark patterns, notification spam, or unauthorized data harvesting.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-8 rounded-3xl bg-cyan-500/5 border border-cyan-500/20 text-center">
+          <p className="text-white/40 text-sm">
+            Failure to adhere to these guidelines results in immediate revocation of platform tokens and removal from the PymmCore discovery network.
+          </p>
+        </div>
+      </section>
+      )}
+    </div>
+  );
+}
+
+function PrivacyPolicy({ data }: { data?: string }) {
   return (
     <div className="prose prose-invert max-w-none">
       <div className="flex items-center gap-4 mb-8">
@@ -97,7 +198,12 @@ function PrivacyPolicy() {
         </div>
       </div>
 
-      <section className="space-y-8">
+      {data ? (
+        <div className="mt-8">
+          <ReactMarkdown>{data}</ReactMarkdown>
+        </div>
+      ) : (
+        <section className="space-y-8">
         <div>
           <h2 className="text-2xl font-bold mb-4 text-teal-400">1. Data Collection Protocol</h2>
           <p className="text-white/60 leading-relaxed">
@@ -160,11 +266,12 @@ function PrivacyPolicy() {
           </p>
         </div>
       </section>
+      )}
     </div>
   );
 }
 
-function TermsOfUse() {
+function TermsOfUse({ data }: { data?: string }) {
   return (
     <div className="prose prose-invert max-w-none">
       <div className="flex items-center gap-4 mb-8">
@@ -177,7 +284,12 @@ function TermsOfUse() {
         </div>
       </div>
 
-      <section className="space-y-8">
+      {data ? (
+        <div className="mt-8">
+          <ReactMarkdown>{data}</ReactMarkdown>
+        </div>
+      ) : (
+        <section className="space-y-8">
         <div>
           <h2 className="text-2xl font-bold mb-4 text-purple-400">1. Acceptance of Terms</h2>
           <p className="text-white/60 leading-relaxed">
@@ -236,11 +348,12 @@ function TermsOfUse() {
           </p>
         </div>
       </section>
+      )}
     </div>
   );
 }
 
-function SecurityProtocol() {
+function SecurityProtocol({ data }: { data?: string }) {
   return (
     <div className="prose prose-invert max-w-none">
       <div className="flex items-center gap-4 mb-8">
@@ -253,7 +366,13 @@ function SecurityProtocol() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+      {data ? (
+        <div className="mt-8">
+          <ReactMarkdown>{data}</ReactMarkdown>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
         <SecurityCard 
           icon={Lock} 
           title="End-to-End Encryption" 
@@ -298,6 +417,8 @@ function SecurityProtocol() {
           </p>
         </div>
       </section>
+        </>
+      )}
     </div>
   );
 }
@@ -314,7 +435,7 @@ function SecurityCard({ icon: Icon, title, desc }: any) {
   );
 }
 
-function SystemStatus() {
+function SystemStatus({ data }: { data?: string }) {
   const systems = [
     { name: 'Storefront API', status: 'operational', uptime: '99.99%' },
     { name: 'Authentication Node', status: 'operational', uptime: '100%' },
@@ -338,7 +459,9 @@ function SystemStatus() {
       <div className="p-8 rounded-3xl bg-green-500/10 border border-green-500/20 mb-12 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-          <span className="text-xl font-bold text-green-500 uppercase tracking-tighter">All Systems Operational</span>
+          <span className="text-xl font-bold text-green-500 uppercase tracking-tighter">
+            {data || 'All Systems Operational'}
+          </span>
         </div>
         <div className="text-xs text-green-500/60 font-bold uppercase tracking-widest">Verified 2m ago</div>
       </div>

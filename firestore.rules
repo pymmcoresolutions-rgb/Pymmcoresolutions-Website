@@ -39,6 +39,8 @@ service cloud.firestore {
     // Fields:
     //   - contactEmail: string (email)
     //   - phoneNumber: string (max 20)
+    //   - tiktok: string (URL)
+    //   - instagram: string (URL)
     //   - linkedin: string (URL)
     //   - twitter: string (URL)
     //   - facebook: string (URL)
@@ -260,6 +262,8 @@ service cloud.firestore {
     function isValidSettings(data) {
       return (!('contactEmail' in data) || isValidEmail(data.contactEmail)) &&
              (!('phoneNumber' in data) || (data.phoneNumber is string && data.phoneNumber.size() <= 100)) &&
+             (!('tiktok' in data) || isValidUrl(data.tiktok)) &&
+             (!('instagram' in data) || isValidUrl(data.instagram)) &&
              (!('linkedin' in data) || isValidUrl(data.linkedin)) &&
              (!('twitter' in data) || isValidUrl(data.twitter)) &&
              (!('facebook' in data) || isValidUrl(data.facebook)) &&
@@ -274,6 +278,11 @@ service cloud.firestore {
              (!('founderBio' in data) || (data.founderBio is string && data.founderBio.size() <= 30000)) &&
              (!('contactTitle' in data) || (data.contactTitle is string && data.contactTitle.size() <= 500)) &&
              (!('contactDescription' in data) || (data.contactDescription is string && data.contactDescription.size() <= 10000)) &&
+             (!('privacyPolicy' in data) || (data.privacyPolicy is string && data.privacyPolicy.size() <= 100000)) &&
+             (!('termsOfUse' in data) || (data.termsOfUse is string && data.termsOfUse.size() <= 100000)) &&
+             (!('securityProtocol' in data) || (data.securityProtocol is string && data.securityProtocol.size() <= 100000)) &&
+             (!('qualityGuidelines' in data) || (data.qualityGuidelines is string && data.qualityGuidelines.size() <= 100000)) &&
+             (!('systemStatusMessage' in data) || (data.systemStatusMessage is string && data.systemStatusMessage.size() <= 10000)) &&
              (!('themeMode' in data) || data.themeMode in ['dark', 'light', 'system']) &&
              (!('updatedAt' in data) || data.updatedAt is timestamp);
     }

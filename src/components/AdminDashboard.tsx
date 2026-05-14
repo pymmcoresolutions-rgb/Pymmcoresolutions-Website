@@ -26,6 +26,7 @@ import WaitlistManager from './admin/WaitlistManager';
 import AnalyticsDashboard from './admin/AnalyticsDashboard';
 import EconomyManager from './admin/EconomyManager';
 import SocialShipper from './admin/SocialShipper';
+import SystemMesh from './admin/SystemMesh';
 import BrandingSettings from './BrandingSettings';
 
 export default function AdminDashboard() {
@@ -114,19 +115,17 @@ export default function AdminDashboard() {
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard, roles: ['admin', 'editor', 'developer'] },
-    { id: 'insights', label: 'Insights', icon: TrendingUp, roles: ['admin', 'developer'] },
+    { id: 'mesh', label: 'System Mesh', icon: Globe, roles: ['admin', 'developer'] },
     { id: 'apps', label: 'Apps', icon: Activity, roles: ['admin', 'editor'] },
     { id: 'users', label: 'Users', icon: Users, roles: ['admin'] },
     { id: 'waitlist', label: 'Waitlist', icon: Mail, roles: ['admin'] },
     { id: 'reviews', label: 'Reviews', icon: Star, roles: ['admin', 'editor'] },
     { id: 'inquiries', label: 'Inquiries', icon: Mail, roles: ['admin'] },
     { id: 'submissions', label: 'Submissions', icon: Rocket, roles: ['admin', 'editor'] },
-    { id: 'security', label: 'Security Audits', icon: ShieldCheck, roles: ['admin'] },
     { id: 'cms', label: 'CMS', icon: FileText, roles: ['admin', 'editor'] },
     { id: 'content', label: 'Site Content', icon: Globe, roles: ['admin', 'editor'] },
     { id: 'economy', label: 'Economy', icon: DollarSign, roles: ['admin'] },
     { id: 'social', label: 'Social Shipper', icon: Share2, roles: ['admin'] },
-    { id: 'intelligence', label: 'Performance', icon: Shield, roles: ['admin'] },
     { id: 'branding', label: 'Branding', icon: Image, roles: ['admin'] },
     { id: 'audit', label: 'Activity Logs', icon: History, roles: ['admin', 'developer'] },
     { id: 'settings', label: 'Settings', icon: Settings, roles: ['admin'] },
@@ -138,8 +137,8 @@ export default function AdminDashboard() {
     <div className="max-w-7xl mx-auto px-4 py-12">
       <div className="flex flex-col md:flex-row gap-8">
         {/* Sidebar */}
-        <aside className="w-full md:w-64 space-y-2">
-          <div className="p-4 mb-6 rounded-2xl bg-blue-600/10 border border-blue-500/20">
+        <aside className="w-full md:w-64 flex flex-col h-fit sticky top-12">
+          <div className="p-4 mb-6 rounded-2xl bg-blue-600/10 border border-blue-500/20 shrink-0">
             <div className="flex items-center gap-3 mb-2">
               <Shield className="w-5 h-5 text-blue-400" />
               <span className="font-bold text-sm uppercase tracking-widest">Admin Tools</span>
@@ -149,28 +148,30 @@ export default function AdminDashboard() {
             </p>
           </div>
           
-          {filteredTabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                activeTab === tab.id 
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
-                  : 'text-white/40 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <tab.icon className="w-4 h-4" />
-                {tab.label}
-              </div>
-              {(tab.id === 'intelligence' || tab.id === 'security') && (
-                <div className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+          <div className="space-y-2 overflow-y-auto max-h-[70vh] pr-2 custom-scrollbar transition-all">
+            {filteredTabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                  activeTab === tab.id 
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
+                    : 'text-white/40 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <tab.icon className="w-4 h-4" />
+                  {tab.label}
                 </div>
-              )}
-            </button>
-          ))}
+                {(tab.id === 'mesh') && (
+                  <div className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
         </aside>
 
         {/* Main Content Area */}
@@ -229,17 +230,15 @@ export default function AdminDashboard() {
               </motion.div>
             )}
 
-            {activeTab === 'insights' && <AnalyticsDashboard key="insights" />}
+            {activeTab === 'mesh' && <SystemMesh key="mesh" />}
             {activeTab === 'apps' && <NodeManager key="apps" />}
             {activeTab === 'users' && <UserManager key="users" />}
             {activeTab === 'waitlist' && <WaitlistManager key="waitlist" />}
             {activeTab === 'reviews' && <ReviewsManager key="reviews" />}
             {activeTab === 'inquiries' && <InquiryManager key="inquiries" />}
             {activeTab === 'submissions' && <SubmissionManager key="submissions" />}
-            {activeTab === 'security' && <SecurityAudits key="security" />}
             {activeTab === 'cms' && <ContentManager key="cms" />}
             {activeTab === 'content' && <SiteContentManager key="content" />}
-            {activeTab === 'intelligence' && <SystemIntelligence key="intelligence" />}
             {activeTab === 'audit' && <AuditViewer key="audit" />}
             {activeTab === 'branding' && <BrandingSettings key="branding" />}
             {activeTab === 'economy' && <EconomyManager key="economy" />}

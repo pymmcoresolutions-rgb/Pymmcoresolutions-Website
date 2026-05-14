@@ -91,6 +91,8 @@
       "properties": {
         "contactEmail": { "type": "string", "format": "email" },
         "phoneNumber": { "type": "string" },
+        "tiktok": { "type": "string", "format": "uri" },
+        "instagram": { "type": "string", "format": "uri" },
         "linkedin": { "type": "string", "format": "uri" },
         "twitter": { "type": "string", "format": "uri" },
         "facebook": { "type": "string", "format": "uri" },
@@ -103,6 +105,11 @@
         "founderPhotoUrl": { "type": "string" },
         "contactTitle": { "type": "string" },
         "contactDescription": { "type": "string" },
+        "privacyPolicy": { "type": "string", "description": "Markdown content for Privacy Policy" },
+        "termsOfUse": { "type": "string", "description": "Markdown content for Terms of Use" },
+        "securityProtocol": { "type": "string", "description": "Markdown content for Security Protocol" },
+        "qualityGuidelines": { "type": "string", "description": "Markdown content for Quality Guidelines" },
+        "systemStatusMessage": { "type": "string", "description": "Overall status message (e.g. All Systems Operational)" },
         "customLogoUrl": { "type": "string", "description": "Base64 encoded logo or external URL" },
         "themeMode": { "type": "string", "enum": ["dark", "light", "system"], "description": "Global visual theme for the platform." }
       }

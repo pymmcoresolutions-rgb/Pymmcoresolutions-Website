@@ -3,7 +3,7 @@ import {
   Shield, Zap, Sparkles, 
   Globe, ArrowRight, ShoppingCart,
   User, Star, X, Info, CheckCircle2, ChevronRight, Activity, Cpu, ShieldCheck,
-  Mail, MessageSquare, Info as InfoIcon, Twitter, Linkedin, Facebook
+  Mail, MessageSquare, Info as InfoIcon, Twitter, Facebook, Music2, Instagram, Linkedin
 } from 'lucide-react';
 import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '../lib/auth';
@@ -183,6 +183,22 @@ export default function LandingPage({
                 <OnboardingShowcase />
               </div>
 
+              {/* Quality Guarantee Call to Action */}
+              <div className="pointer-events-auto relative z-10 py-12 border-b border-white/5 bg-cyan-500/5">
+                <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-bold uppercase tracking-tighter text-white">Our Quality Commitment</h3>
+                    <p className="text-[10px] text-cyan-400 uppercase tracking-[0.3em] font-black italic">Uncompromising standards for every line of code.</p>
+                  </div>
+                  <button 
+                    onClick={() => window.location.hash = '#guidelines'}
+                    className="flex items-center gap-4 px-8 py-4 bg-white text-black text-[10px] font-black uppercase tracking-[0.3em] hover:bg-cyan-400 transition-all group"
+                  >
+                    READ OUR FULL QUALITY GUIDELINES <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+                  </button>
+                </div>
+              </div>
+
               {/* Reviews Preview Section */}
               <div className="pointer-events-auto relative z-10 py-24 bg-black/20 border-b border-white/5 backdrop-blur-3xl">
                 <div className="max-w-7xl mx-auto px-6">
@@ -241,27 +257,39 @@ export default function LandingPage({
                       <button onClick={() => window.location.hash = '#terms'} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">Terms</button>
                       <button onClick={() => window.location.hash = '#privacy'} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">Privacy</button>
                       <button onClick={() => window.location.hash = '#security'} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">Security</button>
+                      <button onClick={() => window.location.hash = '#guidelines'} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">Guidelines</button>
                     </div>
                   </div>
                   <div className="space-y-4">
                     <div className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-500 italic">Resources</div>
                     <div className="flex flex-col gap-2">
                       <button onClick={() => window.location.hash = '#docs'} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">Docs</button>
-                      <button onClick={() => window.location.hash = '#status'} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">Status</button>
-                      <button onClick={() => window.location.hash = '#contact'} className="text-xs text-white/40 hover:text-white transition-colors text-left font-bold uppercase tracking-widest">Support</button>
+                      <button onClick={() => window.location.hash = '#guidelines'} className="flex items-center gap-2 group text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400 mt-2">
+                        READ OUR FULL QUALITY GUIDELINES <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                      </button>
                     </div>
                   </div>
                   <div className="space-y-6">
                     <Logo size="sm" />
                     <div className="flex gap-4">
-                      {settings?.twitter && (
-                        <a href={settings.twitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-cyan-500 transition-all cursor-pointer group">
-                          <Twitter className="w-5 h-5 text-white/40 group-hover:text-black" />
+                      {settings?.tiktok && (
+                        <a href={settings.tiktok} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-cyan-500 transition-all cursor-pointer group">
+                          <Music2 className="w-5 h-5 text-white/40 group-hover:text-black" />
+                        </a>
+                      )}
+                      {settings?.instagram && (
+                        <a href={settings.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-cyan-500 transition-all cursor-pointer group">
+                          <Instagram className="w-5 h-5 text-white/40 group-hover:text-black" />
                         </a>
                       )}
                       {settings?.linkedin && (
                         <a href={settings.linkedin} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-cyan-500 transition-all cursor-pointer group">
                           <Linkedin className="w-5 h-5 text-white/40 group-hover:text-black" />
+                        </a>
+                      )}
+                      {settings?.twitter && (
+                        <a href={settings.twitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-cyan-500 transition-all cursor-pointer group">
+                          <Twitter className="w-5 h-5 text-white/40 group-hover:text-black" />
                         </a>
                       )}
                       {settings?.facebook && (

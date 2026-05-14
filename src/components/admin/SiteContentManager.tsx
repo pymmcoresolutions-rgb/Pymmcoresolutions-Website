@@ -8,9 +8,9 @@ import {
   Layout, Save, Loader2, CheckCircle2, 
   Info, Target, Eye, User, Image as ImageIcon,
   MessageSquare, FileText, Upload, Trash2, X,
-  Maximize2, MousePointer2, Sparkles
+  Maximize2, MousePointer2, Shield
 } from 'lucide-react';
-import KeyFeaturesManager from './KeyFeaturesManager';
+import LegalContentManager from './LegalContentManager';
 
 // Helper for image cropping
 const getCroppedImg = async (imageSrc: string, pixelCrop: any, rotation = 0): Promise<string> => {
@@ -62,6 +62,7 @@ export default function SiteContentManager() {
   });
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [activeSubMenu, setActiveSubMenu] = useState<'general' | 'legal'>('general');
 
   // Cropper state
   const [showCropper, setShowCropper] = useState(false);
@@ -170,10 +171,26 @@ export default function SiteContentManager() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <h3 className="text-xl font-bold flex items-center gap-2">
           <Layout className="w-5 h-5 text-blue-400" /> Site Content Manager
         </h3>
+        
+        <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
+          <button 
+            onClick={() => setActiveSubMenu('general')}
+            className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeSubMenu === 'general' ? 'bg-white text-black' : 'text-white/40 hover:text-white'}`}
+          >
+            General
+          </button>
+          <button 
+            onClick={() => setActiveSubMenu('legal')}
+            className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeSubMenu === 'legal' ? 'bg-white text-black' : 'text-white/40 hover:text-white'}`}
+          >
+            Legal & Quality
+          </button>
+        </div>
+
         {saved && (
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
@@ -185,7 +202,10 @@ export default function SiteContentManager() {
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-12">
+      {activeSubMenu === 'legal' ? (
+        <LegalContentManager />
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-12">
         {/* About Section */}
         <section className="space-y-6">
           <div className="flex items-center gap-3 border-b border-white/10 pb-4">
@@ -394,20 +414,7 @@ export default function SiteContentManager() {
           </button>
         </div>
       </form>
-
-      {/* Global Key Features */}
-      <section className="space-y-6 border-t border-white/10 pt-12">
-        <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-          <Sparkles className="w-5 h-5 text-teal-400" />
-          <div>
-            <h4 className="text-lg font-bold">Landing Page Key Features</h4>
-            <p className="text-xs text-white/40">Manage the highlights and capabilities displayed on the main showcase.</p>
-          </div>
-        </div>
-        <div className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-8">
-          <KeyFeaturesManager />
-        </div>
-      </section>
+      )}
 
       {/* Photo Adjustment Modal */}
       <AnimatePresence>

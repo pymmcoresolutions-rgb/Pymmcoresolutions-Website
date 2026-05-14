@@ -74,14 +74,14 @@ async function startServer() {
     
     console.log(`Publishing campaign for ${appId} to ${platforms.join(', ')}`);
 
-    // Simulate API calls to TikTok, Instagram, LinkedIn
+    // Simulate API calls to TikTok, Instagram
     try {
       // Mock delay
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       res.json({ 
         success: true, 
-        message: "App approved. Marketing campaign dispatched to all social channels.",
+        message: "Marketing campaign dispatched directly to social channels.",
         postIds: platforms.reduce((acc, p) => ({ ...acc, [p]: `social_${Math.random().toString(36).substr(2, 9)}` }), {})
       });
     } catch (error: any) {

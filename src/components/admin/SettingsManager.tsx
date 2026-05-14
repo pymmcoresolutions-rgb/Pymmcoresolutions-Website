@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { motion, AnimatePresence } from 'motion/react';
-import { Settings, Save, Mail, Phone, Linkedin, Twitter, Facebook, Loader2, CheckCircle2, Send, AlertCircle } from 'lucide-react';
+import { Settings, Save, Mail, Phone, Twitter, Facebook, Loader2, CheckCircle2, Send, AlertCircle, Music2, Instagram, Linkedin } from 'lucide-react';
 
 export default function SettingsManager() {
   const [form, setForm] = useState({
     contactEmail: 'pymmcoresolutions@gmail.com',
     phoneNumber: '',
+    tiktok: '',
+    instagram: '',
     linkedin: '',
     twitter: '',
     facebook: ''
@@ -117,43 +119,71 @@ export default function SettingsManager() {
           <div className="space-y-6 p-8 rounded-3xl bg-white/5 border border-white/10">
             <h4 className="text-xs font-bold uppercase tracking-widest text-white/40 mb-4">Social Presence</h4>
             
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2 flex items-center gap-2">
-                <Linkedin className="w-3 h-3" /> LinkedIn URL
-              </label>
-              <input
-                type="url"
-                value={form.linkedin}
-                onChange={e => setForm({ ...form, linkedin: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition-all text-sm"
-                placeholder="https://linkedin.com/company/..."
-              />
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2 flex items-center gap-2">
+                  <Music2 className="w-3 h-3" /> TikTok URL
+                </label>
+                <input
+                  type="url"
+                  value={form.tiktok}
+                  onChange={e => setForm({ ...form, tiktok: e.target.value })}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition-all text-sm"
+                  placeholder="https://tiktok.com/@..."
+                />
+              </div>
 
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2 flex items-center gap-2">
-                <Twitter className="w-3 h-3" /> Twitter URL
-              </label>
-              <input
-                type="url"
-                value={form.twitter}
-                onChange={e => setForm({ ...form, twitter: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition-all text-sm"
-                placeholder="https://twitter.com/..."
-              />
-            </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2 flex items-center gap-2">
+                  <Instagram className="w-3 h-3" /> Instagram URL
+                </label>
+                <input
+                  type="url"
+                  value={form.instagram}
+                  onChange={e => setForm({ ...form, instagram: e.target.value })}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition-all text-sm"
+                  placeholder="https://instagram.com/..."
+                />
+              </div>
 
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2 flex items-center gap-2">
-                <Facebook className="w-3 h-3" /> Facebook URL
-              </label>
-              <input
-                type="url"
-                value={form.facebook}
-                onChange={e => setForm({ ...form, facebook: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition-all text-sm"
-                placeholder="https://facebook.com/..."
-              />
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2 flex items-center gap-2">
+                  <Linkedin className="w-3 h-3" /> LinkedIn URL
+                </label>
+                <input
+                  type="url"
+                  value={form.linkedin}
+                  onChange={e => setForm({ ...form, linkedin: e.target.value })}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition-all text-sm"
+                  placeholder="https://linkedin.com/company/..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2 flex items-center gap-2">
+                  <Twitter className="w-3 h-3" /> Twitter URL
+                </label>
+                <input
+                  type="url"
+                  value={form.twitter}
+                  onChange={e => setForm({ ...form, twitter: e.target.value })}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition-all text-sm"
+                  placeholder="https://twitter.com/..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2 flex items-center gap-2">
+                  <Facebook className="w-3 h-3" /> Facebook URL
+                </label>
+                <input
+                  type="url"
+                  value={form.facebook}
+                  onChange={e => setForm({ ...form, facebook: e.target.value })}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition-all text-sm"
+                  placeholder="https://facebook.com/..."
+                />
+              </div>
             </div>
           </div>
 

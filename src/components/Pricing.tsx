@@ -180,7 +180,10 @@ export default function Pricing({ onStartListing }: PricingProps) {
                 We don't take a commission on your sales—just a simple one-time fee per application to cover vetting and infrastructure.
               </p>
               <div className="pt-4">
-                <button className="flex items-center gap-2 text-cyan-400 font-bold uppercase tracking-widest text-xs hover:gap-4 transition-all">
+                <button 
+                  onClick={() => window.location.hash = '#guidelines'}
+                  className="flex items-center gap-2 text-cyan-400 font-bold uppercase tracking-widest text-xs hover:gap-4 transition-all"
+                >
                   Read our full quality guidelines <ArrowRight className="w-4 h-4" />
                 </button>
               </div>

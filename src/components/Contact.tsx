@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Mail, Phone, Linkedin, Twitter, Facebook, Send, Loader2, CheckCircle2, MapPin } from 'lucide-react';
+import { Mail, Phone, Twitter, Facebook, Send, Loader2, CheckCircle2, MapPin, Music2, Instagram, Linkedin } from 'lucide-react';
 import { collection, addDoc, serverTimestamp, doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
@@ -244,6 +244,8 @@ export default function Contact() {
               <h3 className="text-[10px] font-black uppercase tracking-[0.5em] text-emerald-500 mb-8 ml-1 italic">// SOCIAL FREQUENCIES</h3>
               <div className="flex gap-4">
                 {[
+                  { icon: Music2, url: settings?.tiktok, color: 'text-rose-500 border-rose-500/20 shadow-rose-500/10' },
+                  { icon: Instagram, url: settings?.instagram, color: 'text-pink-500 border-pink-500/20 shadow-pink-500/10' },
                   { icon: Linkedin, url: settings?.linkedin, color: 'text-cyan-500 border-cyan-500/20 shadow-cyan-500/10' },
                   { icon: Twitter, url: settings?.twitter, color: 'text-sky-400 border-sky-400/20 shadow-sky-400/10' },
                   { icon: Facebook, url: settings?.facebook, color: 'text-indigo-500 border-indigo-500/20 shadow-indigo-500/10' }

@@ -137,9 +137,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const result = await signInWithPopup(auth, provider);
       console.log("Login successful:", result.user.email);
     } catch (error: any) {
+      if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+        return;
+      }
+
       console.error("Google Auth Error:", error);
       
-      // If internal error, it might be due to iframe/popup restrictions
       if (error.code === 'auth/internal-error') {
         alert("Authentication encountered an internal error. This can happen in sandboxed environments. Please try opening the app in a new tab if this persists.");
       }
@@ -148,9 +151,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         alert("The login popup was blocked by your browser. Please allow popups for this site or open the application in a new tab to sign in.");
       }
       
-      if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-        return;
-      }
       throw error;
     } finally {
       setLoginLoading(false);
