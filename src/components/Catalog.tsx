@@ -250,10 +250,19 @@ export default function Catalog() {
                       platformList.includes('All') || 
                       platformList.includes(filter);
     
-    // Visible if approved AND production OR if admin/editor and staging is toggled
-    const statusMatch = isAdmin || isEditor 
-      ? (showStaging || (app.approvalStatus === 'approved' && app.status === 'production'))
-      : (app.approvalStatus === 'approved' && app.status === 'production');
+    // Visible if:
+    // 1. Approved AND Production
+    // 2. OR User is the Author (transparency for developers)
+    // 3. OR Admin/Editor and staging is toggled
+    const isAuthor = user && app.authorUid === user.uid;
+    const isPubliclyVisible = app.approvalStatus === 'approved' && app.status === 'production';
+    const isPendingVisible = app.approvalStatus === 'pending';
+    const isStagingVisible = (isAdmin || isEditor) && showStaging;
+    
+    // Core visibility rule: Only show non-drafts in catalog
+    if (app.isDraft) return false;
+
+    const statusMatch = isPubliclyVisible || isPendingVisible || isAuthor || isStagingVisible;
 
     const wishlistMatch = !showWishlistOnly || wishlist.has(app.id);
     const searchMatch = !search || 
@@ -397,6 +406,13 @@ export default function Catalog() {
               {app.isPymmcoreProduct && (
                 <div className="absolute top-0 left-0 px-4 py-1.5 bg-cyan-600 text-[9px] font-black uppercase tracking-[0.2em] rounded-br-2xl flex items-center gap-1.5">
                   <Sparkles className="w-3 h-3" /> Official
+                </div>
+              )}
+
+              {/* Status Badge for Non-Approved Apps */}
+              {app.approvalStatus === 'pending' && (
+                <div className="absolute top-0 left-0 px-4 py-1.5 bg-yellow-600 text-[9px] font-black uppercase tracking-[0.2em] rounded-br-2xl flex items-center gap-1.5 z-20">
+                  <Clock className="w-3 h-3" /> Under Review
                 </div>
               )}
 

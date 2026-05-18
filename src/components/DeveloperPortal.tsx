@@ -56,6 +56,9 @@ export default function DeveloperPortal() {
   const [error, setError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   
+  const [isPaymentConfirmed, setIsPaymentConfirmed] = useState(false);
+  const [paymentReference, setPaymentReference] = useState<string | null>(null);
+  
   const [drafts, setDrafts] = useState<AppSubmissionForm[]>([]);
   const [economy, setEconomy] = useState({ listingFee: 25, exchangeRate: 1600 });
   
@@ -153,7 +156,9 @@ export default function DeveloperPortal() {
   };
 
   const onSuccess = (reference: any) => {
-    handleSubmit(reference.reference);
+    setPaymentReference(reference.reference);
+    setIsPaymentConfirmed(true);
+    setError(null);
   };
 
   const onClose = () => {
@@ -177,25 +182,48 @@ export default function DeveloperPortal() {
   };
 
   const validateForm = () => {
-    if (!form.name || !form.description || !form.category || !form.developer || !form.price) {
-      setError("Please fill in all required operational fields.");
+    // 1. Mandatory Core Fields
+    if (!form.name.trim() || !form.description.trim() || !form.category || !form.developer.trim() || !form.price.trim()) {
+      setError("Protocols Incomplete: All core identity fields (Name, Description, Category, Developer, Price) are required.");
       return false;
     }
+
+    // 2. Platform Node Selection
     if (!form.type || form.type.length === 0) {
-      setError("Select at least one target platform node.");
+      setError("Topology Error: Select at least one target platform node for deployment.");
       return false;
     }
-    if (form.description.length < 50) {
-      setError("Description is too brief. Provide more technical details.");
+
+    // 3. Technical Links & Assets
+    if (!form.link.trim() || !form.link.startsWith('http')) {
+      setError("Resource Error: A valid production/target URL is required for the audit protocol.");
       return false;
     }
-    // Simple automated spam check
-    const spamWords = ['buy now', 'cheap', 'viagra', 'casino', 'free money'];
+
+    if (!form.icon) {
+      setError("Visual Identity Missing: An application icon is mandatory for matrix indexing.");
+      return false;
+    }
+
+    // 4. Content Depth
+    if (form.description.length < 100) {
+      setError("Description Insufficient: Provide at least 100 characters detailing the application's utility and architecture.");
+      return false;
+    }
+
+    if (form.features.length < 2) {
+      setError("Functional Specifications Missing: Define at least 2 key features of the application.");
+      return false;
+    }
+
+    // 5. Spam/Malice Filtering
+    const spamWords = ['buy now', 'cheap', 'viagra', 'casino', 'free money', 'lottery', 'winner', 'cash prize'];
     const content = (form.name + ' ' + form.description).toLowerCase();
     if (spamWords.some(word => content.includes(word))) {
-      setError("Content flagged by Spam Filter. Please revise your metadata.");
+      setError("Security Alert: Content flagged by Anti-Spam heuristic. Please revise your metadata for compliance.");
       return false;
     }
+
     setError(null);
     return true;
   };
@@ -232,15 +260,29 @@ export default function DeveloperPortal() {
   const handleSubmit = async (paymentRef: string) => {
     setLoading(true);
     setError(null);
+    
+    // We prioritize getting the record into the DB as soon as payment is confirmed.
+    // The AI audit is secondary and shouldn't block the core record creation if it fails.
     try {
-      // Stage: AI Auditor 
-      const audit = await auditApplication({
-        name: form.name,
-        description: form.description,
-        link: form.link,
-        developer: form.developer,
-        sourceCodeUrl: form.sourceCodeUrl
-      });
+      let auditResult: { riskScore: 'Safe' | 'Suspicious' | 'Dangerous'; report: string } = { 
+        riskScore: 'Suspicious', 
+        report: 'Audit pending...' 
+      };
+      
+      try {
+        // Stage: AI Auditor (Attemtp)
+        const audit = await auditApplication({
+          name: form.name,
+          description: form.description,
+          link: form.link,
+          developer: form.developer,
+          sourceCodeUrl: form.sourceCodeUrl
+        });
+        auditResult = { riskScore: audit.riskScore, report: audit.report };
+      } catch (auditErr) {
+        console.warn("AI Audit Protocol Interrupted:", auditErr);
+        // We continue anyway, the admin can manually audit or re-trigger.
+      }
 
       const submissionData = {
         ...form,
@@ -250,23 +292,44 @@ export default function DeveloperPortal() {
         paymentStatus: 'paid',
         paymentReference: paymentRef,
         status: 'staging',
-        isDraft: false, // NO LONGER A DRAFT
-        aiRiskScore: audit.riskScore,
-        aiReport: audit.report
+        isDraft: false, 
+        aiRiskScore: auditResult.riskScore,
+        aiReport: auditResult.report
       };
+
+      let finalAppId = form.id;
 
       if (form.id) {
         await updateDoc(doc(db, 'apps', form.id), submissionData);
+        console.log("Submission successful (Update):", form.id);
       } else {
-        await addDoc(collection(db, 'apps'), {
+        const newDoc = await addDoc(collection(db, 'apps'), {
           ...submissionData,
           createdAt: serverTimestamp()
         });
+        finalAppId = newDoc.id;
+        console.log("Submission successful (Create):", finalAppId);
       }
+
+      // 3. Notify Administration
+      try {
+        await addDoc(collection(db, 'notifications'), {
+          title: 'New Deployment Pending',
+          message: `New application "${form.name}" has been submitted for review by ${form.developer}. Payment Ref: ${paymentRef}`,
+          type: 'submission',
+          appId: finalAppId || 'new',
+          read: false,
+          createdAt: serverTimestamp(),
+          targetRole: 'admin' 
+        });
+      } catch (notifErr) {
+        console.warn("Failed to dispatch admin notification:", notifErr);
+      }
+      
       setStep('success');
     } catch (err) {
-      console.error("Submission failed:", err);
-      setError("Critical failure in submission uplink.");
+      console.error("Critical Submission failure:", err);
+      setError("CRITICAL ERROR: Payment confirmed but database uplink failed. Please contact support with Ref: " + paymentRef);
     } finally {
       setLoading(false);
     }
@@ -284,7 +347,7 @@ export default function DeveloperPortal() {
         </div>
         <div>
           <h2 className="text-3xl font-bold mb-4">Transmission Successful</h2>
-          <p className="text-white/40">Your application has been uploaded to the Matrix Review Protocol. Our administrators will verify the deployment within 24-48 hours.</p>
+          <p className="text-white/40">Your app has been successfully submitted for review. The review process can take up to 24 hours.</p>
         </div>
         <button 
           onClick={() => window.location.reload()}
@@ -643,12 +706,71 @@ export default function DeveloperPortal() {
               </div>
             )}
 
-            <button 
-              type="submit"
-              className="w-full py-5 bg-white text-black font-bold rounded-2xl hover:bg-gray-200 transition-all flex items-center justify-center gap-3"
-            >
-              <Shield className="w-5 h-5" /> Submit for Review (${economy.listingFee} / Per App)
-            </button>
+            <div className="space-y-6 pt-4">
+              {!isPaymentConfirmed ? (
+                <div className="space-y-4">
+                  <div className="p-6 rounded-[2rem] bg-blue-500/5 border border-blue-500/10 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                        <CreditCard className="w-5 h-5 text-blue-500" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-bold">Listing & Audit Protocol</p>
+                        <p className="text-[10px] text-white/40 uppercase tracking-widest">Network Entry Fee: ${economy.listingFee}</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (validateForm()) {
+                          (initializePayment as any)(onSuccess, onClose);
+                        }
+                      }}
+                      className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-600/20"
+                    >
+                      Initialize Payment
+                    </button>
+                  </div>
+                  <button 
+                    disabled
+                    className="w-full py-5 bg-white/5 border border-white/5 text-white/20 font-bold rounded-2xl cursor-not-allowed flex items-center justify-center gap-3"
+                  >
+                    <Shield className="w-5 h-5 opacity-20" /> Submit for Review (Locked)
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-6 rounded-[2rem] bg-green-500/10 border border-green-500/20 flex items-center gap-4"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
+                      <CheckCircle2 className="w-5 h-5 text-green-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-green-400">Payment successful.</p>
+                      <p className="text-xs text-green-500/60 font-medium">Ref: {paymentReference}. You may now proceed to submit your work for review.</p>
+                    </div>
+                  </motion.div>
+                  <button 
+                    type="button"
+                    onClick={() => handleSubmit(paymentReference || '')}
+                    disabled={loading}
+                    className="w-full py-5 bg-white text-black font-bold rounded-2xl hover:bg-gray-200 transition-all flex items-center justify-center gap-3 relative overflow-hidden group shadow-2xl shadow-white/10"
+                  >
+                    {loading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <>
+                        <Rocket className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                        Finalize Submission
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
           </motion.form>
         )}
 

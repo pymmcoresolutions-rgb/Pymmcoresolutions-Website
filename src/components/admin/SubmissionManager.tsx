@@ -64,9 +64,9 @@ export default function SubmissionManager() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    let q = query(collection(db, 'apps'));
+    let q = query(collection(db, 'apps'), where('isDraft', '==', false));
     if (filter !== 'all') {
-      q = query(collection(db, 'apps'), where('approvalStatus', '==', filter));
+      q = query(collection(db, 'apps'), where('isDraft', '==', false), where('approvalStatus', '==', filter));
     }
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
