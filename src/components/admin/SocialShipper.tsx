@@ -83,8 +83,11 @@ export default function SocialShipper() {
     let authUrl = '';
     const redirectUri = encodeURIComponent(`${window.location.origin}/api/auth/${platform}/callback`);
     
-    if (platform === 'tiktok') authUrl = `https://www.tiktok.com/auth/authorize?client_key=MOCK_CLIENT&scope=video.upload&response_type=code&redirect_uri=${redirectUri}`;
-    else if (platform === 'instagram') authUrl = `https://api.instagram.com/oauth/authorize?client_id=MOCK_CLIENT&redirect_uri=${redirectUri}&scope=user_profile,user_media&response_type=code`;
+    const tiktokKey = import.meta.env.VITE_TIKTOK_CLIENT_KEY || 'MOCK_CLIENT';
+    const instagramId = import.meta.env.VITE_INSTAGRAM_CLIENT_ID || 'MOCK_CLIENT';
+    
+    if (platform === 'tiktok') authUrl = `https://www.tiktok.com/auth/authorize?client_key=${tiktokKey}&scope=video.upload&response_type=code&redirect_uri=${redirectUri}`;
+    else if (platform === 'instagram') authUrl = `https://api.instagram.com/oauth/authorize?client_id=${instagramId}&redirect_uri=${redirectUri}&scope=user_profile,user_media&response_type=code`;
 
     // For demo/previe purposes, we just open the callback directly
     window.open(baseUrl, 'SocialLogin', 'width=600,height=700');

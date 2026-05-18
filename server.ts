@@ -11,6 +11,11 @@ const __dirname = path.dirname(__filename);
 // Storage for social tokens (in-memory for demo, should be DB in production)
 const socialTokens: Record<string, { accessToken: string; refreshToken?: string }> = {};
 
+import { GoogleGenAI, Type } from "@google/genai";
+
+// Initialize Gemini
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -43,6 +48,125 @@ async function startServer() {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
+  // AI Routes
+  app.post("/api/ai/audit", async (req, res) => {
+    const appData = req.body;
+    const prompt = `
+      Perform a multi-stage security and content audit on the following software submission for the PymmCore Matrix.
+      
+      APP METADATA:
+      Name: ${appData.name}
+      Description: ${appData.description}
+      Target URL: ${appData.link}
+      Source Code: ${appData.sourceCodeUrl || 'Not Provided'}
+      Developer: ${appData.developer}
+
+      AUDIT PROTOCOLS:
+      1. URL ANALYSIS: Check the target URL for signs of phishing, deceptive patterns, or known malicious domains.
+2. CONTENT MODERATION: Scan description for spam, offensive language, or misleading claims.
+3. TECHNICAL SCAVENGE: If source code URL is provided, evaluate the reputation of the repository domain.
+4. RISK SCORING: Assign a score (Safe, Suspicious, Dangerous).
+
+      Output a detailed technical report and a final risk assessment.
+    `;
+
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              riskScore: { type: Type.STRING, enum: ["Safe", "Suspicious", "Dangerous"] },
+              report: { type: Type.STRING },
+              flags: { type: Type.ARRAY, items: { type: Type.STRING } }
+            },
+            required: ["riskScore", "report", "flags"]
+          }
+        }
+      });
+      res.json(JSON.parse(response.text));
+    } catch (error: any) {
+      console.error("AI Audit failed:", error);
+      res.status(500).json({ riskScore: 'Suspicious', report: 'Audit interrupted.', flags: ['INTERNAL_ERROR'] });
+    }
+  });
+
+  app.post("/api/ai/suggest-icon", async (req, res) => {
+    const { name, description } = req.body;
+    const prompt = `Suggest a single PascalCase Lucide icon name representing: Name: ${name}, Description: ${description}. Return JSON {iconName, reason}.`;
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: { iconName: { type: Type.STRING }, reason: { type: Type.STRING } },
+            required: ["iconName", "reason"]
+          }
+        }
+      });
+      res.json(JSON.parse(response.text));
+    } catch (error) {
+      res.status(500).json({ iconName: 'Box', reason: 'Fallback' });
+    }
+  });
+
+  app.post("/api/ai/marketing-info", async (req, res) => {
+    const appData = req.body;
+    const prompt = `Create futuristic social caption and video generation prompt for app: ${appData.name}. Return JSON {caption, videoPrompt}.`;
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: { caption: { type: Type.STRING }, videoPrompt: { type: Type.STRING } },
+            required: ["caption", "videoPrompt"]
+          }
+        }
+      });
+      res.json(JSON.parse(response.text));
+    } catch (error) {
+      res.status(500).json({ caption: "Fallback caption", videoPrompt: "Fallback prompt" });
+    }
+  });
+
+  app.post("/api/ai/marketing-video", async (req, res) => {
+    const { prompt } = req.body;
+    try {
+      const operation = await ai.models.generateVideos({
+        model: 'veo-3.1-lite-generate-preview',
+        prompt: `${prompt}. High quality pro marketing video.`,
+        config: { numberOfVideos: 1, resolution: '1080p', aspectRatio: '16:9' }
+      });
+      
+      let attempts = 0;
+      while (attempts < 5) {
+        const response = await (ai.operations as any).get(operation.name);
+        if (response.done) {
+          const result = response.response as any;
+          const part = result.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData);
+          if (part?.inlineData?.data) {
+            return res.json({ videoUrl: `data:video/mp4;base64,${part.inlineData.data}` });
+          }
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        attempts++;
+      }
+      res.status(408).json({ error: "Generation timed out" });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Social Auth Callbacks (Refer to oauth-integration skill for popup patterns)
   app.get("/api/auth/:platform/callback", (req, res) => {
     const { platform } = req.params;
@@ -58,7 +182,11 @@ async function startServer() {
     }
 
     // In a real flow, exchange code for token here
-    socialTokens[platform] = { accessToken: `mock_token_${Date.now()}` };
+    const token = process.env.NODE_ENV === 'production' 
+      ? `token_${Math.random().toString(36).substring(7)}` 
+      : `mock_token_${Date.now()}`;
+    
+    socialTokens[platform] = { accessToken: token };
 
     res.send(`
       <script>
@@ -99,7 +227,8 @@ async function startServer() {
     const smtpPort = process.env.SMTP_PORT?.trim();
     const smtpUser = process.env.SMTP_USER?.trim();
     const smtpPass = process.env.SMTP_PASS?.trim();
-    const fromEmail = (process.env.SMTP_FROM_EMAIL || "pymmcoresolutions@gmail.com").trim();
+    const adminEmail = (process.env.ADMIN_EMAIL || "pymmcoresolutions@gmail.com").trim();
+    const fromEmail = (process.env.SMTP_FROM_EMAIL || adminEmail).trim();
 
     // Helper to check for missing or placeholder values
     const isInvalid = (val: string | undefined) => 
@@ -136,7 +265,7 @@ async function startServer() {
 
       await transporter.sendMail({
         from: `"PymmCore Storefront" <${fromEmail}>`,
-        to: "pymmcoresolutions@gmail.com",
+        to: adminEmail,
         replyTo: email,
         subject: `[Contact Form] ${subject || "New Inquiry"}`,
         text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
@@ -183,7 +312,8 @@ async function startServer() {
     const smtpPort = process.env.SMTP_PORT?.trim();
     const smtpUser = process.env.SMTP_USER?.trim();
     const smtpPass = process.env.SMTP_PASS?.trim();
-    const fromEmail = (process.env.SMTP_FROM_EMAIL || "pymmcoresolutions@gmail.com").trim();
+    const adminEmail = (process.env.ADMIN_EMAIL || "pymmcoresolutions@gmail.com").trim();
+    const fromEmail = (process.env.SMTP_FROM_EMAIL || adminEmail).trim();
 
     try {
       const transporter = nodemailer.createTransport({
@@ -228,7 +358,8 @@ async function startServer() {
     const smtpPort = process.env.SMTP_PORT?.trim();
     const smtpUser = process.env.SMTP_USER?.trim();
     const smtpPass = process.env.SMTP_PASS?.trim();
-    const fromEmail = (process.env.SMTP_FROM_EMAIL || "pymmcoresolutions@gmail.com").trim();
+    const adminEmail = (process.env.ADMIN_EMAIL || "pymmcoresolutions@gmail.com").trim();
+    const fromEmail = (process.env.SMTP_FROM_EMAIL || adminEmail).trim();
 
     const isInvalid = (val: string | undefined) => 
       !val || val.trim() === "" || val.includes("YOUR_") || val.includes("MY_") || val.includes("<") || val === "undefined";
@@ -290,7 +421,8 @@ async function startServer() {
     const smtpPort = process.env.SMTP_PORT?.trim();
     const smtpUser = process.env.SMTP_USER?.trim();
     const smtpPass = process.env.SMTP_PASS?.trim();
-    const fromEmail = (process.env.SMTP_FROM_EMAIL || "pymmcoresolutions@gmail.com").trim();
+    const adminEmail = (process.env.ADMIN_EMAIL || "pymmcoresolutions@gmail.com").trim();
+    const fromEmail = (process.env.SMTP_FROM_EMAIL || adminEmail).trim();
 
     const isInvalid = (val: string | undefined) => 
       !val || val.trim() === "" || val.includes("YOUR_") || val.includes("MY_") || val.includes("<") || val === "undefined";

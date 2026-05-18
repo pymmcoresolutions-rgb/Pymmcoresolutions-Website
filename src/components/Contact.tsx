@@ -208,8 +208,8 @@ export default function Contact() {
                   </div>
                   <div className="space-y-1">
                     <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Secured.Mail</div>
-                    <a href={`mailto:${settings?.contactEmail || 'pymmcoresolutions@gmail.com'}`} className="text-xs md:text-base font-mono text-white/80 hover:text-cyan-400 transition-colors break-all">
-                      {settings?.contactEmail || 'pymmcoresolutions@gmail.com'}
+                    <a href={`mailto:${settings?.contactEmail || import.meta.env.VITE_ADMIN_EMAIL || 'pymmcoresolutions@gmail.com'}`} className="text-xs md:text-base font-mono text-white/80 hover:text-cyan-400 transition-colors break-all">
+                      {settings?.contactEmail || import.meta.env.VITE_ADMIN_EMAIL || 'pymmcoresolutions@gmail.com'}
                     </a>
                   </div>
                 </div>
