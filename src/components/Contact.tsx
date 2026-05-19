@@ -68,7 +68,7 @@ export default function Contact() {
       >
         <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-cyan-500/5 border border-cyan-500/20 rounded-full">
           <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-400">Communication.Uplink</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-400">Contact Us</span>
         </div>
         
         <h1 className="text-5xl lg:text-7xl font-black tracking-tighter leading-[0.75] uppercase flex flex-col items-center">
@@ -89,17 +89,17 @@ export default function Contact() {
         </h1>
 
         <p className="text-xl text-white/30 max-w-2xl mx-auto leading-relaxed font-light italic">
-          "{settings?.contactDescription || "Initialize a direct neural link to our operations hub. We process complex inquiries with algorithmic precision."}"
+          "{settings?.contactDescription || "Have a question or a project in mind? We're here to help you build the future of digital commerce."}"
         </p>
 
         <div className="flex justify-center gap-12 pt-8">
           <div className="flex flex-col items-center">
-            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/20 mb-2">Channel.Status</span>
+            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/20 mb-2">Security</span>
             <span className="text-xs font-mono text-cyan-500">ENCRYPTED</span>
           </div>
           <div className="w-[1px] h-10 bg-white/5" />
           <div className="flex flex-col items-center">
-            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/20 mb-2">Response.Rate</span>
+            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/20 mb-2">Response Time</span>
             <span className="text-xs font-mono text-cyan-500">&lt; 24H</span>
           </div>
         </div>
@@ -120,61 +120,61 @@ export default function Contact() {
               <div className="w-24 h-24 bg-cyan-500/20 rounded-[2rem] flex items-center justify-center mb-8 border border-cyan-500/30">
                 <CheckCircle2 className="w-12 h-12 text-cyan-500" />
               </div>
-              <h3 className="text-3xl font-black tracking-tighter mb-4 uppercase">Message Logged</h3>
+              <h3 className="text-3xl font-black tracking-tighter mb-4 uppercase">Message Sent</h3>
               <p className="text-white/40 mb-10 font-light leading-relaxed">
-                Your inquiry has been successfully transmitted to the PymmCore archives. 
-                Our team will process the directive and respond in kind.
+                Your message has been received successfully. 
+                Our team will review your inquiry and get back to you shortly.
               </p>
               <button 
                 onClick={() => setSubmitted(false)}
                 className="px-10 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:scale-105 active:scale-95"
               >
-                New Transmission
+                Send Another
               </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-cyan-500/60 ml-1">Identity.Name</label>
+                  <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-cyan-500/60 ml-1">Full Name</label>
                   <input
                     required
                     value={form.name}
                     onChange={e => setForm({ ...form, name: e.target.value })}
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-cyan-500/50 focus:bg-cyan-500/5 outline-none transition-all text-sm font-mono placeholder:text-white/20"
-                    placeholder="ENTER NAME"
+                    placeholder="E.g. John Doe"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-cyan-500/60 ml-1">Identity.Email</label>
+                  <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-cyan-500/60 ml-1">Email Address</label>
                   <input
                     required
                     type="email"
                     value={form.email}
                     onChange={e => setForm({ ...form, email: e.target.value })}
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-cyan-500/50 focus:bg-cyan-500/5 outline-none transition-all text-sm font-mono placeholder:text-white/20"
-                    placeholder="EMAIL_ADDRESS"
+                    placeholder="name@example.com"
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-cyan-500/60 ml-1">Protocol.Subject</label>
+                <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-cyan-500/60 ml-1">Subject</label>
                 <input
                   required
                   value={form.subject}
                   onChange={e => setForm({ ...form, subject: e.target.value })}
                   className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-cyan-500/50 focus:bg-cyan-500/5 outline-none transition-all text-sm font-mono placeholder:text-white/20"
-                  placeholder="INQUIRY TYPE"
+                  placeholder="How can we help?"
                 />
               </div>
               <div className="space-y-2">
-                <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-cyan-500/60 ml-1">Payload.Message</label>
+                <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-cyan-500/60 ml-1">Your Message</label>
                 <textarea
                   required
                   value={form.message}
                   onChange={e => setForm({ ...form, message: e.target.value })}
                   className="w-full h-48 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-cyan-500/50 focus:bg-cyan-500/5 outline-none transition-all resize-none text-sm font-mono placeholder:text-white/20 scrollbar-hide"
-                  placeholder="TYPE MESSAGE HERE..."
+                  placeholder="Tell us about your project or inquiry..."
                 />
               </div>
               <button
@@ -183,7 +183,7 @@ export default function Contact() {
                 className="w-full py-5 bg-cyan-600 hover:bg-cyan-500 text-white font-black uppercase tracking-[0.4em] rounded-2xl transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(6,182,212,0.2)] hover:shadow-cyan-500/40 disabled:opacity-50 active:scale-[0.98]"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5 group-hover:translate-x-1" />}
-                Transmit Data
+                Send Message
               </button>
             </form>
           )}
@@ -200,14 +200,14 @@ export default function Contact() {
             <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-purple-600/10 blur-[80px] rounded-full pointer-events-none" />
             
             <div>
-              <h3 className="text-[10px] font-black uppercase tracking-[0.5em] text-cyan-500 mb-10 ml-1 italic">// GRID CHANNELS</h3>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.5em] text-cyan-500 mb-10 ml-1 italic">// CONTACT CHANNELS</h3>
               <div className="space-y-10">
                 <div className="flex items-center gap-6 group">
                   <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center group-hover:bg-cyan-500/20 transition-all duration-500 group-hover:rotate-12">
                     <Mail className="w-6 h-6 text-cyan-500" />
                   </div>
                   <div className="space-y-1">
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Secured.Mail</div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Email Address</div>
                     <a href={`mailto:${settings?.contactEmail || import.meta.env.VITE_ADMIN_EMAIL || ''}`} className="text-xs md:text-base font-mono text-white/80 hover:text-cyan-400 transition-colors break-all">
                       {settings?.contactEmail || import.meta.env.VITE_ADMIN_EMAIL || ''}
                     </a>
@@ -220,7 +220,7 @@ export default function Contact() {
                       <Phone className="w-6 h-6 text-purple-500" />
                     </div>
                     <div className="space-y-1">
-                      <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Voice.Uplink</div>
+                      <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Phone Number</div>
                       <a href={`tel:${settings.phoneNumber}`} className="text-xl font-mono text-white/80 hover:text-purple-400 transition-colors">
                         {settings.phoneNumber}
                       </a>
@@ -233,15 +233,15 @@ export default function Contact() {
                     <MapPin className="w-6 h-6 text-emerald-500" />
                   </div>
                   <div className="space-y-1">
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Spatial.Origin</div>
-                    <div className="text-xl font-mono text-white/80">GLOBAL_OPERATIONS_HUB</div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Our Office</div>
+                    <div className="text-xl font-mono text-white/80">GLOBAL OPERATIONS</div>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="pt-8 border-t border-white/5">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.5em] text-emerald-500 mb-8 ml-1 italic">// SOCIAL FREQUENCIES</h3>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.5em] text-emerald-500 mb-8 ml-1 italic">// FOLLOW US</h3>
               <div className="flex gap-4">
                 {[
                   { icon: Music2, url: settings?.tiktok, color: 'text-rose-500 border-rose-500/20 shadow-rose-500/10' },
@@ -267,11 +267,11 @@ export default function Contact() {
           <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-cyan-600/10 via-black/40 to-emerald-600/10 border border-white/10 backdrop-blur-md">
             <div className="flex items-center gap-3 mb-4 text-[10px] font-black uppercase tracking-[0.3em] text-cyan-400 opacity-60">
               <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-              Runtime Support Status
+              Support Availability
             </div>
             <p className="text-sm font-light text-white/40 leading-relaxed italic">
-              "Matrix protocols optimized for 24/7 infrastructure monitoring. 
-              General node inquiries integrated within 1440 standard chronometric units."
+              "Our support team is available 24/7 to monitor platform stability. 
+              General inquiries are typically answered within 24 hours."
             </p>
           </div>
         </motion.div>
