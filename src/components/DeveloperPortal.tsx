@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Rocket, Shield, CheckCircle2, AlertCircle, 
@@ -146,26 +146,30 @@ export default function DeveloperPortal() {
 
   const [tagInput, setTagInput] = useState('');
 
-  // Paystack Configuration
-  const config = {
-    reference: (new Date()).getTime().toString(),
+  // Paystack Configuration - Stable via useMemo
+  const paymentRefId = (useState(() => `PAY-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)[0]);
+  
+  const paystackConfig = useMemo(() => ({
+    reference: paymentRefId,
     email: user?.email || '',
-    amount: economy.listingFee * economy.exchangeRate * 100, // Dynamic fee from config
-    publicKey: (import.meta as any).env.VITE_PAYSTACK_PUBLIC_KEY || '',
-    currency: 'NGN' // Standard Paystack currency, change to USD if using a US library
-  };
+    amount: economy.listingFee * economy.exchangeRate * 100,
+    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '',
+    currency: 'NGN'
+  }), [user?.email, economy.listingFee, economy.exchangeRate, paymentRefId]);
 
-  const onSuccess = (reference: any) => {
+  const onSuccess = useCallback((reference: any) => {
+    console.log("Paystack Success Protocol:", reference);
     setPaymentReference(reference.reference);
     setIsPaymentConfirmed(true);
     setError(null);
-  };
+  }, []);
 
-  const onClose = () => {
+  const onClose = useCallback(() => {
+    console.warn("Paystack Session Terminated by User");
     setError("Payment session closed. Listing fee must be processed to finalize submission.");
-  };
+  }, []);
 
-  const initializePayment = usePaystackPayment(config);
+  const initializePayment = usePaystackPayment(paystackConfig);
 
   const handleAddTag = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && tagInput.trim()) {

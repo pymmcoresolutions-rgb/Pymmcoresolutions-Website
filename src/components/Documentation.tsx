@@ -223,7 +223,7 @@ export default function Documentation({ isEditor = false }: { isEditor?: boolean
   const [activeSection, setActiveSection] = useState(sections[0].id);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white pt-24 pb-32">
+    <div className="min-h-screen bg-transparent text-white pt-24 pb-32">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex flex-col lg:flex-row gap-16">
           {/* Sidebar Navigation */}

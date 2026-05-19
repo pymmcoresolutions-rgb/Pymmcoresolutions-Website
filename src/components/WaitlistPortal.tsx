@@ -39,33 +39,45 @@ export default function WaitlistPortal() {
     setStatus('idle');
     
     try {
-      // Check if already registered
-      const q = query(collection(db, 'waitlist'), where('email', '==', email.toLowerCase()));
-      const snap = await getDocs(q);
-      
-      if (!snap.empty) {
-        setStatus('error');
-        setMessage('You are already registered.');
-        setLoading(false);
-        return;
+      // Check if already registered - this might fail for non-admins due to permission rules
+      // so we handle it gracefully or skip if permission denied
+      try {
+        const q = query(collection(db, 'waitlist'), where('email', '==', email.toLowerCase()));
+        const snap = await getDocs(q);
+        
+        if (!snap.empty) {
+          setStatus('error');
+          setMessage('This email is already in our protocol. We will notify you once access is granted.');
+          setLoading(false);
+          return;
+        }
+      } catch (err: any) {
+        // If we get a permission error here, it's expected for public users
+        // We proceed to write; if it's a duplicate, we handle it on the server/later
+        console.warn("Duplicate check skipped due to permission restrictions (Expected for non-admins)");
       }
 
       await addDoc(collection(db, 'waitlist'), {
         email: email.toLowerCase(),
-        name: name,
+        name: name || 'Anonymous Node',
         subscribed: subscribed,
         targetAppId: selectedApp?.id || 'general',
         createdAt: serverTimestamp()
       });
 
       setStatus('success');
-      setMessage('Success! You are now on our official waitlist.');
+      setMessage('Access Confirmed! You have been added to the priority waitlist.');
       setEmail('');
       setName('');
-    } catch (error) {
+    } catch (error: any) {
       console.error("Waitlist registration failed:", error);
       setStatus('error');
-      setMessage('Registration failed. Please check your information and try again.');
+      
+      if (error.code === 'permission-denied') {
+        setMessage('Security Protocol: Registration rejected. Please ensure all fields are valid.');
+      } else {
+        setMessage('Network failure. Please try again in a few moments.');
+      }
     }
     setLoading(false);
   };
@@ -153,7 +165,7 @@ export default function WaitlistPortal() {
             exit={{ opacity: 0, scale: 0.95 }}
             className="w-full max-w-4xl mx-auto p-1 bg-gradient-to-br from-teal-500/20 via-transparent to-purple-500/20 rounded-[3rem]"
           >
-            <div className="bg-[#0a0a0a] rounded-[2.9rem] p-12 relative overflow-hidden">
+            <div className="bg-black/40 rounded-[2.9rem] p-12 relative overflow-hidden">
               <button 
                 onClick={() => setSelectedApp(null)}
                 className="absolute top-8 right-8 p-2 hover:bg-white/5 rounded-full transition-all text-white/40 hover:text-white"

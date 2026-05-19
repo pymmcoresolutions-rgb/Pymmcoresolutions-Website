@@ -6,7 +6,7 @@ import { Settings, Save, Mail, Phone, Twitter, Facebook, Loader2, CheckCircle2, 
 
 export default function SettingsManager() {
   const [form, setForm] = useState({
-    contactEmail: import.meta.env.VITE_ADMIN_EMAIL || 'pymmcoresolutions@gmail.com',
+    contactEmail: import.meta.env.VITE_ADMIN_EMAIL || '',
     phoneNumber: '',
     tiktok: '',
     instagram: '',

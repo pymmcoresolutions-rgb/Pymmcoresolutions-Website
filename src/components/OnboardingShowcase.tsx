@@ -75,7 +75,7 @@ export default function OnboardingShowcase() {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="relative min-h-[400px] lg:h-[480px] rounded-[3rem] overflow-hidden group bg-[#0a0a0a] border border-white/5">
+      <div className="relative min-h-[400px] lg:h-[480px] rounded-[3rem] overflow-hidden group bg-white/5 border border-white/5">
         {/* Decorative Grid Overlay */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_80%)] pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(20,184,166,0.05),transparent_50%)]" />

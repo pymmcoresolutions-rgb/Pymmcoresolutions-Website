@@ -67,7 +67,7 @@ export default function Reviews({ minimal = false }: { minimal?: boolean }) {
   };
 
   return (
-    <section className={`${minimal ? 'py-8 bg-transparent' : 'py-24 bg-black'} relative overflow-hidden`}>
+    <section className={`${minimal ? 'py-8 bg-transparent' : 'py-24 bg-transparent'} relative overflow-hidden`}>
       <div className={`${minimal ? 'max-w-none' : 'max-w-7xl mx-auto px-4'} relative z-10`}>
         {!minimal && (
           <div className="text-center mb-16">

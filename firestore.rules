@@ -88,26 +88,20 @@ service cloud.firestore {
     
     function isAdmin() {
       return isAuthenticated() &&
-        (request.auth.token.email == "pymmcoresolutions@gmail.com" ||
-         request.auth.uid == "cBjT0eC3nnVIEE0BD4Xj9Kr1y8h1" ||
-         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"));
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin");
     }
 
     function isEditor() {
       return isAuthenticated() && 
-        (request.auth.token.email == "pymmcoresolutions@gmail.com" ||
-         request.auth.uid == "cBjT0eC3nnVIEE0BD4Xj9Kr1y8h1" ||
-         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ["admin", "editor", "developer"]));
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ["admin", "editor", "developer"]);
     }
 
     function isDeveloper() {
       return isAuthenticated() && 
-        (request.auth.token.email == "pymmcoresolutions@gmail.com" ||
-         request.auth.uid == "cBjT0eC3nnVIEE0BD4Xj9Kr1y8h1" ||
-         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ["admin", "developer"]));
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ["admin", "developer"]);
     }
 
     function isViewer() {

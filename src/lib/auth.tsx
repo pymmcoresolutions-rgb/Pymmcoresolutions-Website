@@ -89,8 +89,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
           
           if (!snap || !snap.exists()) {
-            const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || "pymmcoresolutions@gmail.com";
-            const isDefaultAdmin = user.email === adminEmail;
+            const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
+            const isDefaultAdmin = adminEmail && user.email === adminEmail;
             const newProfile = {
               role: isDefaultAdmin ? 'admin' : 'viewer',
               email: user.email,
@@ -215,8 +215,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || "pymmcoresolutions@gmail.com";
-  const isAdmin = profile?.role === 'admin' || user?.email === adminEmail;
+  const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
+  const isAdmin = profile?.role === 'admin' || (adminEmail && user?.email === adminEmail);
   const isEditor = isAdmin || profile?.role === 'editor' || profile?.role === 'developer';
   const isDeveloper = isAdmin || profile?.role === 'developer';
   const isSuspended = profile?.status === 'suspended';

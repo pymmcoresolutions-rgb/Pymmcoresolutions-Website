@@ -59,7 +59,7 @@ export default function Pricing({ onStartListing }: PricingProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-[#020202] text-white pt-32 pb-20 px-6 sm:px-12 relative overflow-hidden">
+    <div className="min-h-screen bg-transparent text-white pt-32 pb-20 px-6 sm:px-12 relative overflow-hidden">
       {/* Background Orbs */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-cyan-500/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/5 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2" />

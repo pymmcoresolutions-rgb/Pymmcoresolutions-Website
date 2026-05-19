@@ -227,7 +227,7 @@ async function startServer() {
     const smtpPort = process.env.SMTP_PORT?.trim();
     const smtpUser = process.env.SMTP_USER?.trim();
     const smtpPass = process.env.SMTP_PASS?.trim();
-    const adminEmail = (process.env.ADMIN_EMAIL || "pymmcoresolutions@gmail.com").trim();
+    const adminEmail = (process.env.ADMIN_EMAIL || "").trim();
     const fromEmail = (process.env.SMTP_FROM_EMAIL || adminEmail).trim();
 
     // Helper to check for missing or placeholder values
@@ -312,7 +312,7 @@ async function startServer() {
     const smtpPort = process.env.SMTP_PORT?.trim();
     const smtpUser = process.env.SMTP_USER?.trim();
     const smtpPass = process.env.SMTP_PASS?.trim();
-    const adminEmail = (process.env.ADMIN_EMAIL || "pymmcoresolutions@gmail.com").trim();
+    const adminEmail = (process.env.ADMIN_EMAIL || "").trim();
     const fromEmail = (process.env.SMTP_FROM_EMAIL || adminEmail).trim();
 
     try {
@@ -358,7 +358,7 @@ async function startServer() {
     const smtpPort = process.env.SMTP_PORT?.trim();
     const smtpUser = process.env.SMTP_USER?.trim();
     const smtpPass = process.env.SMTP_PASS?.trim();
-    const adminEmail = (process.env.ADMIN_EMAIL || "pymmcoresolutions@gmail.com").trim();
+    const adminEmail = (process.env.ADMIN_EMAIL || "").trim();
     const fromEmail = (process.env.SMTP_FROM_EMAIL || adminEmail).trim();
 
     const isInvalid = (val: string | undefined) => 
@@ -421,7 +421,7 @@ async function startServer() {
     const smtpPort = process.env.SMTP_PORT?.trim();
     const smtpUser = process.env.SMTP_USER?.trim();
     const smtpPass = process.env.SMTP_PASS?.trim();
-    const adminEmail = (process.env.ADMIN_EMAIL || "pymmcoresolutions@gmail.com").trim();
+    const adminEmail = (process.env.ADMIN_EMAIL || "").trim();
     const fromEmail = (process.env.SMTP_FROM_EMAIL || adminEmail).trim();
 
     const isInvalid = (val: string | undefined) => 
