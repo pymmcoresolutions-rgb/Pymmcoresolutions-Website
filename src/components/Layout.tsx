@@ -25,12 +25,12 @@ export default function Layout({ children, currentPath, onNavigate }: { children
 
   const navItems = [
     { id: '#home', label: 'Home', icon: Home },
-    { id: '#', label: 'Storefront', icon: Globe },
     { id: '#about', label: 'About', icon: Award },
-    { id: '#reviews', label: 'Reviews', icon: Star },
     { id: '#pricing', label: 'Pricing', icon: DollarSign },
     { id: '#contact', label: 'Contact', icon: Mail },
+    { id: '#reviews', label: 'Reviews', icon: Star },
     { id: '#advisor', label: 'Advisor', icon: Sparkles },
+    { id: '#', label: 'Storefront', icon: Globe },
   ];
 
   const handleNavigate = (path: string) => {
@@ -227,10 +227,12 @@ export default function Layout({ children, currentPath, onNavigate }: { children
               <h4 className="text-xs font-black uppercase tracking-[0.2em] text-white/60 mb-6">Platform</h4>
               <ul className="space-y-4">
                 <li><button onClick={() => handleNavigate('#home')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Home</button></li>
-                <li><button onClick={() => handleNavigate('#')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Storefront</button></li>
+                <li><button onClick={() => handleNavigate('#about')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">About</button></li>
                 <li><button onClick={() => handleNavigate('#pricing')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Pricing</button></li>
-                <li><button onClick={() => handleNavigate('#advisor')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">AI Advisor</button></li>
+                <li><button onClick={() => handleNavigate('#contact')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Contact</button></li>
                 <li><button onClick={() => handleNavigate('#reviews')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Reviews</button></li>
+                <li><button onClick={() => handleNavigate('#advisor')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Advisor</button></li>
+                <li><button onClick={() => handleNavigate('#')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Storefront</button></li>
               </ul>
             </div>
 

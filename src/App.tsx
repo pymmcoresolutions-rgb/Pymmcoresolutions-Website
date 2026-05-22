@@ -39,7 +39,7 @@ function MainContent() {
     );
   }
 
-  const isPublicPath = ['#privacy', '#terms', '#security', '#status', '#docs', '#pricing', '#guidelines'].includes(currentPath);
+  const isPublicPath = ['#privacy', '#terms', '#security', '#status', '#docs', '#pricing', '#guidelines', '#about', '#reviews', '#contact'].includes(currentPath);
 
   const needsVerification = user && !isEmailVerified && user.providerData[0]?.providerId === 'password';
 
@@ -66,6 +66,9 @@ function MainContent() {
           {isPublicPath ? (
             currentPath === '#docs' ? <Documentation isEditor={isEditor} /> : 
             currentPath === '#pricing' ? <Pricing onStartListing={() => setCurrentPath('#')} /> :
+            currentPath === '#about' ? <About /> :
+            currentPath === '#reviews' ? <Reviews /> :
+            currentPath === '#contact' ? <Contact /> :
             <Legal />
           ) : (!user || needsVerification) ? (
             <div className="py-20">
@@ -77,12 +80,6 @@ function MainContent() {
             <div className="max-w-7xl mx-auto px-4 py-12">
               <AIAdvisor isFullPage />
             </div>
-          ) : currentPath === '#about' ? (
-            <About />
-          ) : currentPath === '#contact' ? (
-            <Contact />
-          ) : currentPath === '#reviews' ? (
-            <Reviews />
           ) : (
             <div className="space-y-24 pb-24">
               <Catalog />
