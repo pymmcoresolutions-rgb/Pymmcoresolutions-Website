@@ -14,6 +14,7 @@ import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
 import { useAuth } from '../lib/auth';
 import { auditApplication } from '../services/geminiService';
 import ImageUploader from './ui/ImageUploader';
+import StoreLinksForm from './ui/StoreLinksForm';
 
 interface AppSubmissionForm {
   id?: string;
@@ -61,6 +62,8 @@ export default function DeveloperPortal() {
   
   const [drafts, setDrafts] = useState<AppSubmissionForm[]>([]);
   const [economy, setEconomy] = useState({ listingFee: 25, exchangeRate: 1600 });
+  const [playStoreLinkValid, setPlayStoreLinkValid] = useState(true);
+  const [appStoreLinkValid, setAppStoreLinkValid] = useState(true);
   
   const [form, setForm] = useState<AppSubmissionForm>({
     name: '',
@@ -185,6 +188,15 @@ export default function DeveloperPortal() {
     setForm(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }));
   };
 
+  const handleStoreLinksChange = (field: 'playStoreLink' | 'appStoreLink', value: string, isValid: boolean) => {
+    setForm(prev => ({ ...prev, [field]: value }));
+    if (field === 'playStoreLink') {
+      setPlayStoreLinkValid(isValid);
+    } else {
+      setAppStoreLinkValid(isValid);
+    }
+  };
+
   const validateForm = () => {
     // 1. Mandatory Core Fields
     if (!form.name.trim() || !form.description.trim() || !form.category || !form.developer.trim() || !form.price.trim()) {
@@ -220,7 +232,28 @@ export default function DeveloperPortal() {
       return false;
     }
 
-    // 5. Spam/Malice Filtering
+    // 5. Store links validations
+    if (!playStoreLinkValid) {
+      setError("Please enter a valid Google Play Store URL.");
+      return false;
+    }
+
+    if (!appStoreLinkValid) {
+      setError("Please enter a valid Apple App Store URL.");
+      return false;
+    }
+
+    if (form.playStoreLink?.trim() && !form.playStoreLink.trim().includes('play.google.com/store/apps/details?id=')) {
+      setError("Please enter a valid Google Play Store URL.");
+      return false;
+    }
+
+    if (form.appStoreLink?.trim() && !form.appStoreLink.trim().includes('apps.apple.com/')) {
+      setError("Please enter a valid Apple App Store URL.");
+      return false;
+    }
+
+    // 6. Spam/Malice Filtering
     const spamWords = ['buy now', 'cheap', 'viagra', 'casino', 'free money', 'lottery', 'winner', 'cash prize'];
     const content = (form.name + ' ' + form.description).toLowerCase();
     if (spamWords.some(word => content.includes(word))) {
@@ -236,14 +269,19 @@ export default function DeveloperPortal() {
     if (!user) return;
     setSaveStatus('saving');
     try {
+      const sanitizedForm = {
+        ...form,
+        playStoreLink: form.playStoreLink ? form.playStoreLink.trim() : '',
+        appStoreLink: form.appStoreLink ? form.appStoreLink.trim() : '',
+      };
       if (form.id) {
         await updateDoc(doc(db, 'apps', form.id), {
-          ...form,
+          ...sanitizedForm,
           updatedAt: serverTimestamp()
         });
       } else {
         const newDoc = await addDoc(collection(db, 'apps'), {
-          ...form,
+          ...sanitizedForm,
           authorUid: user.uid,
           createdAt: serverTimestamp(),
           isDraft: true,
@@ -251,7 +289,7 @@ export default function DeveloperPortal() {
           paymentStatus: 'unpaid',
           status: 'inactive'
         });
-        setForm(prev => ({ ...prev, id: newDoc.id }));
+        setForm(prev => ({ ...prev, ...sanitizedForm, id: newDoc.id }));
       }
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
@@ -290,6 +328,8 @@ export default function DeveloperPortal() {
 
       const submissionData = {
         ...form,
+        playStoreLink: form.playStoreLink ? form.playStoreLink.trim() : '',
+        appStoreLink: form.appStoreLink ? form.appStoreLink.trim() : '',
         authorUid: user?.uid,
         updatedAt: serverTimestamp(),
         approvalStatus: 'pending',
@@ -595,6 +635,12 @@ export default function DeveloperPortal() {
                   placeholder="https://github.com/username/project"
                 />
               </div>
+
+              <StoreLinksForm
+                playStoreLink={form.playStoreLink || ''}
+                appStoreLink={form.appStoreLink || ''}
+                onChange={handleStoreLinksChange}
+              />
             </div>
 
             {/* Description */}

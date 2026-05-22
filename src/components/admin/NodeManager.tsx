@@ -4,6 +4,7 @@ import { db } from '../../lib/firebase';
 import { useAuth } from '../../lib/auth';
 import { handleFirestoreError, OperationType } from '../../lib/firestore-errors';
 import ImageUploader from '../ui/ImageUploader';
+import StoreLinksForm from '../ui/StoreLinksForm';
 import { optimizeMetadata, generateIconSuggestion } from '../../lib/gemini';
 import { motion, AnimatePresence } from 'motion/react';
 import * as LucideIcons from 'lucide-react';
@@ -59,6 +60,8 @@ export default function NodeManager() {
     screenshots: ''
   });
   const [errorLocal, setErrorLocal] = useState<string | null>(null);
+  const [playStoreLinkValid, setPlayStoreLinkValid] = useState(true);
+  const [appStoreLinkValid, setAppStoreLinkValid] = useState(true);
 
   useEffect(() => {
     setInitialLoading(true);
@@ -118,14 +121,27 @@ export default function NodeManager() {
       alert("Please select at least one platform node.");
       return;
     }
+
+    // Validate store links
+    if (!playStoreLinkValid || (form.playStoreLink?.trim() && !form.playStoreLink.trim().includes('play.google.com/store/apps/details?id='))) {
+      setErrorLocal("Please enter a valid Google Play Store URL (containing play.google.com/store/apps/details?id=)");
+      return;
+    }
+    if (!appStoreLinkValid || (form.appStoreLink?.trim() && !form.appStoreLink.trim().includes('apps.apple.com/'))) {
+      setErrorLocal("Please enter a valid Apple App Store URL (containing apps.apple.com/)");
+      return;
+    }
+
     setLoading(true);
     try {
       const nodeData = {
         ...form,
+        playStoreLink: form.playStoreLink ? form.playStoreLink.trim() : '',
+        appStoreLink: form.appStoreLink ? form.appStoreLink.trim() : '',
         type: Array.isArray(form.type) ? form.type : [form.type],
-        tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
+        tags: form.tags.split(',').map((t: string) => t.trim()).filter(Boolean),
         features: Array.isArray(form.features) ? form.features : [],
-        screenshots: form.screenshots.split('\n').map(s => s.trim()).filter(Boolean),
+        screenshots: form.screenshots.split('\n').map((s: string) => s.trim()).filter(Boolean),
         authorUid: user.uid,
         updatedAt: serverTimestamp()
       };
@@ -464,30 +480,15 @@ export default function NodeManager() {
                   placeholder="https://..."
                 />
               </div>
-              {(form.type?.includes('Mobile') || form.type?.includes('All')) && (
-                <div className="grid grid-cols-1 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">App Store Link (iOS)</label>
-                    <input
-                      type="url"
-                      value={form.appStoreLink}
-                      onChange={e => setForm({ ...form, appStoreLink: e.target.value })}
-                      className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition-all text-sm"
-                      placeholder="https://apps.apple.com/..."
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Play Store Link (Android)</label>
-                    <input
-                      type="url"
-                      value={form.playStoreLink}
-                      onChange={e => setForm({ ...form, playStoreLink: e.target.value })}
-                      className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition-all text-sm"
-                      placeholder="https://play.google.com/..."
-                    />
-                  </div>
-                </div>
-              )}
+              <StoreLinksForm
+                playStoreLink={form.playStoreLink || ''}
+                appStoreLink={form.appStoreLink || ''}
+                onChange={(field, value, isValid) => {
+                  setForm((prev: any) => ({ ...prev, [field]: value }));
+                  if (field === 'playStoreLink') setPlayStoreLinkValid(isValid);
+                  else setAppStoreLinkValid(isValid);
+                }}
+              />
               {(form.type?.includes('Web') || form.type?.includes('Desktop') || form.type?.includes('All')) && (
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Interactive Demo URL</label>

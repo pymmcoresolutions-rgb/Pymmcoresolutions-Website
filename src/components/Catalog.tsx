@@ -521,17 +521,17 @@ export default function Catalog() {
                 </div>
 
                 <div className="pt-6 border-t border-white/5 grid grid-cols-1 gap-3">
-                  {app.type === 'Mobile' || (Array.isArray(app.type) && app.type.includes('Mobile')) ? (
-                    <div className="flex gap-2">
+                  {app.type === 'Mobile' || (Array.isArray(app.type) && app.type.includes('Mobile')) || app.appStoreLink || app.playStoreLink ? (
+                    <div className="flex flex-col gap-2">
                       {app.appStoreLink && (
                         <a 
                           href={app.appStoreLink} 
                           target="_blank" 
                           rel="noreferrer"
                           onClick={() => analyticsService.trackDownload(app.id, app.name)}
-                          className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all"
+                          className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all text-white"
                         >
-                          <Apple className="w-4 h-4" /> App Store
+                          <Apple className="w-4 h-4" /> Download on the App Store
                         </a>
                       )}
                       {app.playStoreLink && (
@@ -540,9 +540,9 @@ export default function Catalog() {
                           target="_blank" 
                           rel="noreferrer"
                           onClick={() => analyticsService.trackDownload(app.id, app.name)}
-                          className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all"
+                          className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all text-white"
                         >
-                          <Play className="w-4 h-4" /> Play Store
+                          <Play className="w-4 h-4 text-green-400" /> Download on Google Play
                         </a>
                       )}
                     </div>

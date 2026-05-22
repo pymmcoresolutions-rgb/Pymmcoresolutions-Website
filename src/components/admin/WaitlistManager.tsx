@@ -54,6 +54,17 @@ export default function WaitlistManager() {
     }
   };
 
+  const deleteSelected = async () => {
+    if (selectedIds.length === 0) return;
+    if (!confirm(`Are you sure you want to permanently delete the ${selectedIds.length} selected entries?`)) return;
+    try {
+      await Promise.all(selectedIds.map(id => deleteDoc(doc(db, 'waitlist', id))));
+      setSelectedIds([]);
+    } catch (err) {
+      console.error("Bulk deletion failed:", err);
+    }
+  };
+
   const filteredEntries = entries.filter(e => 
     e.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     e.name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -84,6 +95,15 @@ export default function WaitlistManager() {
           >
             <Send className="w-4 h-4" /> Broadcast ({selectedIds.length})
           </button>
+
+          {selectedIds.length > 0 && (
+            <button 
+              onClick={deleteSelected}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg transition-all"
+            >
+              <Trash2 className="w-4 h-4" /> Delete ({selectedIds.length})
+            </button>
+          )}
           
           <button className="p-2 bg-white/5 border border-white/10 rounded-lg text-white/40 hover:text-white transition-all">
             <Download className="w-4 h-4" />

@@ -74,6 +74,34 @@ export default function LandingPage({
                 </div>
               )}
             </div>
+
+            {/* Navigation links for key features on Landing Page */}
+            <div className="hidden md:flex items-center gap-8">
+              <button 
+                onClick={() => window.location.hash = '#about'}
+                className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 hover:text-cyan-400 transition-colors pointer-events-auto cursor-pointer"
+              >
+                About
+              </button>
+              <button 
+                onClick={() => window.location.hash = '#pricing'}
+                className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 hover:text-cyan-400 transition-colors pointer-events-auto cursor-pointer"
+              >
+                Pricing
+              </button>
+              <button 
+                onClick={() => window.location.hash = '#contact'}
+                className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 hover:text-cyan-400 transition-colors pointer-events-auto cursor-pointer"
+              >
+                Contact
+              </button>
+              <button 
+                onClick={() => window.location.hash = '#reviews'}
+                className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 hover:text-cyan-400 transition-colors pointer-events-auto cursor-pointer"
+              >
+                Reviews
+              </button>
+            </div>
             
             <div className="flex items-center gap-6">
               <button 
