@@ -16,6 +16,7 @@ import ThreeMarketplace from './ThreeMarketplace';
 import OnboardingShowcase from './OnboardingShowcase';
 import WaitlistPortal from './WaitlistPortal';
 import { Skeleton } from './ui/Skeleton';
+import AppShowcaseSlider from './AppShowcaseSlider';
 
 export default function LandingPage({ 
   onLaunch,
@@ -233,87 +234,37 @@ export default function LandingPage({
                         </div>
 
                         {/* Liquid-LCD Inner High-Tech UI Screen Content */}
-                        <div className="relative flex-1 bg-neutral-950 flex flex-col justify-between overflow-hidden p-5 select-none shadow-[inset_0_0_20px_rgba(0,0,0,0.8)]">
+                        <div className="relative flex-1 bg-neutral-950 flex flex-col justify-between overflow-hidden p-1 select-none shadow-[inset_0_0_20px_rgba(0,0,0,0.8)]">
                           
-                          {/* Screen Header - Top Bar stats indicators */}
-                          <div className="flex items-center justify-between text-[8px] text-white/30 font-mono tracking-widest z-20 pt-1">
-                            <span>09:41 AM</span>
-                            <div className="flex items-center gap-1.5 bg-cyan-500/5 px-2 py-0.5 rounded border border-cyan-500/10">
-                              <span className="w-1 h-1 rounded-full bg-emerald-500 animate-ping" />
-                              <span className="text-[7px]">SECURE_NODE</span>
-                            </div>
-                          </div>
-
-                          {/* Futuristic SVG Node Coordinates Grid Background */}
-                          <div className="absolute inset-0 z-0 opacity-30 mix-blend-screen pointer-events-none">
-                            <svg className="w-full h-full text-cyan-500/20" viewBox="0 0 100 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              {/* Grid Gridlines overlay */}
-                              <line x1="0" y1="110" x2="100" y2="110" stroke="currentColor" strokeWidth="0.1" />
-                              <line x1="50" y1="0" x2="50" y2="220" stroke="currentColor" strokeWidth="0.1" />
-                              
-                              {/* Fine coordinate node pathways */}
-                              <path d="M 0,40 L 40,40 L 50,50 L 100,50" stroke="currentColor" strokeWidth="0.3" strokeDasharray="1,2" />
-                              <path d="M 10,130 L 30,130 L 50,150 L 90,150" stroke="currentColor" strokeWidth="0.3" />
-                              <path d="M 0,180 L 35,180 L 50,195 L 100,195" stroke="currentColor" strokeWidth="0.25" strokeDasharray="3,1" />
-
-                              {/* Target crosshairs, node vectors and radar shapes */}
-                              <circle cx="50" cy="110" r="50" stroke="currentColor" strokeWidth="0.2" strokeDasharray="5,5" />
-                              <circle cx="50" cy="110" r="32" stroke="currentColor" strokeWidth="0.25" />
-                              <circle cx="50" cy="110" r="16" stroke="currentColor" strokeWidth="0.35" />
-                              <circle cx="50" cy="110" r="3" fill="currentColor" className="text-cyan-400 animate-pulse" />
-
-                              {/* Matrix node intersections */}
-                              <circle cx="30" cy="130" r="1.5" fill="currentColor" className="text-cyan-500" />
-                              <circle cx="50" cy="150" r="1.5" fill="currentColor" className="text-emerald-500" />
-                              <circle cx="35" cy="180" r="1.2" fill="currentColor" />
-                              <circle cx="50" cy="195" r="1.2" fill="currentColor" className="text-purple-400" />
-                              <circle cx="40" cy="40" r="1.5" fill="currentColor" className="text-cyan-500" />
-                              <circle cx="50" cy="50" r="1.5" fill="currentColor" className="text-cyan-500" />
-                            </svg>
-                          </div>
-
-                          {/* Outer-space blur lights */}
-                          <div className="absolute top-[18%] -left-16 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-1000" />
-                          <div className="absolute bottom-[18%] -right-16 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-1000" />
-
-                          {/* Dead Center UI Module */}
-                          <div className="flex-1 flex flex-col justify-center items-center relative z-10 text-center">
-                            
-                            {/* Brackets HUD bounding box */}
-                            <div className="relative p-5 bg-black/50 backdrop-blur-sm rounded-xl border border-white/5 shadow-2.5xl transition-all duration-500 group-hover:border-cyan-500/20 group-hover:bg-black/70">
-                              {/* Corner Bracket Reticles */}
-                              <div className="absolute top-0 left-0 w-3 h-3 border-t-[1.5px] border-l-[1.5px] border-cyan-400/80" />
-                              <div className="absolute top-0 right-0 w-3 h-3 border-t-[1.5px] border-r-[1.5px] border-cyan-400/80" />
-                              <div className="absolute bottom-0 left-0 w-3 h-3 border-b-[1.5px] border-l-[1.5px] border-cyan-400/80" />
-                              <div className="absolute bottom-0 right-0 w-3 h-3 border-b-[1.5px] border-r-[1.5px] border-cyan-400/80" />
-
-                              {/* Center Bold Futuristic "PYMMCORE" */}
-                              <h2 className="text-lg font-black tracking-[0.22em] text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-400 to-emerald-400 drop-shadow-[0_0_12px_rgba(6,182,212,0.65)] uppercase block whitespace-nowrap">
-                                PYMMCORE
-                              </h2>
-
-                              {/* Subtitle identifier with tiny tracking */}
-                              <div className="mt-1.5 text-[6.5px] font-mono font-bold text-cyan-400/40 uppercase tracking-[0.25em]">
-                                INTEGRATION INSTANCE
+                          {/* Screen Header - Top Bar stats indicators & Branded Website Header */}
+                          <div className="px-4 pt-4 pb-2.5 z-20 shrink-0 bg-neutral-950/90 border-b border-white/5 space-y-2">
+                            <div className="flex items-center justify-between text-[8px] text-white/30 font-mono tracking-widest">
+                              <span>09:41 AM</span>
+                              <div className="flex items-center gap-1.5 bg-cyan-500/5 px-2 py-0.5 rounded border border-cyan-500/10">
+                                <span className="w-1 h-1 rounded-full bg-emerald-500 animate-ping" />
+                                <span className="text-[7px]">SECURE_NODE</span>
                               </div>
                             </div>
 
-                            {/* Core status tracker */}
-                            <div className="mt-4 flex items-center justify-center gap-1.5 bg-white/[0.02] border border-white/10 rounded-full px-2.5 py-0.5 text-[6.5px] font-mono text-emerald-400 uppercase tracking-[0.15em]">
-                              <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
-                              <span>PIPELINE_INIT_STBY</span>
+                            {/* Branded Website Header Name inside the slide wrapper */}
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black tracking-[0.25em] text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.4)] uppercase">
+                                PYMMCORE
+                              </span>
+                              <span className="text-[6.5px] font-mono font-bold text-white/30 uppercase tracking-[0.1em]">
+                                PIPELINE
+                              </span>
                             </div>
                           </div>
 
-                          {/* Footer navigation bars mock */}
-                          <div className="z-10 text-center space-y-1.5 pb-0.5">
-                            <div className="flex justify-center items-center gap-1 opacity-60">
-                              <div className="w-1 h-1 rounded-full bg-white/20" />
-                              <div className="w-3 h-0.5 bg-cyan-400" />
-                              <div className="w-1 h-1 rounded-full bg-white/20" />
-                            </div>
-                            {/* Native OS Home Swipe Handle */}
-                            <div className="w-16 h-0.5 bg-white/15 mx-auto rounded-full" />
+                          {/* Futuristic Automated Slider Showcase Container */}
+                          <div className="flex-1 relative w-full h-full overflow-hidden p-2.5 pt-1 bg-black/40">
+                            <AppShowcaseSlider />
+                          </div>
+
+                          {/* Home Swipe Indicator */}
+                          <div className="pb-1 z-20 relative">
+                            <div className="w-14 h-0.5 bg-white/10 mx-auto rounded-full" />
                           </div>
 
                         </div>
