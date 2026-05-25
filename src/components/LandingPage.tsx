@@ -96,12 +96,6 @@ export default function LandingPage({
               >
                 Contact
               </button>
-              <button 
-                onClick={() => window.location.hash = '#reviews'}
-                className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 hover:text-cyan-400 transition-colors pointer-events-auto cursor-pointer"
-              >
-                Reviews
-              </button>
             </div>
             
             <div className="flex items-center gap-6">

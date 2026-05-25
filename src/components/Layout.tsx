@@ -29,7 +29,7 @@ export default function Layout({ children, currentPath, onNavigate }: { children
     { id: '#about', label: 'About', icon: Award },
     { id: '#pricing', label: 'Pricing', icon: DollarSign },
     { id: '#contact', label: 'Contact', icon: Mail },
-    { id: '#reviews', label: 'Reviews', icon: Star },
+    ...(!isAdmin ? [{ id: '#reviews', label: 'Reviews', icon: Star }] : []),
     { id: '#', label: 'Storefront', icon: Globe },
   ];
 
@@ -230,7 +230,9 @@ export default function Layout({ children, currentPath, onNavigate }: { children
                 <li><button onClick={() => handleNavigate('#about')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">About</button></li>
                 <li><button onClick={() => handleNavigate('#pricing')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Pricing</button></li>
                 <li><button onClick={() => handleNavigate('#contact')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Contact</button></li>
-                <li><button onClick={() => handleNavigate('#reviews')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Reviews</button></li>
+                {!isAdmin && (
+                  <li><button onClick={() => handleNavigate('#reviews')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Reviews</button></li>
+                )}
                 <li><button onClick={() => handleNavigate('#')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Storefront</button></li>
               </ul>
             </div>
