@@ -102,44 +102,97 @@ export default function MyWaitlist() {
       }
     });
 
-    // 2. Fetch user's joined waitlists
-    const myWaitlistQuery = query(
-      collection(db, 'waitlist'),
-      where('userId', '==', user.uid),
-      orderBy('createdAt', 'desc')
-    );
+    // 2. Fetch user's joined waitlists via both userId and email (merged dynamically)
+    let unsubscribeUid = () => {};
+    let unsubscribeEmail = () => {};
 
-    const waitlistUnsubscribe = onSnapshot(myWaitlistQuery, (snap) => {
-      const list = snap.docs.map(docSnap => ({
-        id: docSnap.id,
-        ...docSnap.data()
-      } as WaitlistDoc));
-      setMySubscriptions(list);
-      setLoading(false);
-    }, (err) => {
-      console.error("Error loading personal waitlists:", err);
-      // Fallback: Query by email to ensure resilience
-      const fallbackQuery = query(
-        collection(db, 'waitlist'),
-        where('email', '==', user.email?.toLowerCase()),
-        orderBy('createdAt', 'desc')
-      );
-      onSnapshot(fallbackQuery, (fallbackSnap) => {
-        const list = fallbackSnap.docs.map(docSnap => ({
-          id: docSnap.id,
-          ...docSnap.data()
-        } as WaitlistDoc));
-        setMySubscriptions(list);
-        setLoading(false);
-      }, (err2) => {
-        handleFirestoreError(err2, OperationType.LIST, 'waitlist');
-        setLoading(false);
+    let uidList: WaitlistDoc[] = [];
+    let emailList: WaitlistDoc[] = [];
+
+    const handleMerge = (fromUid: WaitlistDoc[], fromEmail: WaitlistDoc[]) => {
+      const mergedMap = new Map<string, WaitlistDoc>();
+      fromUid.forEach(item => mergedMap.set(item.id, item));
+      fromEmail.forEach(item => mergedMap.set(item.id, item));
+      
+      const mergedList = Array.from(mergedMap.values());
+      // Sort by createdAt descending (handling Firestore timestamps dynamically)
+      mergedList.sort((a, b) => {
+        const tA = a.createdAt?.seconds !== undefined ? a.createdAt.seconds : (a.createdAt?.toMillis ? a.createdAt.toMillis() / 1000 : 0);
+        const tB = b.createdAt?.seconds !== undefined ? b.createdAt.seconds : (b.createdAt?.toMillis ? b.createdAt.toMillis() / 1000 : 0);
+        return tB - tA;
       });
-    });
+      
+      setMySubscriptions(mergedList);
+      setLoading(false);
+    };
+
+    const setupUidSubscription = (useOrder: boolean) => {
+      try {
+        const q = useOrder 
+          ? query(collection(db, 'waitlist'), where('userId', '==', user.uid), orderBy('createdAt', 'desc'))
+          : query(collection(db, 'waitlist'), where('userId', '==', user.uid));
+        
+        unsubscribeUid = onSnapshot(q, (snap) => {
+          uidList = snap.docs.map(docSnap => ({
+            id: docSnap.id,
+            ...docSnap.data()
+          } as WaitlistDoc));
+          handleMerge(uidList, emailList);
+        }, (err) => {
+          if (useOrder) {
+            console.warn("Uid query index might be missing, falling back to unordered query:", err);
+            unsubscribeUid();
+            setupUidSubscription(false);
+          } else {
+            console.error("Uid query fallback also failed:", err);
+            setLoading(false);
+          }
+        });
+      } catch (e) {
+        console.error("Error creating uid query:", e);
+        setLoading(false);
+      }
+    };
+
+    const setupEmailSubscription = (useOrder: boolean) => {
+      if (!user.email) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const q = useOrder
+          ? query(collection(db, 'waitlist'), where('email', '==', user.email.toLowerCase()), orderBy('createdAt', 'desc'))
+          : query(collection(db, 'waitlist'), where('email', '==', user.email.toLowerCase()));
+          
+        unsubscribeEmail = onSnapshot(q, (snap) => {
+          emailList = snap.docs.map(docSnap => ({
+            id: docSnap.id,
+            ...docSnap.data()
+          } as WaitlistDoc));
+          handleMerge(uidList, emailList);
+        }, (err) => {
+          if (useOrder) {
+            console.warn("Email query index might be missing, falling back to unordered query:", err);
+            unsubscribeEmail();
+            setupEmailSubscription(false);
+          } else {
+            console.error("Email query fallback also failed:", err);
+            setLoading(false);
+          }
+        });
+      } catch (e) {
+        console.error("Error creating email query:", e);
+        setLoading(false);
+      }
+    };
+
+    setupUidSubscription(true);
+    setupEmailSubscription(true);
 
     return () => {
       appsUnsubscribe();
-      waitlistUnsubscribe();
+      unsubscribeUid();
+      unsubscribeEmail();
     };
   }, [user]);
 
