@@ -125,24 +125,50 @@ export default function WaitlistPortal() {
                 </div>
 
                 <div className="flex items-start gap-4 mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-teal-400">
-                    {app.type === 'Web' && <Globe className="w-6 h-6" />}
-                    {app.type === 'Mobile' && <Smartphone className="w-6 h-6" />}
-                    {app.type === 'Desktop' && <Monitor className="w-6 h-6" />}
+                  <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-teal-400 p-1">
+                    {(() => {
+                      const types = Array.isArray(app.type) ? app.type : [app.type || 'Web'];
+                      return (
+                        <div className="flex gap-1 items-center justify-center">
+                          {types.includes('Web') && <Globe className="w-5 h-5 text-cyan-400" />}
+                          {types.includes('Mobile') && <Smartphone className="w-5 h-5 text-emerald-400" />}
+                          {types.includes('Desktop') && <Monitor className="w-5 h-5 text-purple-400" />}
+                        </div>
+                      );
+                    })()}
                   </div>
                   <div>
                     <h3 className="text-xl font-bold tracking-tight">{app.name}</h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="px-2 py-0.5 rounded bg-white/5 text-[8px] font-bold uppercase tracking-[0.2em] text-white/40">
-                        {app.type}
-                      </span>
+                    <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                      {(() => {
+                        const types = Array.isArray(app.type) ? app.type : [app.type || 'Web'];
+                        return types.map((t) => (
+                          <span key={t} className="px-2 py-0.5 rounded bg-white/5 text-[8px] font-bold uppercase tracking-[0.2em] text-white/40">
+                            {t}
+                          </span>
+                        ));
+                      })()}
                     </div>
                   </div>
                 </div>
 
-                <p className="text-xs text-white/40 line-clamp-3 mb-6 leading-relaxed">
+                <p className="text-xs text-white/40 line-clamp-3 mb-4 leading-relaxed">
                   {app.description}
                 </p>
+
+                {app.features && app.features.length > 0 && (
+                  <div className="mb-6 space-y-1.5">
+                    <div className="text-[9px] font-bold uppercase tracking-widest text-teal-400/80">Highlights</div>
+                    <ul className="space-y-1">
+                      {app.features.slice(0, 3).map((feat: string, i: number) => (
+                        <li key={i} className="text-[10px] text-white/60 flex items-center gap-1.5 leading-snug">
+                          <span className="w-1 h-1 rounded-full bg-teal-400 shadow-[0_0_8px_rgba(45,212,191,0.5)] shrink-0" />
+                          <span className="truncate">{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
                 <div className="pt-6 border-t border-white/5 flex items-center justify-between">
                   <div className="space-y-1">
@@ -198,7 +224,13 @@ export default function WaitlistPortal() {
                   <div className="grid grid-cols-2 gap-8">
                     <div className="space-y-2">
                       <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Category</div>
-                      <div className="text-sm font-bold text-white/80">{selectedApp.type} Solution</div>
+                      <div className="text-sm font-bold text-white/80">{selectedApp.category || 'Utilities'}</div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Platform / Type</div>
+                      <div className="text-sm font-bold text-white/80">
+                        {Array.isArray(selectedApp.type) ? selectedApp.type.join(' & ') : selectedApp.type || 'Web'} Solution
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Development Phase</div>
@@ -208,11 +240,25 @@ export default function WaitlistPortal() {
                       <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Target Launch</div>
                       <div className="text-sm font-bold text-blue-400">{selectedApp.expectedLaunchDate || 'TBD'}</div>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 col-span-2">
                       <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Lead Developer</div>
-                      <div className="text-sm font-bold text-white/80">{selectedApp.developer}</div>
+                      <div className="text-sm font-bold text-white/80">{selectedApp.developer || 'PymmCore Solutions'}</div>
                     </div>
                   </div>
+
+                  {selectedApp.features && selectedApp.features.length > 0 && (
+                    <div className="space-y-3 pt-6 border-t border-white/5">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-teal-400">Key Features / Highlights</div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {selectedApp.features.map((feat: string, i: number) => (
+                          <div key={i} className="flex items-start gap-2 bg-white/5 border border-white/10 rounded-xl p-3 hover:border-teal-500/30 transition-all">
+                            <span className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1.5 shrink-0 shadow-[0_0_8px_rgba(45,212,191,0.5)]" />
+                            <span className="text-xs text-white/80 leading-relaxed">{feat}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-8 p-8 rounded-[2rem] bg-white/5 border border-white/10">

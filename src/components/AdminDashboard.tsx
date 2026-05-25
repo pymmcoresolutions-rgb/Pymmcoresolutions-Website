@@ -24,6 +24,7 @@ import SubmissionManager from './admin/SubmissionManager';
 import LogoManager from './admin/LogoManager';
 import WaitlistManager from './admin/WaitlistManager';
 import AnalyticsDashboard from './admin/AnalyticsDashboard';
+import UpcomingProjectsManager from './admin/UpcomingProjectsManager';
 import EconomyManager from './admin/EconomyManager';
 import SocialShipper from './admin/SocialShipper';
 import SystemMesh from './admin/SystemMesh';
@@ -122,6 +123,7 @@ export default function AdminDashboard() {
     { id: 'reviews', label: 'Reviews', icon: Star, roles: ['admin', 'editor'] },
     { id: 'inquiries', label: 'Inquiries', icon: Mail, roles: ['admin'] },
     { id: 'submissions', label: 'Submissions', icon: Rocket, roles: ['admin', 'editor'] },
+    { id: 'upcoming_projects', label: 'Upcoming Projects', icon: Rocket, roles: ['admin', 'editor'] },
     { id: 'cms', label: 'CMS', icon: FileText, roles: ['admin', 'editor'] },
     { id: 'content', label: 'Site Content', icon: Globe, roles: ['admin', 'editor'] },
     { id: 'economy', label: 'Economy', icon: DollarSign, roles: ['admin'] },
@@ -232,6 +234,7 @@ export default function AdminDashboard() {
 
             {activeTab === 'mesh' && <SystemMesh key="mesh" />}
             {activeTab === 'apps' && <NodeManager key="apps" />}
+            {activeTab === 'upcoming_projects' && <UpcomingProjectsManager key="upcoming_projects" />}
             {activeTab === 'users' && <UserManager key="users" />}
             {activeTab === 'waitlist' && <WaitlistManager key="waitlist" />}
             {activeTab === 'reviews' && <ReviewsManager key="reviews" />}
