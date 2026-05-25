@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Home, Rocket, Shield, Cpu, Globe, LayoutDashboard, LogOut, Menu, X, Sparkles, Bell, Award, Mail, Star, Loader2, DollarSign, Twitter, Facebook, Music2, Instagram, Linkedin } from 'lucide-react';
+import { Home, Rocket, Shield, Clock, Cpu, Globe, LayoutDashboard, LogOut, Menu, X, Sparkles, Bell, Award, Mail, Star, Loader2, DollarSign, Twitter, Facebook, Music2, Instagram, Linkedin } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import { useState, useEffect } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
@@ -25,6 +25,7 @@ export default function Layout({ children, currentPath, onNavigate }: { children
 
   const navItems = [
     { id: '#home', label: 'Home', icon: Home },
+    ...(user ? [{ id: '#waitlist', label: 'My Waitlist', icon: Clock }] : []),
     { id: '#about', label: 'About', icon: Award },
     { id: '#pricing', label: 'Pricing', icon: DollarSign },
     { id: '#contact', label: 'Contact', icon: Mail },

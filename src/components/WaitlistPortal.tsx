@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { useAuth } from '../lib/auth';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mail, Send, CheckCircle2, AlertCircle, Sparkles, User, Clock, ChevronRight, Info, Rocket, Globe, Smartphone, Monitor } from 'lucide-react';
 
 export default function WaitlistPortal() {
+  const { user } = useAuth();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [subscribed, setSubscribed] = useState(true);
@@ -13,6 +15,13 @@ export default function WaitlistPortal() {
   const [message, setMessage] = useState('');
   const [pendingApps, setPendingApps] = useState<any[]>([]);
   const [selectedApp, setSelectedApp] = useState<any | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setEmail(user.email || '');
+      setName(user.displayName || '');
+    }
+  }, [user]);
 
   useEffect(() => {
     const q = query(
@@ -62,6 +71,8 @@ export default function WaitlistPortal() {
         name: name || 'Anonymous Node',
         subscribed: subscribed,
         targetAppId: selectedApp?.id || 'general',
+        userId: user?.uid || '',
+        status: 'Pending',
         createdAt: serverTimestamp()
       });
 

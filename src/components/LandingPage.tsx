@@ -125,76 +125,203 @@ export default function LandingPage({
             >
               {/* Hero Section */}
               <motion.main 
-                className="min-h-screen flex flex-col justify-center px-6 lg:px-24 w-full max-w-full relative pointer-events-none pt-32"
+                className="min-h-screen flex flex-col justify-start px-6 lg:px-24 w-full max-w-full relative pointer-events-none pt-32 lg:pt-36 pb-12"
               >
-                <div className="space-y-2 lg:space-y-4 max-w-7xl mx-auto w-full">
-                  <motion.div
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className="inline-flex items-center gap-3 px-4 py-1.5 bg-cyan-500/5 border border-cyan-500/20 rounded-full w-fit pointer-events-auto"
-                  >
-                    <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_10px_rgba(6,182,212,1)]" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-400 italic">SECURE_CONNECTION_ACTIVE</span>
-                  </motion.div>
+                <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
                   
-                  <h1 className="text-[clamp(2rem,8vw,5rem)] font-black tracking-tighter leading-[0.9] uppercase flex flex-col pointer-events-none mb-4">
-                    <motion.span 
-                      initial={{ y: 50, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ type: 'spring', damping: 25, stiffness: 120, delay: 0.3 }}
-                      className="relative"
+                  {/* Left Column - Tech Content */}
+                  <div className="lg:col-span-7 space-y-4 lg:space-y-6">
+                    <motion.div
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.2 }}
+                      className="inline-flex items-center gap-3 px-4 py-1.5 bg-cyan-500/5 border border-cyan-500/20 rounded-full w-fit pointer-events-auto"
                     >
-                      Pymm
-                    </motion.span>
-                    <motion.span 
-                      initial={{ y: 50, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ type: 'spring', damping: 25, stiffness: 120, delay: 0.4 }}
-                      className="text-cyan-500 drop-shadow-[0_0_80px_rgba(6,182,212,0.5)] relative z-10"
-                    >
-                      Core.
-                    </motion.span>
-                  </h1>
-
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.6 }}
-                    className="flex flex-col lg:flex-row items-start lg:items-center gap-8 lg:gap-16 mt-8"
-                  >
-                    <div className="max-w-md pointer-events-auto">
-                      <p className="text-lg lg:text-3xl text-white/40 leading-tight font-light mb-8">
-                         <span className="text-white">Modern Software Solutions</span> for premium software delivery. 
-                        Deploy your project within the application dashboard.
-                      </p>
-                      
-                      <button 
-                        className="w-full sm:w-auto flex items-center justify-center gap-6 px-14 py-8 bg-white text-black font-black uppercase tracking-[0.3em] hover:bg-cyan-400 transition-all group scale-100 active:scale-95 text-xs"
-                        onClick={onLaunch}
+                      <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_10px_rgba(6,182,212,1)]" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-400 italic">SECURE_CONNECTION_ACTIVE</span>
+                    </motion.div>
+                    
+                    <h1 className="text-[clamp(2rem,8vw,5.5rem)] font-black tracking-tighter leading-[0.9] uppercase flex flex-col pointer-events-none mb-4">
+                      <motion.span 
+                        initial={{ y: 50, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 120, delay: 0.3 }}
+                        className="relative"
                       >
-                        Explore Applications <ArrowRight className="w-6 h-6 group-hover:translate-x-4 transition-transform duration-500" />
-                      </button>
-                    </div>
+                        Pymm
+                      </motion.span>
+                      <motion.span 
+                        initial={{ y: 50, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 120, delay: 0.4 }}
+                        className="text-cyan-500 drop-shadow-[0_0_80px_rgba(6,182,212,0.5)] relative z-10"
+                      >
+                        Core.
+                      </motion.span>
+                    </h1>
 
-                    <div className="flex flex-row items-center gap-12 border-l border-white/10 pl-12 h-20">
-                      <div className="flex flex-col">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-cyan-500/50 italic mb-2">Active Applications</span>
-                        {loading ? (
-                          <Skeleton className="h-10 w-20 rounded-lg" />
-                        ) : (
-                          <span className="text-4xl font-mono tracking-tighter">{apps.length.toString().padStart(3, '0')}</span>
-                        )}
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.6 }}
+                      className="flex flex-col sm:flex-row items-start sm:items-center gap-8 lg:gap-12 mt-8"
+                    >
+                      <div className="max-w-md pointer-events-auto">
+                        <p className="text-lg lg:text-2xl text-white/40 leading-tight font-light mb-8">
+                          <span className="text-white">Modern Software Solutions</span> for premium software delivery. 
+                          Deploy your project within the application dashboard.
+                        </p>
+                        
+                        <button 
+                          className="w-full sm:w-auto flex items-center justify-center gap-6 px-14 py-8 bg-white text-black font-black uppercase tracking-[0.3em] hover:bg-cyan-400 transition-all group scale-100 active:scale-95 text-xs"
+                          onClick={onLaunch}
+                        >
+                          Explore Applications <ArrowRight className="w-6 h-6 group-hover:translate-x-4 transition-transform duration-500" />
+                        </button>
                       </div>
-                      <div className="w-[1px] h-full bg-white/10" />
-                      <div className="flex flex-col">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white/20 italic mb-2">Network Status</span>
-                        <span className="text-xs font-black text-cyan-400 uppercase tracking-widest flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,1)]" /> Optimized
-                        </span>
+
+                      <div className="flex flex-row items-center gap-8 border-l border-white/10 pl-8 h-20 shrink-0">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-cyan-500/50 italic mb-2">Active Applications</span>
+                          {loading ? (
+                            <Skeleton className="h-10 w-20 rounded-lg" />
+                          ) : (
+                            <span className="text-4xl font-mono tracking-tighter">{apps.length.toString().padStart(3, '0')}</span>
+                          )}
+                        </div>
+                        <div className="w-[1px] h-full bg-white/10" />
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-white/20 italic mb-2">Network Status</span>
+                          <span className="text-xs font-black text-cyan-400 uppercase tracking-widest flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,1)]" /> Optimized
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </div>
+
+                  {/* Right Column - Sleek Phone Mockup Wrapper */}
+                  <div className="lg:col-span-12 xl:col-span-5 flex justify-center lg:justify-end xl:justify-end pt-4 xl:pt-0 pointer-events-auto w-full relative">
+                    <div id="phone-mockup-wrapper" className="relative w-full max-w-[260px] aspect-[9/19] p-3.5 bg-neutral-900/10 rounded-[3rem] border border-white/5 shadow-2.5xl backdrop-blur-md group">
+                      
+                      {/* Depth Ambient Radiance Glows */}
+                      <div className="absolute -inset-4 bg-gradient-to-tr from-cyan-500/15 via-transparent to-emerald-500/15 rounded-[3.25rem] blur-3xl opacity-80 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                      
+                      {/* Physical Button Elements Mock (Outer left/right keys) */}
+                      <div className="absolute left-[-2px] top-28 w-[3px] h-10 bg-neutral-800 rounded-l-md border-r border-neutral-950/40 z-10" />
+                      <div className="absolute left-[-2px] top-40 w-[3px] h-10 bg-neutral-800 rounded-l-md border-r border-neutral-950/40 z-10" />
+                      <div className="absolute right-[-2px] top-34 w-[3px] h-14 bg-neutral-700 rounded-r-md border-l border-neutral-950/40 z-10" />
+
+                      {/* Precise Smartphone Frame Chassis */}
+                      <div className="relative w-full h-full bg-neutral-950 border-[5px] border-neutral-800 rounded-[2.5rem] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col">
+                        
+                        {/* Interactive Screen Reflection glass sheen */}
+                        <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/[0.02] to-white/[0.05] pointer-events-none z-20" />
+                        
+                        {/* Upper Notch Island Component */}
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-5 w-22 bg-black rounded-b-xl z-30 flex items-center justify-between px-2.5 shadow-md">
+                          {/* Left sensor glass dot */}
+                          <div className="w-1 h-1 rounded-full bg-neutral-950 flex items-center justify-center">
+                            <div className="w-0.5 h-0.5 rounded-full bg-cyan-900" />
+                          </div>
+                          {/* Ear speaker line indicator */}
+                          <div className="w-6 h-0.5 bg-neutral-850 rounded-full" />
+                          {/* Right front-facing camera lens */}
+                          <div className="w-2 h-2 rounded-full bg-neutral-900 border border-neutral-800/40 relative flex items-center justify-center">
+                            <div className="w-0.5 h-0.5 rounded-full bg-cyan-950 animate-pulse" />
+                          </div>
+                        </div>
+
+                        {/* Liquid-LCD Inner High-Tech UI Screen Content */}
+                        <div className="relative flex-1 bg-neutral-950 flex flex-col justify-between overflow-hidden p-5 select-none shadow-[inset_0_0_20px_rgba(0,0,0,0.8)]">
+                          
+                          {/* Screen Header - Top Bar stats indicators */}
+                          <div className="flex items-center justify-between text-[8px] text-white/30 font-mono tracking-widest z-20 pt-1">
+                            <span>09:41 AM</span>
+                            <div className="flex items-center gap-1.5 bg-cyan-500/5 px-2 py-0.5 rounded border border-cyan-500/10">
+                              <span className="w-1 h-1 rounded-full bg-emerald-500 animate-ping" />
+                              <span className="text-[7px]">SECURE_NODE</span>
+                            </div>
+                          </div>
+
+                          {/* Futuristic SVG Node Coordinates Grid Background */}
+                          <div className="absolute inset-0 z-0 opacity-30 mix-blend-screen pointer-events-none">
+                            <svg className="w-full h-full text-cyan-500/20" viewBox="0 0 100 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              {/* Grid Gridlines overlay */}
+                              <line x1="0" y1="110" x2="100" y2="110" stroke="currentColor" strokeWidth="0.1" />
+                              <line x1="50" y1="0" x2="50" y2="220" stroke="currentColor" strokeWidth="0.1" />
+                              
+                              {/* Fine coordinate node pathways */}
+                              <path d="M 0,40 L 40,40 L 50,50 L 100,50" stroke="currentColor" strokeWidth="0.3" strokeDasharray="1,2" />
+                              <path d="M 10,130 L 30,130 L 50,150 L 90,150" stroke="currentColor" strokeWidth="0.3" />
+                              <path d="M 0,180 L 35,180 L 50,195 L 100,195" stroke="currentColor" strokeWidth="0.25" strokeDasharray="3,1" />
+
+                              {/* Target crosshairs, node vectors and radar shapes */}
+                              <circle cx="50" cy="110" r="50" stroke="currentColor" strokeWidth="0.2" strokeDasharray="5,5" />
+                              <circle cx="50" cy="110" r="32" stroke="currentColor" strokeWidth="0.25" />
+                              <circle cx="50" cy="110" r="16" stroke="currentColor" strokeWidth="0.35" />
+                              <circle cx="50" cy="110" r="3" fill="currentColor" className="text-cyan-400 animate-pulse" />
+
+                              {/* Matrix node intersections */}
+                              <circle cx="30" cy="130" r="1.5" fill="currentColor" className="text-cyan-500" />
+                              <circle cx="50" cy="150" r="1.5" fill="currentColor" className="text-emerald-500" />
+                              <circle cx="35" cy="180" r="1.2" fill="currentColor" />
+                              <circle cx="50" cy="195" r="1.2" fill="currentColor" className="text-purple-400" />
+                              <circle cx="40" cy="40" r="1.5" fill="currentColor" className="text-cyan-500" />
+                              <circle cx="50" cy="50" r="1.5" fill="currentColor" className="text-cyan-500" />
+                            </svg>
+                          </div>
+
+                          {/* Outer-space blur lights */}
+                          <div className="absolute top-[18%] -left-16 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-1000" />
+                          <div className="absolute bottom-[18%] -right-16 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-1000" />
+
+                          {/* Dead Center UI Module */}
+                          <div className="flex-1 flex flex-col justify-center items-center relative z-10 text-center">
+                            
+                            {/* Brackets HUD bounding box */}
+                            <div className="relative p-5 bg-black/50 backdrop-blur-sm rounded-xl border border-white/5 shadow-2.5xl transition-all duration-500 group-hover:border-cyan-500/20 group-hover:bg-black/70">
+                              {/* Corner Bracket Reticles */}
+                              <div className="absolute top-0 left-0 w-3 h-3 border-t-[1.5px] border-l-[1.5px] border-cyan-400/80" />
+                              <div className="absolute top-0 right-0 w-3 h-3 border-t-[1.5px] border-r-[1.5px] border-cyan-400/80" />
+                              <div className="absolute bottom-0 left-0 w-3 h-3 border-b-[1.5px] border-l-[1.5px] border-cyan-400/80" />
+                              <div className="absolute bottom-0 right-0 w-3 h-3 border-b-[1.5px] border-r-[1.5px] border-cyan-400/80" />
+
+                              {/* Center Bold Futuristic "PYMMCORE" */}
+                              <h2 className="text-lg font-black tracking-[0.22em] text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-400 to-emerald-400 drop-shadow-[0_0_12px_rgba(6,182,212,0.65)] uppercase block whitespace-nowrap">
+                                PYMMCORE
+                              </h2>
+
+                              {/* Subtitle identifier with tiny tracking */}
+                              <div className="mt-1.5 text-[6.5px] font-mono font-bold text-cyan-400/40 uppercase tracking-[0.25em]">
+                                INTEGRATION INSTANCE
+                              </div>
+                            </div>
+
+                            {/* Core status tracker */}
+                            <div className="mt-4 flex items-center justify-center gap-1.5 bg-white/[0.02] border border-white/10 rounded-full px-2.5 py-0.5 text-[6.5px] font-mono text-emerald-400 uppercase tracking-[0.15em]">
+                              <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+                              <span>PIPELINE_INIT_STBY</span>
+                            </div>
+                          </div>
+
+                          {/* Footer navigation bars mock */}
+                          <div className="z-10 text-center space-y-1.5 pb-0.5">
+                            <div className="flex justify-center items-center gap-1 opacity-60">
+                              <div className="w-1 h-1 rounded-full bg-white/20" />
+                              <div className="w-3 h-0.5 bg-cyan-400" />
+                              <div className="w-1 h-1 rounded-full bg-white/20" />
+                            </div>
+                            {/* Native OS Home Swipe Handle */}
+                            <div className="w-16 h-0.5 bg-white/15 mx-auto rounded-full" />
+                          </div>
+
+                        </div>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
+                  {/* Wrapper Ends */}
+
                 </div>
               </motion.main>
 

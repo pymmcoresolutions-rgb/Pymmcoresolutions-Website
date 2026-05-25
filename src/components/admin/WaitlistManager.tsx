@@ -7,6 +7,7 @@ import {
   Download, Send, CheckCircle2, UserCheck, Shield
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import ConfirmDialog from './ConfirmDialog';
 
 export default function WaitlistManager() {
   const { isAdmin, loading } = useAuth();
@@ -14,6 +15,8 @@ export default function WaitlistManager() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -44,8 +47,7 @@ export default function WaitlistManager() {
     );
   };
 
-  const deleteEntry = async (id: string) => {
-    if (!confirm('Permanent deletion requested. Proceed?')) return;
+  const handleDeleteSingle = async (id: string) => {
     try {
       await deleteDoc(doc(db, 'waitlist', id));
       setSelectedIds(prev => prev.filter(i => i !== id));
@@ -54,9 +56,8 @@ export default function WaitlistManager() {
     }
   };
 
-  const deleteSelected = async () => {
+  const handleDeleteBulk = async () => {
     if (selectedIds.length === 0) return;
-    if (!confirm(`Are you sure you want to permanently delete the ${selectedIds.length} selected entries?`)) return;
     try {
       await Promise.all(selectedIds.map(id => deleteDoc(doc(db, 'waitlist', id))));
       setSelectedIds([]);
@@ -98,7 +99,7 @@ export default function WaitlistManager() {
 
           {selectedIds.length > 0 && (
             <button 
-              onClick={deleteSelected}
+              onClick={() => setShowBulkDeleteConfirm(true)}
               className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg transition-all"
             >
               <Trash2 className="w-4 h-4" /> Delete ({selectedIds.length})
@@ -166,7 +167,7 @@ export default function WaitlistManager() {
                 </td>
                 <td className="px-6 py-4 rounded-r-2xl text-right">
                   <button 
-                    onClick={() => deleteEntry(entry.id)}
+                    onClick={() => setDeleteTargetId(entry.id)}
                     className="p-2 text-white/20 hover:text-red-500 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -184,6 +185,22 @@ export default function WaitlistManager() {
           onClose={() => setShowMessageModal(false)}
         />
       )}
+
+      <ConfirmDialog
+        isOpen={!!deleteTargetId}
+        title="Delete Waitlist Entry"
+        message="Are you sure you want to permanently delete this waitlist entry? This action cannot be undone."
+        onConfirm={() => deleteTargetId && handleDeleteSingle(deleteTargetId)}
+        onCancel={() => setDeleteTargetId(null)}
+      />
+
+      <ConfirmDialog
+        isOpen={showBulkDeleteConfirm}
+        title="Delete Selected Entries"
+        message={`Are you sure you want to permanently delete the ${selectedIds.length} selected entries? This action cannot be undone.`}
+        onConfirm={handleDeleteBulk}
+        onCancel={() => setShowBulkDeleteConfirm(false)}
+      />
     </div>
   );
 }

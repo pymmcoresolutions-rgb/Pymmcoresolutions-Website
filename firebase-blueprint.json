@@ -180,7 +180,10 @@
         "email": { "type": "string", "format": "email" },
         "name": { "type": "string" },
         "subscribed": { "type": "boolean", "description": "Opted-in for updates" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "createdAt": { "type": "string", "format": "date-time" },
+        "targetAppId": { "type": "string", "description": "Reference to the app ID" },
+        "userId": { "type": "string", "description": "Reference to the User Profile ID" },
+        "status": { "type": "string", "enum": ["Pending", "Accepted", "Rejected", "Invited"], "description": "Current status of waitlist registration" }
       },
       "required": ["email", "subscribed", "createdAt"]
     },

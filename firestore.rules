@@ -200,7 +200,9 @@ service cloud.firestore {
              data.subscribed is bool &&
              data.createdAt is timestamp &&
              (!('targetAppId' in data) || (data.targetAppId is string && data.targetAppId.size() <= 100)) &&
-             (!('name' in data) || (data.name is string && data.name.size() <= 100));
+             (!('name' in data) || (data.name is string && data.name.size() <= 100)) &&
+             (!('userId' in data) || (data.userId is string && data.userId.size() <= 128)) &&
+             (!('status' in data) || (data.status is string && data.status in ['Pending', 'Accepted', 'Rejected', 'Invited']));
     }
 
     function isValidAppRating(data) {
@@ -348,7 +350,7 @@ service cloud.firestore {
     match /notifications/{notifId} {
       allow read: if isOwner(resource.data.userId);
       allow update: if isOwner(resource.data.userId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
-      allow create: if isAdmin();
+      allow create: if isAuthenticated();
     }
 
     match /settings/{settingId} {
@@ -392,9 +394,35 @@ service cloud.firestore {
 
     match /waitlist/{entryId} {
       allow create: if isValidWaitlistEntry(request.resource.data);
-      allow list: if isAdmin();
-      allow get: if isAdmin();
-      allow delete: if isAdmin();
+      allow get: if isAdmin() || 
+                    (isAuthenticated() && (
+                      resource.data.userId == request.auth.uid || 
+                      resource.data.email == request.auth.token.email ||
+                      (resource.data.targetAppId != null && 
+                       exists(/databases/$(database)/documents/apps/$(resource.data.targetAppId)) && 
+                       get(/databases/$(database)/documents/apps/$(resource.data.targetAppId)).data.authorUid == request.auth.uid)
+                    ));
+      allow list: if isAdmin() ||
+                    (isAuthenticated() && (
+                      resource.data.userId == request.auth.uid || 
+                      resource.data.email == request.auth.token.email ||
+                      (resource.data.targetAppId != null && 
+                       exists(/databases/$(database)/documents/apps/$(resource.data.targetAppId)) && 
+                       get(/databases/$(database)/documents/apps/$(resource.data.targetAppId)).data.authorUid == request.auth.uid)
+                    ));
+      allow update: if isAdmin() || (
+                    isAuthenticated() && isNotSuspended() && 
+                    resource.data.targetAppId != null &&
+                    exists(/databases/$(database)/documents/apps/$(resource.data.targetAppId)) &&
+                    get(/databases/$(database)/documents/apps/$(resource.data.targetAppId)).data.authorUid == request.auth.uid &&
+                    isValidWaitlistEntry(request.resource.data) &&
+                    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+                  );
+      allow delete: if isAdmin() || 
+                    (isAuthenticated() && (
+                      resource.data.userId == request.auth.uid || 
+                      resource.data.email == request.auth.token.email
+                    ));
     }
 
     match /background_assets/{assetId} {

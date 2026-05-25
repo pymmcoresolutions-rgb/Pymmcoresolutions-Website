@@ -11,6 +11,7 @@ import Reviews from './components/Reviews';
 import Legal from './components/Legal';
 import ErrorBoundary from './components/ErrorBoundary';
 import Pricing from './components/Pricing';
+import MyWaitlist from './components/MyWaitlist';
 
 import AuthInterface from './components/AuthInterface';
 import Documentation from './components/Documentation';
@@ -80,6 +81,8 @@ function MainContent() {
             <div className="max-w-7xl mx-auto px-4 py-12">
               <AIAdvisor isFullPage />
             </div>
+          ) : currentPath === '#waitlist' ? (
+            <MyWaitlist />
           ) : (
             <div className="space-y-24 pb-24">
               <Catalog />
