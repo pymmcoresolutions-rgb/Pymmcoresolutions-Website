@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, doc, getDoc, setDoc, arrayUnion, serverTimestamp, query, where, getDocs, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../lib/auth';
 import { motion, AnimatePresence } from 'motion/react';
@@ -48,36 +48,47 @@ export default function WaitlistPortal() {
     setStatus('idle');
     
     try {
-      // Check if already registered - this might fail for non-admins due to permission rules
-      // so we handle it gracefully or skip if permission denied
+      const emailKey = email.toLowerCase();
+      const docRef = doc(db, 'waitlist', emailKey);
+      const appId = selectedApp?.id || 'general';
+
+      // Check if already registered for this specific app (only works if they have read or if admin/authenticated)
+      let isAlreadyRegistered = false;
       try {
-        const q = query(collection(db, 'waitlist'), where('email', '==', email.toLowerCase()));
-        const snap = await getDocs(q);
-        
-        if (!snap.empty) {
-          setStatus('error');
-          setMessage('This email is already in our protocol. We will notify you once access is granted.');
-          setLoading(false);
-          return;
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          const data = snap.data();
+          const targetAppIds = data.targetAppIds || (data.targetAppId ? [data.targetAppId] : []);
+          if (targetAppIds.includes(appId)) {
+            isAlreadyRegistered = true;
+          }
         }
       } catch (err: any) {
-        // If we get a permission error here, it's expected for public users
-        // We proceed to write; if it's a duplicate, we handle it on the server/later
-        console.warn("Duplicate check skipped due to permission restrictions (Expected for non-admins)");
+        // Expected if reader is unauthenticated and rules block get on that id
+        console.warn("Waitlist read permission restricted (proceeding securely to write/append)");
       }
 
-      await addDoc(collection(db, 'waitlist'), {
-        email: email.toLowerCase(),
+      if (isAlreadyRegistered) {
+        setStatus('error');
+        setMessage('You are already registered on the waitlist for this application.');
+        setLoading(false);
+        return;
+      }
+
+      // Merge early access: upsert with arrayUnion so they don't get saved multiple times
+      await setDoc(docRef, {
+        email: emailKey,
         name: name || 'Anonymous Node',
         subscribed: subscribed,
-        targetAppId: selectedApp?.id || 'general',
+        targetAppId: appId, // Backward compatibility
+        targetAppIds: arrayUnion(appId),
         userId: user?.uid || '',
         status: 'Pending',
         createdAt: serverTimestamp()
-      });
+      }, { merge: true });
 
       setStatus('success');
-      setMessage('Access Confirmed! You have been added to the priority waitlist.');
+      setMessage(`Access Confirmed! You have been added to the priority waitlist for ${selectedApp ? selectedApp.name : 'PymmCore'}.`);
       setEmail('');
       setName('');
     } catch (error: any) {

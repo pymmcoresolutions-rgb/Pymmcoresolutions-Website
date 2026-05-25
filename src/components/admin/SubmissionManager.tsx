@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
   collection, query, where, onSnapshot, 
-  doc, updateDoc, deleteDoc, serverTimestamp 
+  doc, updateDoc, deleteDoc, serverTimestamp, getDocs
 } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { handleFirestoreError, OperationType } from '../../lib/firestore-errors';
@@ -11,7 +11,7 @@ import {
   Filter, Edit3, Trash2, ExternalLink, 
   MessageSquare, Save, AlertCircle, Loader2,
   Layout, Smartphone, Monitor, ShieldCheck,
-  ImageIcon, Sparkles, Box, Globe, Plus
+  ImageIcon, Sparkles, Box, Globe, Plus, Send
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import ImageUploader from '../ui/ImageUploader';
@@ -62,6 +62,7 @@ export default function SubmissionManager() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuggestingIcon, setIsSuggestingIcon] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isSendingNotification, setIsSendingNotification] = useState<string | null>(null);
 
   useEffect(() => {
     let q = query(collection(db, 'apps'), where('isDraft', '==', false));
@@ -139,6 +140,56 @@ export default function SubmissionManager() {
       handleFirestoreError(err, OperationType.UPDATE, `apps/${id}`);
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleNotifyWaitlist = async (app: AppSubmission) => {
+    setIsSendingNotification(app.id);
+    try {
+      // 1. Fetch waitlist collection
+      const q = query(collection(db, 'waitlist'));
+      const snap = await getDocs(q);
+      
+      const emails = snap.docs
+        .map(d => d.data())
+        .filter(item => {
+          const appIds = item.targetAppIds || (item.targetAppId ? [item.targetAppId] : []);
+          return appIds.includes(app.id) || (app.id === 'general' && appIds.includes('general'));
+        })
+        .map(item => item.email)
+        .filter(Boolean);
+
+      // Remove potential duplicates
+      const uniqueEmails = Array.from(new Set(emails));
+
+      if (uniqueEmails.length === 0) {
+        alert(`No waitlist subscribers found registered for "${app.name}".`);
+        return;
+      }
+
+      // 2. Compose notification details
+      const subject = `🚀 "${app.name}" is officially launched!`;
+      const content = `We are proud to notify you that "${app.name}" has officially passed all security audits and is now live on the PymmCore Production Mesh!\n\nAs a priority waitlist member, you are authorized to gain instant access now.\n\nDescription:\n${app.description}\n\nLaunch Link:\n${app.link || 'https://pymmcore.com'}\n\nThank you for choosing PymmCore Solutions. Secure synchronization complete.`;
+
+      // 3. Dispatch broadcast endpoint
+      const response = await fetch('/api/admin/broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emails: uniqueEmails, subject, content })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert(`Success! Broadcast notification dispatched to ${uniqueEmails.length} subscriber(s) for "${app.name}" in one click.`);
+        await logActivity('waitlist_notification_sent', { appId: app.id, count: uniqueEmails.length });
+      } else {
+        throw new Error(data.error || 'Server rejected broadcast request');
+      }
+    } catch (err: any) {
+      console.error("Broadcast notification failed:", err);
+      alert(`Broadcast notification failed: ${err.message || err}`);
+    } finally {
+      setIsSendingNotification(null);
     }
   };
 
@@ -596,13 +647,27 @@ export default function SubmissionManager() {
                         Refine
                       </button>
                       {sub.approvalStatus === 'approved' && (
-                        <button 
-                          onClick={() => handleDecommission(sub.id)}
-                          className="flex-1 py-3 bg-red-900/20 hover:bg-red-900/40 text-red-400 border border-red-900/30 rounded-xl transition-all flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Offline
-                        </button>
+                        <>
+                          <button 
+                            onClick={() => handleNotifyWaitlist(sub)}
+                            disabled={isSendingNotification === sub.id}
+                            className="flex-1 py-3 bg-teal-600/10 hover:bg-teal-600 text-teal-400 hover:text-white border border-teal-500/20 rounded-xl transition-all flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
+                          >
+                            {isSendingNotification === sub.id ? (
+                              <span className="w-4 h-4 border-2 border-teal-400 border-t-transparent rounded-full animate-spin shrink-0" />
+                            ) : (
+                              <Send className="w-4 h-4" />
+                            )}
+                            Notify Waitlist
+                          </button>
+                          <button 
+                            onClick={() => handleDecommission(sub.id)}
+                            className="flex-1 py-3 bg-red-900/20 hover:bg-red-900/40 text-red-400 border border-red-900/30 rounded-xl transition-all flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Offline
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>

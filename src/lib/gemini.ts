@@ -5,7 +5,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 export async function getAIAdvice(prompt: string) {
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-3.5-flash",
       contents: prompt,
       config: {
         systemInstruction: "You are the PymmCore Product Consultant. You provide expert advice on selecting the right applications from our storefront. You help users understand platform compatibility (Web, Mobile, Desktop), pricing, and feature sets. Keep your responses professional, helpful, and focused on product discovery.",
@@ -21,7 +21,7 @@ export async function getAIAdvice(prompt: string) {
 export async function optimizeMetadata(name: string, description: string) {
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-3.5-flash",
       contents: `Optimize this application metadata for a premium app storefront. 
       Name: ${name}
       Description: ${description}`,
@@ -55,7 +55,7 @@ export async function optimizeMetadata(name: string, description: string) {
 export async function generateIconSuggestion(name: string, description: string) {
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-3.5-flash",
       contents: `Suggest 5 Lucide React icon names that best represent this application.
       Name: ${name}
       Description: ${description}`,

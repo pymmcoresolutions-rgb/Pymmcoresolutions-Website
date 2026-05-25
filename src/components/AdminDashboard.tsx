@@ -8,7 +8,7 @@ import {
   Plus, Shield, Activity, Globe, Smartphone, Monitor,
   AlertCircle, CheckCircle2, Clock, Search, Filter, Mail,
   MoreVertical, UserMinus, UserPlus, ShieldCheck, Ban, Star, Image, Rocket,
-  TrendingUp, DollarSign, Share2
+  TrendingUp, DollarSign, Share2, Sparkles
 } from 'lucide-react';
 import NodeManager from './admin/NodeManager';
 import UserManager from './admin/UserManager';
@@ -29,6 +29,7 @@ import EconomyManager from './admin/EconomyManager';
 import SocialShipper from './admin/SocialShipper';
 import SystemMesh from './admin/SystemMesh';
 import BrandingSettings from './BrandingSettings';
+import AIAdvisor from './AIAdvisor';
 
 export default function AdminDashboard() {
   const { user, profile, isAdmin, isEditor, isDeveloper, loading } = useAuth();
@@ -117,6 +118,7 @@ export default function AdminDashboard() {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard, roles: ['admin', 'editor', 'developer'] },
     { id: 'mesh', label: 'System Mesh', icon: Globe, roles: ['admin', 'developer'] },
+    { id: 'advisor', label: 'AI Advisor', icon: Sparkles, roles: ['admin', 'editor', 'developer'] },
     { id: 'apps', label: 'Apps', icon: Activity, roles: ['admin', 'editor'] },
     { id: 'users', label: 'Users', icon: Users, roles: ['admin'] },
     { id: 'waitlist', label: 'Waitlist', icon: Mail, roles: ['admin'] },
@@ -233,6 +235,7 @@ export default function AdminDashboard() {
             )}
 
             {activeTab === 'mesh' && <SystemMesh key="mesh" />}
+            {activeTab === 'advisor' && <AIAdvisor isFullPage key="advisor" />}
             {activeTab === 'apps' && <NodeManager key="apps" />}
             {activeTab === 'upcoming_projects' && <UpcomingProjectsManager key="upcoming_projects" />}
             {activeTab === 'users' && <UserManager key="users" />}

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { 
   collection, query, where, onSnapshot, 
   doc, setDoc, serverTimestamp, getDocs,
-  limit, orderBy 
+  limit, orderBy, deleteDoc
 } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { motion, AnimatePresence } from 'motion/react';
@@ -11,7 +11,7 @@ import {
   Video, Sparkles, Send, CheckCircle2, 
   Loader2, AlertCircle, Eye, ThumbsUp, 
   TrendingUp, Download, Shield, ExternalLink,
-  Edit3, Play, BarChart3, RefreshCcw
+  Edit3, Play, BarChart3, RefreshCcw, Trash2
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import { generateSocialMarketingInfo, generateMarketingVideo } from '../../services/geminiService';
@@ -52,6 +52,31 @@ export default function SocialShipper() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDispatching, setIsDispatching] = useState(false);
   const [selectedAppId, setSelectedAppId] = useState<string>('');
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  const handleDeletePost = async (postId: string) => {
+    if (confirmDeleteId !== postId) {
+      setConfirmDeleteId(postId);
+      // Auto-reset confirmation state after 4 seconds
+      setTimeout(() => {
+        setConfirmDeleteId(current => current === postId ? null : current);
+      }, 4000);
+      return;
+    }
+
+    setIsDeleting(postId);
+    setConfirmDeleteId(null);
+    try {
+      await deleteDoc(doc(db, 'social_posts', postId));
+      await logActivity('social_post_deleted', { postId });
+    } catch (err: any) {
+      console.error("Delete failed:", err);
+      alert("Failed to delete post: " + err.message);
+    } finally {
+      setIsDeleting(null);
+    }
+  };
   
   const [preview, setPreview] = useState<{
     caption: string;
@@ -178,7 +203,7 @@ export default function SocialShipper() {
         await setDoc(doc(db, 'social_posts', postId), postData);
         await logActivity('SOCIAL_DISPATCH', { appId: selectedAppId, platforms: postData.platforms });
         
-        alert(response.data.message);
+        alert(`Success! Shipped video and caption dispatched to official handles:\n\n- TikTok: https://tiktok.com/@pymmcore.solution\n- Instagram: https://www.instagram.com/pymmcoresolutions2026`);
         setPreview(null);
         setSelectedAppId('');
       }
@@ -260,6 +285,24 @@ export default function SocialShipper() {
                     connected={connectedPlatforms.instagram} 
                     onToggle={() => connectedPlatforms.instagram ? setConnectedPlatforms(p => ({ ...p, instagram: false })) : handleLogin('instagram')}
                   />
+                </div>
+
+                <div className="p-4 bg-cyan-950/20 border border-cyan-800/20 rounded-xl space-y-2">
+                  <p className="text-[9px] font-black uppercase tracking-wider text-cyan-400">Target Publish Handles</p>
+                  <div className="space-y-1.5 text-[11px] text-white/70">
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/40">TikTok:</span>
+                      <a href="https://tiktok.com/@pymmcore.solution" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 font-bold hover:underline flex items-center gap-1">
+                        @pymmcore.solution <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/40">Instagram:</span>
+                      <a href="https://www.instagram.com/pymmcoresolutions2026" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 font-bold hover:underline flex items-center gap-1">
+                        @pymmcoresolutions2026 <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -397,7 +440,41 @@ export default function SocialShipper() {
                       <div>
                         <h4 className="font-bold text-sm">{post.appName}</h4>
                         <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">Dispatched {post.createdAt?.toDate?.()?.toLocaleDateString()}</p>
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {post.platforms.map(p => {
+                            const link = p === 'tiktok' ? "https://tiktok.com/@pymmcore.solution" : "https://www.instagram.com/pymmcoresolutions2026";
+                            return (
+                              <a 
+                                key={p} 
+                                href={link} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 hover:bg-cyan-500 hover:text-black transition-all flex items-center gap-1"
+                              >
+                                {p} <ExternalLink className="w-2 h-2" />
+                              </a>
+                            );
+                          })}
+                        </div>
                       </div>
+                      <button
+                        onClick={() => handleDeletePost(post.id)}
+                        disabled={isDeleting === post.id}
+                        className={`p-2 rounded-lg transition-all flex items-center justify-center gap-1 ${
+                          confirmDeleteId === post.id 
+                            ? "bg-red-500/20 text-red-400 text-[9px] font-bold px-3 py-1.5 uppercase outline-none animate-pulse border border-red-500/30" 
+                            : "text-white/20 hover:text-red-400 hover:bg-red-500/10"
+                        }`}
+                        title={confirmDeleteId === post.id ? "Click again to confirm" : "Delete Dispatch"}
+                      >
+                        {isDeleting === post.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : confirmDeleteId === post.id ? (
+                          "Confirm Deletion"
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </button>
                     </div>
                     <div className="grid grid-cols-3 gap-3">
                       <AnalyticsChip icon={<Eye className="w-3 h-3" />} value={post.analytics?.views || 0} label="Views" />
@@ -450,24 +527,33 @@ export default function SocialShipper() {
                   <div key={post.id} className="p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 transition-all group">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
-                          <Video className="w-6 h-6 text-white/20" />
+                        <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 font-black text-white/20">
+                          <Video className="w-6 h-6" />
                         </div>
                         <div>
-                          <h4 className="font-bold text-sm">{post.appName}</h4>
-                          <div className="flex items-center gap-2 mt-1">
-                            {post.platforms.map(p => (
-                               <span key={p} className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 bg-white/5 border border-white/10 rounded-lg text-white/40">
-                                 {p}
-                               </span>
-                            ))}
+                          <h4 className="font-bold text-sm text-white">{post.appName}</h4>
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
+                            {post.platforms.map(p => {
+                              const link = p === 'tiktok' ? "https://tiktok.com/@pymmcore.solution" : "https://www.instagram.com/pymmcoresolutions2026";
+                              return (
+                                <a 
+                                  key={p} 
+                                  href={link} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 hover:bg-cyan-500 hover:text-black transition-all flex items-center gap-1"
+                                >
+                                  {p} <ExternalLink className="w-2 h-2" />
+                                </a>
+                              );
+                            })}
                             <span className="text-[10px] text-white/20 ml-2">
                               {post.createdAt?.toDate?.()?.toLocaleString()}
                             </span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex gap-6">
+                      <div className="flex items-center gap-6">
                         <div className="text-right">
                           <p className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Reach</p>
                           <p className="text-sm font-black text-cyan-400">{post.analytics?.views || 0}</p>
@@ -476,6 +562,24 @@ export default function SocialShipper() {
                           <p className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Likes</p>
                           <p className="text-sm font-black text-blue-400">{post.analytics?.likes || 0}</p>
                         </div>
+                        <button
+                          onClick={() => handleDeletePost(post.id)}
+                          disabled={isDeleting === post.id}
+                          className={`p-3 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center shrink-0 ml-2 text-[10px] font-black uppercase tracking-wider ${
+                            confirmDeleteId === post.id 
+                              ? "bg-red-500 text-black px-4 animate-pulse border-none font-bold"
+                              : "bg-red-950/20 hover:bg-red-500/20 text-white/45 hover:text-red-400 border border-red-900/30"
+                          }`}
+                          title={confirmDeleteId === post.id ? "Click again to confirm" : "Delete Post"}
+                        >
+                          {isDeleting === post.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : confirmDeleteId === post.id ? (
+                            "Confirm Delete"
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
+                        </button>
                       </div>
                     </div>
                   </div>

@@ -2,5 +2,5 @@
   "name": "pymmcore website",
   "description": "A curated marketplace for premium mobile, web, and desktop applications developed by PymmCore Solutions and third-party developers, featuring automated security audits and secure Paystack handling for listing fees.",
   "requestFramePermissions": [],
-  "majorCapabilities": []
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

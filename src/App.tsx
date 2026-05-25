@@ -77,11 +77,7 @@ function MainContent() {
             </div>
           ) : currentPath === '#admin' && isEditor ? (
             <AdminDashboard />
-          ) : currentPath === '#advisor' ? (
-            <div className="max-w-7xl mx-auto px-4 py-12">
-              <AIAdvisor isFullPage />
-            </div>
-          ) : currentPath === '#waitlist' ? (
+          ) : currentPath === '#waitlist' && !isAdmin ? (
             <MyWaitlist />
           ) : (
             <div className="space-y-24 pb-24">

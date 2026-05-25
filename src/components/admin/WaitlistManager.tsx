@@ -12,16 +12,19 @@ import ConfirmDialog from './ConfirmDialog';
 export default function WaitlistManager() {
   const { isAdmin, loading } = useAuth();
   const [entries, setEntries] = useState<any[]>([]);
+  const [apps, setApps] = useState<Record<string, any>>({});
+  const [expandedEmails, setExpandedEmails] = useState<Record<string, boolean>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showMessageModal, setShowMessageModal] = useState(false);
-  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (loading || !isAdmin) return;
 
+    // Load waitlist entries
     const q = query(collection(db, 'waitlist'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setEntries(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -30,8 +33,73 @@ export default function WaitlistManager() {
       console.error("WaitlistManager subscription error:", err);
       setError("Waitlist update failed.");
     });
-    return () => unsubscribe();
+
+    // Load approved apps to map IDs to titles
+    const appsQuery = query(collection(db, 'apps'));
+    const unsubscribeApps = onSnapshot(appsQuery, (snap) => {
+      const appMap: Record<string, any> = {};
+      snap.docs.forEach(d => {
+        appMap[d.id] = d.data();
+      });
+      setApps(appMap);
+    }, (err) => {
+      console.error("Apps load in WaitlistManager failed:", err);
+    });
+
+    return () => {
+      unsubscribe();
+      unsubscribeApps();
+    };
   }, [loading, isAdmin]);
+
+  // Consolidated entries by email, supporting array-based targetAppIds & single targetAppId
+  const consolidated = (() => {
+    const map = new Map<string, any>();
+    entries.forEach(entry => {
+      const email = entry.email?.toLowerCase() || '';
+      if (!email) return;
+
+      const appIds = new Set<string>();
+      if (entry.targetAppIds && Array.isArray(entry.targetAppIds)) {
+        entry.targetAppIds.forEach((id: string) => appIds.add(id));
+      }
+      if (entry.targetAppId) {
+        appIds.add(entry.targetAppId);
+      }
+
+      if (map.has(email)) {
+        const existing = map.get(email);
+        if ((!existing.name || existing.name === 'Anonymous Node' || existing.name === 'Anonymous') && entry.name && entry.name !== 'Anonymous Node' && entry.name !== 'Anonymous') {
+          existing.name = entry.name;
+        }
+        if (entry.createdAt && (!existing.createdAt || entry.createdAt > existing.createdAt)) {
+          existing.createdAt = entry.createdAt;
+        }
+        existing.docIds.push(entry.id);
+        appIds.forEach(id => existing.appIds.add(id));
+        if (!existing.userId && entry.userId) {
+          existing.userId = entry.userId;
+        }
+        existing.subscribed = existing.subscribed || entry.subscribed;
+      } else {
+        map.set(email, {
+          ...entry,
+          docIds: [entry.id],
+          appIds: appIds
+        });
+      }
+    });
+
+    return Array.from(map.values()).map(item => ({
+      ...item,
+      appIds: Array.from(item.appIds)
+    }));
+  })();
+
+  const filteredEntries = consolidated.filter(e => 
+    e.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    e.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
@@ -47,10 +115,12 @@ export default function WaitlistManager() {
     );
   };
 
-  const handleDeleteSingle = async (id: string) => {
+  const handleDeleteSingle = async (entry: any) => {
     try {
-      await deleteDoc(doc(db, 'waitlist', id));
-      setSelectedIds(prev => prev.filter(i => i !== id));
+      const docIdsToDelete = entry.docIds || [entry.id];
+      await Promise.all(docIdsToDelete.map((id: string) => deleteDoc(doc(db, 'waitlist', id))));
+      setSelectedIds(prev => prev.filter(i => i !== entry.id));
+      setDeleteTarget(null);
     } catch (err) {
       console.error("Deletion failed:", err);
     }
@@ -59,17 +129,26 @@ export default function WaitlistManager() {
   const handleDeleteBulk = async () => {
     if (selectedIds.length === 0) return;
     try {
-      await Promise.all(selectedIds.map(id => deleteDoc(doc(db, 'waitlist', id))));
+      const docIdsToDelete: string[] = [];
+      filteredEntries.forEach(entry => {
+        if (selectedIds.includes(entry.id)) {
+          docIdsToDelete.push(...(entry.docIds || [entry.id]));
+        }
+      });
+      await Promise.all(docIdsToDelete.map(id => deleteDoc(doc(db, 'waitlist', id))));
       setSelectedIds([]);
+      setShowBulkDeleteConfirm(false);
     } catch (err) {
       console.error("Bulk deletion failed:", err);
     }
   };
 
-  const filteredEntries = entries.filter(e => 
-    e.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    e.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const toggleExpandUser = (email: string) => {
+    setExpandedEmails(prev => ({
+      ...prev,
+      [email]: !prev[email]
+    }));
+  };
 
   return (
     <div className="space-y-8">
@@ -142,13 +221,36 @@ export default function WaitlistManager() {
                   />
                 </td>
                 <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-teal-600/20 flex items-center justify-center text-teal-400 font-bold text-xs uppercase">
+                  <div className="flex items-start gap-4">
+                    <div className="w-8 h-8 rounded-lg bg-teal-600/20 flex items-center justify-center text-teal-400 font-bold text-xs uppercase shrink-0 mt-0.5">
                       {entry.name?.[0] || entry.email?.[0]}
                     </div>
                     <div>
-                      <div className="text-sm font-medium">{entry.name || 'Anonymous'}</div>
+                      <div 
+                        onClick={() => toggleExpandUser(entry.email)}
+                        className="text-sm font-medium hover:text-teal-400 cursor-pointer transition-colors flex items-center gap-1.5"
+                      >
+                        {entry.name || 'Anonymous Node'}
+                        <span className="text-[10.5px] text-teal-500/60 hover:underline">({entry.appIds.length} app{entry.appIds.length !== 1 ? 's' : ''})</span>
+                      </div>
                       <div className="text-[10px] text-white/40">{entry.email}</div>
+                      
+                      {expandedEmails[entry.email] && (
+                        <div className="mt-2.5 p-3 rounded-xl bg-black/40 border border-white/5 space-y-2 max-w-sm">
+                          <p className="text-[9px] text-teal-400 font-bold uppercase tracking-widest border-b border-white/5 pb-1">Subscribed Apps</p>
+                          <div className="space-y-1">
+                            {entry.appIds.map((appId: string) => {
+                              const appName = apps[appId]?.name || (appId === 'general' ? 'General Interest Protocol' : appId);
+                              return (
+                                <div key={appId} className="text-[11px] text-white/80 flex items-center gap-1.5 leading-relaxed">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-teal-400 shrink-0 animate-pulse" />
+                                  <span>{appName}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </td>
@@ -167,7 +269,7 @@ export default function WaitlistManager() {
                 </td>
                 <td className="px-6 py-4 rounded-r-2xl text-right">
                   <button 
-                    onClick={() => setDeleteTargetId(entry.id)}
+                    onClick={() => setDeleteTarget(entry)}
                     className="p-2 text-white/20 hover:text-red-500 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -181,23 +283,23 @@ export default function WaitlistManager() {
 
       {showMessageModal && (
         <BroadcastModal 
-          selectedUsers={entries.filter(e => selectedIds.includes(e.id))}
+          selectedUsers={consolidated.filter(e => selectedIds.includes(e.id))}
           onClose={() => setShowMessageModal(false)}
         />
       )}
 
       <ConfirmDialog
-        isOpen={!!deleteTargetId}
+        isOpen={!!deleteTarget}
         title="Delete Waitlist Entry"
-        message="Are you sure you want to permanently delete this waitlist entry? This action cannot be undone."
-        onConfirm={() => deleteTargetId && handleDeleteSingle(deleteTargetId)}
-        onCancel={() => setDeleteTargetId(null)}
+        message="Are you sure you want to permanently delete this waitlist entry and all of their related registrations? This action cannot be undone."
+        onConfirm={() => deleteTarget && handleDeleteSingle(deleteTarget)}
+        onCancel={() => setDeleteTarget(null)}
       />
 
       <ConfirmDialog
         isOpen={showBulkDeleteConfirm}
         title="Delete Selected Entries"
-        message={`Are you sure you want to permanently delete the ${selectedIds.length} selected entries? This action cannot be undone.`}
+        message={`Are you sure you want to permanently delete the ${selectedIds.length} selected consolidated entries? This action cannot be undone.`}
         onConfirm={handleDeleteBulk}
         onCancel={() => setShowBulkDeleteConfirm(false)}
       />

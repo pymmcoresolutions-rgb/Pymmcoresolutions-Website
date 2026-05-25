@@ -200,6 +200,7 @@ service cloud.firestore {
              data.subscribed is bool &&
              data.createdAt is timestamp &&
              (!('targetAppId' in data) || (data.targetAppId is string && data.targetAppId.size() <= 100)) &&
+             (!('targetAppIds' in data) || (data.targetAppIds is list && data.targetAppIds.size() <= 100)) &&
              (!('name' in data) || (data.name is string && data.name.size() <= 100)) &&
              (!('userId' in data) || (data.userId is string && data.userId.size() <= 128)) &&
              (!('status' in data) || (data.status is string && data.status in ['Pending', 'Accepted', 'Rejected', 'Invited']));
@@ -417,6 +418,11 @@ service cloud.firestore {
                     get(/databases/$(database)/documents/apps/$(resource.data.targetAppId)).data.authorUid == request.auth.uid &&
                     isValidWaitlistEntry(request.resource.data) &&
                     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+                  ) || (
+                    // Permit same-email updates to append/update targetAppIds or targetAppId
+                    isValidWaitlistEntry(request.resource.data) &&
+                    request.resource.data.email == resource.data.email &&
+                    !request.resource.data.diff(resource.data).affectedKeys().hasAny(['email', 'userId', 'createdAt'])
                   );
       allow delete: if isAdmin() || 
                     (isAuthenticated() && (

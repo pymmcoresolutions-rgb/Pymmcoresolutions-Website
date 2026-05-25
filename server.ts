@@ -4,6 +4,10 @@ import path from "path";
 import { fileURLToPath } from "url";
 import nodemailer from "nodemailer";
 import { rateLimit } from 'express-rate-limit';
+import dotenv from "dotenv";
+
+// Load environment variables
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,10 +15,17 @@ const __dirname = path.dirname(__filename);
 // Storage for social tokens (in-memory for demo, should be DB in production)
 const socialTokens: Record<string, { accessToken: string; refreshToken?: string }> = {};
 
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, GenerateVideosOperation } from "@google/genai";
 
-// Initialize Gemini
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+// Initialize Gemini with recommended headers and correct API key lookup
+const ai = new GoogleGenAI({ 
+  apiKey: process.env.GEMINI_API_KEY,
+  httpOptions: {
+    headers: {
+      'User-Agent': 'aistudio-build',
+    }
+  }
+});
 
 async function startServer() {
   const app = express();
@@ -72,7 +83,7 @@ async function startServer() {
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-3.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -99,7 +110,7 @@ async function startServer() {
     const prompt = `Suggest a single PascalCase Lucide icon name representing: Name: ${name}, Description: ${description}. Return JSON {iconName, reason}.`;
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-3.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -121,7 +132,7 @@ async function startServer() {
     const prompt = `Create futuristic social caption and video generation prompt for app: ${appData.name}. Return JSON {caption, videoPrompt}.`;
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-3.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -134,7 +145,11 @@ async function startServer() {
       });
       res.json(JSON.parse(response.text));
     } catch (error) {
-      res.status(500).json({ caption: "Fallback caption", videoPrompt: "Fallback prompt" });
+      console.error("Marketing generation failed, using fallback:", error);
+      res.json({ 
+        caption: `Unleash the power of ${appData.name} on the Matrix! 🚀`, 
+        videoPrompt: `A high quality cinematic premium preview representing ${appData.name} software interface.` 
+      });
     }
   });
 
@@ -148,13 +163,19 @@ async function startServer() {
       });
       
       let attempts = 0;
-      while (attempts < 5) {
-        const response = await (ai.operations as any).get(operation.name);
+      while (attempts < 12) {
+        const op = new GenerateVideosOperation();
+        op.name = operation.name;
+        const response = await ai.operations.getVideosOperation({ operation: op });
         if (response.done) {
-          const result = response.response as any;
-          const part = result.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData);
-          if (part?.inlineData?.data) {
-            return res.json({ videoUrl: `data:video/mp4;base64,${part.inlineData.data}` });
+          const uri = response.response?.generatedVideos?.[0]?.video?.uri;
+          if (uri) {
+            const videoRes = await fetch(uri, {
+              headers: { 'x-goog-api-key': process.env.GEMINI_API_KEY || "" },
+            });
+            const arrayBuffer = await videoRes.arrayBuffer();
+            const base64 = Buffer.from(arrayBuffer).toString('base64');
+            return res.json({ videoUrl: `data:video/mp4;base64,${base64}` });
           }
           break;
         }
@@ -163,6 +184,7 @@ async function startServer() {
       }
       res.status(408).json({ error: "Generation timed out" });
     } catch (error: any) {
+      console.error("Video generation failed:", error);
       res.status(500).json({ error: error.message });
     }
   });

@@ -25,12 +25,11 @@ export default function Layout({ children, currentPath, onNavigate }: { children
 
   const navItems = [
     { id: '#home', label: 'Home', icon: Home },
-    ...(user ? [{ id: '#waitlist', label: 'My Waitlist', icon: Clock }] : []),
+    ...(user && !isAdmin ? [{ id: '#waitlist', label: 'My Waitlist', icon: Clock }] : []),
     { id: '#about', label: 'About', icon: Award },
     { id: '#pricing', label: 'Pricing', icon: DollarSign },
     { id: '#contact', label: 'Contact', icon: Mail },
     { id: '#reviews', label: 'Reviews', icon: Star },
-    { id: '#advisor', label: 'Advisor', icon: Sparkles },
     { id: '#', label: 'Storefront', icon: Globe },
   ];
 
@@ -232,7 +231,6 @@ export default function Layout({ children, currentPath, onNavigate }: { children
                 <li><button onClick={() => handleNavigate('#pricing')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Pricing</button></li>
                 <li><button onClick={() => handleNavigate('#contact')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Contact</button></li>
                 <li><button onClick={() => handleNavigate('#reviews')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Reviews</button></li>
-                <li><button onClick={() => handleNavigate('#advisor')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Advisor</button></li>
                 <li><button onClick={() => handleNavigate('#')} className="text-sm text-white/40 hover:text-cyan-400 transition-colors cursor-pointer">Storefront</button></li>
               </ul>
             </div>
