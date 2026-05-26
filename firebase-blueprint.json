@@ -49,14 +49,24 @@
     },
     "AuditLog": {
       "title": "Audit Log",
-      "description": "Record of administrative actions.",
+      "description": "Minimized structured record of system security and platform actions.",
       "type": "object",
       "properties": {
-        "action": { "type": "string" },
-        "userId": { "type": "string" },
-        "userEmail": { "type": "string" },
-        "timestamp": { "type": "string", "format": "date-time" },
-        "details": { "type": "object" }
+        "actorId": { "type": "string", "description": "The unique identifier of the security actor." },
+        "action": { "type": "string", "description": "Normalized action label (e.g. user_login, user_logout)." },
+        "timestamp": { "type": "string", "format": "date-time", "description": "Standardised server-side record timestamp." },
+        "deviceContext": {
+          "type": "object",
+          "properties": {
+            "userAgent": { "type": "string" },
+            "language": { "type": "string" },
+            "screenResolution": { "type": "string" },
+            "platform": { "type": "string" }
+          },
+          "description": "Client device and user agent environment context."
+        },
+        "userEmail": { "type": "string", "description": "Optional email for searchability and dashboard lookup" },
+        "details": { "type": "object", "description": "Additional unstructured details" }
       }
     },
     "Notification": {

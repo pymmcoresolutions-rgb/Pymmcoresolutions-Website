@@ -9,6 +9,8 @@ import dotenv from "dotenv";
 // Load environment variables
 dotenv.config();
 
+import { runRetentionPolicy } from "./src/lib/retention-admin";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -511,6 +513,17 @@ async function startServer() {
     }
   });
 
+  // Admin Purge Logs endpoint (Manual/Triggered)
+  app.post("/api/admin/purge-logs", async (req, res) => {
+    try {
+      const result = await runRetentionPolicy();
+      res.json({ success: true, ...result });
+    } catch (error: any) {
+      console.error("Manual retention logs purge failed:", error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
@@ -528,6 +541,20 @@ async function startServer() {
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`PymmCore Server running on http://localhost:${PORT}`);
+
+    // Run automated 30-day retention clean-up once on boot (after a 5-second warm-up delay)
+    setTimeout(() => {
+      runRetentionPolicy().catch(err => {
+        console.error("Boot-time log retention job failed:", err);
+      });
+    }, 5000);
+
+    // Schedule periodic retention clean-up every 12 hours
+    setInterval(() => {
+      runRetentionPolicy().catch(err => {
+        console.error("Periodic log retention job failed:", err);
+      });
+    }, 12 * 60 * 60 * 1000);
   });
 }
 

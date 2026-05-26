@@ -45,11 +45,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logActivity = async (action: string, details: any = {}) => {
     if (!auth.currentUser) return;
     try {
+      const deviceContext = {
+        userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'Server',
+        language: typeof window !== 'undefined' ? window.navigator.language : 'en',
+        screenResolution: typeof window !== 'undefined' ? `${window.screen.width}x${window.screen.height}` : 'unknown',
+        platform: typeof window !== 'undefined' ? (window.navigator as any).platform || 'unknown' : 'unknown'
+      };
+
       await addDoc(collection(db, 'logs'), {
+        actorId: auth.currentUser.uid,
+        userId: auth.currentUser.uid, // backward compatibility
+        userEmail: auth.currentUser.email || 'unknown', // backward compatibility
         action,
-        userId: auth.currentUser.uid,
-        userEmail: auth.currentUser.email,
         timestamp: serverTimestamp(),
+        deviceContext,
         details
       });
     } catch (error) {
