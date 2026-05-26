@@ -55,7 +55,7 @@ export default function LandingPage({
   }, []);
 
   return (
-    <div className="min-h-screen text-white selection:bg-cyan-500/30 relative">
+    <div className="min-h-screen text-white selection:bg-cyan-500/30 relative z-10">
       <div className="fixed inset-0 z-0 pointer-events-none" />
 
       {/* MATRIX HUD OVERLAY */}

@@ -7,30 +7,44 @@ import AppNode3D from './AppNode3D';
 
 function DataCore() {
   return (
-    <Float speed={2} rotationIntensity={1} floatIntensity={1.5}>
+    <Float speed={2.5} rotationIntensity={1.2} floatIntensity={1.5}>
       <group>
-        <mesh>
-          <dodecahedronGeometry args={[3, 0]} />
+        {/* Core 3D Hexagon Shape (Cylinder with 6 segments) */}
+        <mesh rotation={[Math.PI / 4, Math.PI / 6, 0]}>
+          <cylinderGeometry args={[2.5, 2.5, 1.5, 6]} />
           <MeshDistortMaterial
-            color="#06b6d4"
-            speed={4}
-            distort={0.3}
+            color="#0f766e"
+            speed={4.5}
+            distort={0.15}
             radius={1}
             metalness={0.9}
             roughness={0.1}
-            emissive="#0891b2"
-            emissiveIntensity={0.5}
+            emissive="#042f2e"
+            emissiveIntensity={0.2}
           />
         </mesh>
+
+        {/* Outer Wireframe Hexagon Shell */}
+        <mesh rotation={[Math.PI / 4, Math.PI / 6, 0]}>
+          <cylinderGeometry args={[2.7, 2.7, 1.6, 6]} />
+          <meshBasicMaterial 
+            color="#115e59" 
+            wireframe 
+            transparent 
+            opacity={0.1} 
+          />
+        </mesh>
+
+        {/* Orbital Rings */}
         <mesh rotation={[Math.PI / 4, 0, 0]}>
           <torusGeometry args={[5, 0.02, 16, 100]} />
-          <meshBasicMaterial color="#22d3ee" transparent opacity={0.2} />
+          <meshBasicMaterial color="#115e59" transparent opacity={0.08} />
         </mesh>
         <mesh rotation={[-Math.PI / 3, Math.PI / 4, 0]}>
           <torusGeometry args={[5.5, 0.015, 16, 100]} />
-          <meshBasicMaterial color="#06b6d4" transparent opacity={0.1} />
+          <meshBasicMaterial color="#0f766e" transparent opacity={0.05} />
         </mesh>
-        <pointLight intensity={2} color="#00ffff" distance={10} />
+        <pointLight intensity={1.0} color="#0f766e" distance={12} />
       </group>
     </Float>
   );
@@ -58,14 +72,14 @@ function MatrixBackground() {
           itemSize={3}
         />
       </bufferGeometry>
-      <pointsMaterial size={0.1} color="#00ffff" transparent opacity={0.4} sizeAttenuation />
+      <pointsMaterial size={0.04} color="#0f766e" transparent opacity={0.15} sizeAttenuation />
     </points>
   );
 }
 
 function GridBackground() {
   return (
-    <gridHelper args={[100, 50, "#00ffff", "#111111"]} position={[0, -5, 0]} />
+    <gridHelper args={[100, 50, "#083344", "#022c22"]} position={[0, -5, 0]} />
   );
 }
 
@@ -82,6 +96,9 @@ export default function Global3DBackground({
     const q = query(collection(db, 'apps'), orderBy('createdAt', 'desc'), limit(15));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setApps(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (error) => {
+      console.warn("Global3DBackground subscription error:", error);
+      setApps([]);
     });
     return () => unsubscribe();
   }, []);
@@ -101,20 +118,23 @@ export default function Global3DBackground({
   const isInteractive = !!onSelectApp;
 
   return (
-    <div className={`fixed inset-0 z-[-1] ${isInteractive ? '' : 'pointer-events-none'}`}>
+    <div className={`fixed inset-0 z-[1] ${isInteractive ? '' : 'pointer-events-none'}`}>
       <Canvas dpr={[1, 2]}>
         <PerspectiveCamera makeDefault position={[0, 0, 15]} fov={50} />
         <color attach="background" args={["#030303"]} />
         <fog attach="fog" args={["#030303", 10, 40]} />
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} intensity={1} color="#00ffff" />
+        <ambientLight intensity={0.2} />
+        <pointLight position={[10, 10, 10]} intensity={0.4} color="#0f766e" />
         
         <MatrixBackground />
         <GridBackground />
-        <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+        <Stars radius={100} depth={50} count={1500} factor={1.5} saturation={0} fade speed={1} />
         
         <Suspense fallback={null}>
           <DataCore />
+        </Suspense>
+
+        <Suspense fallback={null}>
           <group>
             {apps.map((app, i) => (
               <AppNode3D
@@ -126,6 +146,9 @@ export default function Global3DBackground({
               />
             ))}
           </group>
+        </Suspense>
+
+        <Suspense fallback={null}>
           <Environment preset="city" />
         </Suspense>
 
@@ -137,6 +160,11 @@ export default function Global3DBackground({
           makeDefault 
         />
       </Canvas>
+      {/* Dark blend overlay to guarantee high-contrast text legibility across all sections */}
+      <div className="absolute inset-0 bg-[#030303]/40 pointer-events-none z-[2]" />
+      
+      {/* Radial vignette mask, creating soft dark outer bounds where white/grey text writeups are located */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,#030303_95%)] opacity-85 pointer-events-none z-[3]" />
     </div>
   );
 }

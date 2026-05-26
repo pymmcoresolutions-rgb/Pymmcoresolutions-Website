@@ -12,20 +12,31 @@ interface ThreeMarketplaceProps {
 
 function DataCore() {
   return (
-    <Float speed={2} rotationIntensity={1} floatIntensity={1.5}>
+    <Float speed={2.5} rotationIntensity={1.2} floatIntensity={1.5}>
       <group>
-        {/* Core Geometry */}
-        <mesh>
-          <dodecahedronGeometry args={[3, 0]} />
+        {/* Core 3D Hexagon Shape (Cylinder with 6 segments) */}
+        <mesh rotation={[Math.PI / 4, Math.PI / 6, 0]}>
+          <cylinderGeometry args={[2.5, 2.5, 1.5, 6]} />
           <MeshDistortMaterial
             color="#06b6d4"
-            speed={4}
-            distort={0.3}
+            speed={4.5}
+            distort={0.15}
             radius={1}
             metalness={0.9}
             roughness={0.1}
             emissive="#0891b2"
-            emissiveIntensity={0.5}
+            emissiveIntensity={0.6}
+          />
+        </mesh>
+
+        {/* Outer Wireframe Hexagon Shell */}
+        <mesh rotation={[Math.PI / 4, Math.PI / 6, 0]}>
+          <cylinderGeometry args={[2.7, 2.7, 1.6, 6]} />
+          <meshBasicMaterial 
+            color="#22d3ee" 
+            wireframe 
+            transparent 
+            opacity={0.2} 
           />
         </mesh>
         
@@ -40,7 +51,7 @@ function DataCore() {
         </mesh>
         
         {/* Inner Light */}
-        <pointLight intensity={2} color="#00ffff" distance={10} />
+        <pointLight intensity={2.5} color="#00ffff" distance={12} />
       </group>
     </Float>
   );
@@ -120,6 +131,9 @@ export default function ThreeMarketplace({ apps, onSelectApp, selectedAppId }: T
         
         <Suspense fallback={null}>
           <DataCore />
+        </Suspense>
+
+        <Suspense fallback={null}>
           <group>
             {apps.map((app, i) => (
               <AppNode3D
@@ -131,6 +145,9 @@ export default function ThreeMarketplace({ apps, onSelectApp, selectedAppId }: T
               />
             ))}
           </group>
+        </Suspense>
+
+        <Suspense fallback={null}>
           <Environment preset="city" />
         </Suspense>
 

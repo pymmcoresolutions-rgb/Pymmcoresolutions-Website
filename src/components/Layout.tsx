@@ -40,7 +40,7 @@ export default function Layout({ children, currentPath, onNavigate }: { children
   };
 
   return (
-    <div className="min-h-screen text-white font-sans selection:bg-cyan-500/30">
+    <div className="min-h-screen text-white font-sans selection:bg-cyan-500/30 relative z-10">
       <GlobalBackground />
       <MAAYFeedback />
       {/* Background Gradients */}
