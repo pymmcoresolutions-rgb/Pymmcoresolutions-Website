@@ -4,7 +4,8 @@ import { db } from '../../lib/firebase';
 import { useAuth } from '../../lib/auth';
 import { 
   Users, Mail, Clock, Trash2, Search, Filter, 
-  Download, Send, CheckCircle2, UserCheck, Shield
+  Download, Send, CheckCircle2, UserCheck, Shield,
+  Award, TrendingUp, Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ConfirmDialog from './ConfirmDialog';
@@ -95,6 +96,56 @@ export default function WaitlistManager() {
       appIds: Array.from(item.appIds)
     }));
   })();
+
+  const appStats = (() => {
+    const stats: Record<string, { id: string; name: string; count: number; emails: string[] }> = {};
+    
+    // Initialize apps with 0 count
+    Object.entries(apps).forEach(([id, appData]) => {
+      stats[id] = {
+        id,
+        name: appData.name || id,
+        count: 0,
+        emails: []
+      };
+    });
+    
+    // Ensure 'general' is initialized
+    if (!stats['general']) {
+      stats['general'] = {
+        id: 'general',
+        name: 'General Interest Protocol',
+        count: 0,
+        emails: []
+      };
+    }
+    
+    // Count unique subscribers from consolidated list
+    consolidated.forEach(entry => {
+      const email = entry.email || '';
+      if (entry.appIds && Array.isArray(entry.appIds)) {
+        entry.appIds.forEach((appId: string) => {
+          if (!stats[appId]) {
+            stats[appId] = {
+              id: appId,
+              name: apps[appId]?.name || appId,
+              count: 0,
+              emails: []
+            };
+          }
+          if (!stats[appId].emails.includes(email)) {
+            stats[appId].emails.push(email);
+            stats[appId].count += 1;
+          }
+        });
+      }
+    });
+    
+    // Sort descending by count
+    return Object.values(stats).sort((a, b) => b.count - a.count);
+  })();
+
+  const maxCount = Math.max(...appStats.map(s => s.count), 1);
 
   const filteredEntries = consolidated.filter(e => 
     e.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -188,6 +239,93 @@ export default function WaitlistManager() {
           <button className="p-2 bg-white/5 border border-white/10 rounded-lg text-white/40 hover:text-white transition-all">
             <Download className="w-4 h-4" />
           </button>
+        </div>
+      </div>
+
+      {/* App Demand Metrics Leaderboard */}
+      <div className="p-6 rounded-[2rem] bg-gradient-to-br from-slate-900/60 to-black/40 border border-white/5 space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <h4 className="text-base font-bold text-white flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-teal-400" /> App Subscription Demand Leaderboard
+            </h4>
+            <p className="text-[11px] text-white/40 mt-0.5">
+              Live waitlist interest, ranking applications by total verified subscriber nods.
+            </p>
+          </div>
+          <div className="px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 shrink-0">
+            <Sparkles className="w-3 h-3 animate-pulse" /> Ranked by Subscribers
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {appStats.map((item, index) => {
+            const isTopApp = index === 0 && item.count > 0;
+            const progressPercent = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
+            
+            return (
+              <div 
+                key={item.id}
+                className={`p-5 rounded-2xl border transition-all duration-300 relative overflow-hidden group ${
+                  isTopApp 
+                    ? 'bg-gradient-to-br from-teal-950/20 to-slate-900/40 border-teal-500/30 shadow-lg shadow-teal-500/5' 
+                    : 'bg-white/[0.02] border-white/5 hover:border-white/10 hover:bg-white/[0.04]'
+                }`}
+              >
+                {/* Ranking Icon/Badge */}
+                <div className="absolute top-4 right-4 flex items-center gap-1">
+                  {isTopApp ? (
+                    <div className="p-1.5 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20 flex items-center justify-center shadow-sm" title="Highest Subscribed App">
+                      <Award className="w-4 h-4 text-amber-400 animate-bounce" />
+                    </div>
+                  ) : (
+                    <span className="text-[10px] font-mono font-bold text-white/30 group-hover:text-white/60 transition-colors">
+                      #{index + 1}
+                    </span>
+                  )}
+                </div>
+
+                {/* App details details */}
+                <div className="space-y-4">
+                  <div>
+                    <h5 className="text-sm font-semibold text-white/90 truncate pr-8" title={item.name}>
+                      {item.name}
+                    </h5>
+                    <p className="text-[10px] font-mono text-white/30 uppercase tracking-wider mt-0.5">
+                      {item.id}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-end text-xs">
+                      <span className="text-white/40">Verified Nods</span>
+                      <span className="font-bold text-sm text-teal-400 group-hover:text-teal-300 transition-colors">
+                        {item.count} {item.count === 1 ? 'person' : 'people'}
+                      </span>
+                    </div>
+
+                    {/* Visual Progress Meter */}
+                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full transition-all duration-1000 ${
+                          isTopApp 
+                            ? 'bg-gradient-to-r from-teal-500 to-emerald-400' 
+                            : 'bg-gradient-to-r from-teal-600/60 to-teal-500/50'
+                        }`}
+                        style={{ width: `${progressPercent}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+          {appStats.length === 0 && (
+            <div className="col-span-full py-8 text-center border border-dashed border-white/10 rounded-2xl text-white/30 text-xs italic">
+              No waitlist metrics available yet. Register a waitlist entry to initialize tracking.
+            </div>
+          )}
         </div>
       </div>
 

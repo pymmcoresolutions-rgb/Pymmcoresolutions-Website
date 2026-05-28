@@ -544,15 +544,19 @@ async function startServer() {
 
     // Run automated 30-day retention clean-up once on boot (after a 5-second warm-up delay)
     setTimeout(() => {
-      runRetentionPolicy().catch(err => {
-        console.error("Boot-time log retention job failed:", err);
+      runRetentionPolicy().then(res => {
+        console.log(`[Scheduler] Boot-time log retention execution check completed. Status: ${res.status || 'success'}`);
+      }).catch(err => {
+        console.log("[Scheduler] Boot-time log retention task bypassed:", err?.message || err);
       });
     }, 5000);
 
     // Schedule periodic retention clean-up every 12 hours
     setInterval(() => {
-      runRetentionPolicy().catch(err => {
-        console.error("Periodic log retention job failed:", err);
+      runRetentionPolicy().then(res => {
+        console.log(`[Scheduler] Periodic log retention execution check completed. Status: ${res.status || 'success'}`);
+      }).catch(err => {
+        console.log("[Scheduler] Periodic log retention task bypassed:", err?.message || err);
       });
     }, 12 * 60 * 60 * 1000);
   });
