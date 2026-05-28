@@ -225,6 +225,12 @@ export default function SubmissionManager() {
   const startEdit = (sub: AppSubmission) => {
     setEditingId(sub.id);
     setEditForm(sub);
+    setTimeout(() => {
+      const element = document.getElementById(`submission-${sub.id}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 100);
   };
 
   // if (loading) return (
@@ -290,6 +296,7 @@ export default function SubmissionManager() {
           ) : submissions.map((sub) => (
             <motion.div
               key={sub.id}
+              id={`submission-${sub.id}`}
               layout
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

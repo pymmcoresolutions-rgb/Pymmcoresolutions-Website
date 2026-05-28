@@ -194,11 +194,21 @@ export default function WaitlistManager() {
     }
   };
 
-  const toggleExpandUser = (email: string) => {
+  const toggleExpandUser = (email: string, id: string) => {
+    const isOpening = !expandedEmails[email];
     setExpandedEmails(prev => ({
       ...prev,
       [email]: !prev[email]
     }));
+
+    if (isOpening) {
+      setTimeout(() => {
+        const element = document.getElementById(`waitlist-row-${id}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 100);
+    }
   };
 
   return (
@@ -349,7 +359,11 @@ export default function WaitlistManager() {
           </thead>
           <tbody>
             {filteredEntries.map(entry => (
-              <tr key={entry.id} className="bg-white/5 border border-white/10 group hover:bg-white/[0.08] transition-colors">
+              <tr 
+                key={entry.id} 
+                id={`waitlist-row-${entry.id}`}
+                className="bg-white/5 border border-white/10 group hover:bg-white/[0.08] transition-colors"
+              >
                 <td className="px-6 py-4 rounded-l-2xl">
                   <input 
                     type="checkbox" 
@@ -365,7 +379,7 @@ export default function WaitlistManager() {
                     </div>
                     <div>
                       <div 
-                        onClick={() => toggleExpandUser(entry.email)}
+                        onClick={() => toggleExpandUser(entry.email, entry.id)}
                         className="text-sm font-medium hover:text-teal-400 cursor-pointer transition-colors flex items-center gap-1.5"
                       >
                         {entry.name || 'Anonymous Node'}

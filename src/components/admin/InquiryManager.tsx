@@ -17,6 +17,19 @@ export default function InquiryManager() {
   const [replyStatus, setReplyStatus] = useState<{ success: boolean; message: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const toggleSelectInquiry = (id: string) => {
+    const isOpening = selectedId !== id;
+    setSelectedId(isOpening ? id : null);
+    if (isOpening) {
+      setTimeout(() => {
+        const element = document.getElementById(`inquiry-${id}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 100);
+    }
+  };
+
   useEffect(() => {
     if (loading || !isAdmin) return;
 
@@ -88,6 +101,7 @@ export default function InquiryManager() {
         {messages.map((msg) => (
           <div 
             key={msg.id} 
+            id={`inquiry-${msg.id}`}
             className={`p-6 rounded-2xl bg-white/5 border transition-all ${
               selectedId === msg.id ? 'border-blue-500/50 bg-blue-500/5' : 'border-white/10 hover:border-white/20'
             }`}
@@ -95,7 +109,7 @@ export default function InquiryManager() {
             <div className="flex justify-between items-start gap-4">
               <div 
                 className="flex-1 cursor-pointer"
-                onClick={() => setSelectedId(selectedId === msg.id ? null : msg.id)}
+                onClick={() => toggleSelectInquiry(msg.id)}
               >
                 <div className="flex items-center gap-3 mb-2">
                   <h4 className="font-bold text-lg">{msg.subject}</h4>
