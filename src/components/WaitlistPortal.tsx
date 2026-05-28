@@ -17,6 +17,17 @@ export default function WaitlistPortal() {
   const [selectedApp, setSelectedApp] = useState<any | null>(null);
 
   useEffect(() => {
+    if (selectedApp) {
+      setTimeout(() => {
+        const element = document.getElementById('project-waitlist-details');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 100);
+    }
+  }, [selectedApp]);
+
+  useEffect(() => {
     if (user) {
       setEmail(user.email || '');
       setName(user.displayName || '');
@@ -208,6 +219,7 @@ export default function WaitlistPortal() {
       <AnimatePresence>
         {selectedApp && (
           <motion.div
+            id="project-waitlist-details"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
