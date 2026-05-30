@@ -96,26 +96,26 @@ export default function AppDetailModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 overflow-y-auto bg-black/90 backdrop-blur-xl"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 bg-black/95 backdrop-blur-xl overflow-hidden"
           onClick={onClose}
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 30 }}
-            className="bg-[#050505] border border-white/10 rounded-[3rem] w-full max-w-6xl overflow-hidden shadow-[0_0_100px_rgba(6,182,212,0.1)] relative flex flex-col md:flex-row"
+            className="bg-[#050505] border border-white/10 rounded-[2rem] md:rounded-[3rem] w-full max-w-6xl h-full max-h-[85vh] overflow-y-auto md:overflow-hidden shadow-[0_0_100px_rgba(6,182,212,0.1)] relative flex flex-col md:flex-row"
             onClick={e => e.stopPropagation()}
           >
             {/* Close Button */}
             <button 
               onClick={onClose}
-              className="absolute top-8 right-8 p-3 rounded-full bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all z-20"
+              className="absolute top-4 right-4 md:top-8 md:right-8 p-2 md:p-3 rounded-full bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all z-20"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5 md:w-6 md:h-6" />
             </button>
 
             {/* Left Side: Visuals & Core Info */}
-            <div className="w-full md:w-[40%] bg-white/[0.01] border-r border-white/5 p-8 md:p-12 space-y-10 overflow-y-auto hidden-scrollbar">
+            <div className="w-full md:w-[40%] bg-white/[0.01] md:h-full border-b md:border-b-0 md:border-r border-white/5 p-6 md:p-10 space-y-8 overflow-y-auto hidden-scrollbar shrink-0">
               <div className="flex justify-between items-start">
                 <div className="w-28 h-28 rounded-[2rem] bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center overflow-hidden shadow-2xl relative group">
                    <div className="absolute inset-0 bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -251,7 +251,7 @@ export default function AppDetailModal({
             </div>
 
             {/* Right Side: Detailed Narrative & Features */}
-            <div className="flex-1 p-8 md:p-12 overflow-y-auto">
+            <div className="flex-1 md:h-full p-6 md:p-12 overflow-y-auto">
               <div className="max-w-3xl space-y-12">
                 <section className="space-y-6">
                   <div className="flex items-center gap-3 text-cyan-400">
